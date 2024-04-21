@@ -6,7 +6,7 @@
 <div class="container container-fluid">
     <div class="row pt-3 justify-content-between">
         <div class="col-7 col-lg-7">
-            <h2 class="h_one my-0 p-1">重要公告</h2>
+            <h2 class="h_one my-0 p-1">重要公告test</h2>
 
                
                     <table class="table table-bordered table-striped table-hover text-center align-middle">
