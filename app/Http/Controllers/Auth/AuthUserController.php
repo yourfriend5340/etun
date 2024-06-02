@@ -170,7 +170,7 @@ class AuthUserController extends Controller
             //dd($employeeID,'體檢日：'.$body_check,'今天：'.$now,'體檢差：'.$years.'年'.$months.'月'.$days.'天','年紀：'.$age_years.'歲'.$age_months.'月',$data['message']);
 
             if($age_years<40){
-                if($year>=4){
+                if($years==4){
                     if($months>=10){
                         $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 5 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
@@ -178,9 +178,15 @@ class AuthUserController extends Controller
                                 ]);
                             }
                 }
+                if($years>4){
+                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 5 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                }
             }
             if($age_years>=40 && $age_years<65){
-                if($year>=2){
+                if($years==2){
                     if($months>=10){
                         $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 3 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
@@ -188,14 +194,28 @@ class AuthUserController extends Controller
                                 ]);
                             }
                 }
+                if($years>2){
+                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 3 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                }
             }
             if($age_years>=65){
-                if($months>=10){
+                if($years<1){
+                    if($months>=10){
                         $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every year,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+1 year",strtotime("$body_check"))),
+                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
                             }
+                }
+                if($years>=1){
+                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                }
             }
 
             //寫入打卡記錄
@@ -205,7 +225,8 @@ class AuthUserController extends Controller
                  ['month','=',$month],
                  ['day','=',$day],   
             ])->get()->toarray();
-//dd($check);
+            //dd($check);
+            //本日第一筆紀錄
             if (count($check)==0){
                 $DBdata=[
                     'employee_id'=>$employeeID,
@@ -221,13 +242,13 @@ class AuthUserController extends Controller
                 return response()->json([$data],200);
             }
             else{
-                for($i=1;$i<=10;$i++){
+                for($i=2;$i<=10;$i++){
 
-                    if ($check[0]['PunchInTime'.$i]==""){
+                    if ($check[0]['PunchInTime'.$i]=="" && $check[0]['PunchInTime'.($i-1)]!=""){
 
-                        $sub=abs(strtotime($time)-strtotime($check[0]['scheduleEnd'.($i-1)]));//計算現在時間跟上一班下班時間的秒差
-                    
-                        if ($sub<600){//離上一班下班，上下十分鐘內才可打卡
+                        //$sub=abs(strtotime($time)-strtotime($check[0]['scheduleEnd'.($i-1)]));//計算現在時間跟上一班下班時間的秒差
+                        //dd($sub,strtotime($time),strtotime($check[0]['scheduleEnd'.($i-1)]),$check,$allowPunchStartTime);
+                        //if ($check[0]['scheduleEnd'.($i-1)]!=null){ //離上一班下班，上下十分鐘內才可打卡
                             DB::table('punch_record')->where([
                                 ['employee_id','=',$employeeID],
                                 ['year','=',$year],
@@ -236,11 +257,10 @@ class AuthUserController extends Controller
                             ])->update(["PunchInTime$i"=>$now]);
                             return response()->json([$data],200);
                             
-                        }
-                        else{
+                        //}
+                    }
+                    else{
                             return "打卡失敗，請於您的工作場地及上班前十分鐘再試行打卡";
-                        }
-
                     }
                 }
                 

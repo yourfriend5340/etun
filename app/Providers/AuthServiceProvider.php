@@ -62,6 +62,7 @@ class AuthServiceProvider extends ServiceProvider
                     return $user->user_group_id === User::ROLE_USER;
                 });
 
+                
         //
         //Auth::provider('admin-eloquent', function ($app, $config) {
         //    return New \App\Foundation\Auth\AdminEloquentUserProvider($app['hash'], $config['model']);

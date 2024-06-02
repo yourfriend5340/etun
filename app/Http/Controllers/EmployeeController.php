@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use App\Models\User;
 use App\Models\Employee;
 use App\Models\Organize;
 use App\Models\Customer;
@@ -546,19 +546,23 @@ class EmployeeController extends Controller
         {$member_password = null;
         $salt=null;}
 
-        $IDCard_front_imageName=null;
-        $IDCard_back_imageName=null;
-        $EmployeeCard_imageName=null;
-        $OthersCard_imageName=null;
-        $IDCard_front_addr=null;
-        $IDCard_back_addr=null;
-        $EmployeeCard_addr=null;
-        $OtherCard_addr=null;
 
+        $img_route=employee::where('member_sn',$request->input('uid'))->get();
+
+        //$IDCard_front_imageName=null;
+        //$IDCard_back_imageName=null;
+        //$EmployeeCard_imageName=null;
+        //$OthersCard_imageName=null;
+        $IDCard_front_addr=$img_route[0]['pic_route1'];
+        $IDCard_back_addr=$img_route[0]['pic_route2'];
+        $EmployeeCard_addr=$img_route[0]['pic_route3'];
+        $OtherCard_addr=$img_route[0]['pic_route4'];
+        //dd($IDCard_front_addr,$IDCard_back_addr,$EmployeeCard_addr,$OtherCard_addr);
 
         if ($request->file('IDCard_front')!=null){
             $IDCard_front_imageName = $membersn.'_IDCard_front.'.$request->file('IDCard_front')->extension();
             $path = $request->file('IDCard_front')->storeas('credential/IDCard_front',$IDCard_front_imageName);
+
         }
 
         if ($request->file('IDCard_back')!=null){
@@ -572,8 +576,9 @@ class EmployeeController extends Controller
         }
 
         if ($request->file('OthersCard')!=null){
-        $OthersCard_imageName = $membersn.'_'.date("Y-m-d H:i:s").'_OthersCard.'.$request->file('OthersCard')->extension();
-        $path = $request->file('OthersCard')->storeas('credential/OthersCard',$OthersCard_imageName);
+            $OthersCard_imageName = $membersn.'_'.date("Y-m-d H:i:s").'_OthersCard.'.$request->file('OthersCard')->extension();
+            $path = $request->file('OthersCard')->storeas('credential/OthersCard',$OthersCard_imageName);
+            $OtherCard_addr="/etun/storage/app/credential/OthersCard',$OthersCard_imageName";
         }
 
         $request=Employee::where('member_name','=',$name)->count();

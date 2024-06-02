@@ -94,6 +94,7 @@ class RegisterController extends Controller
             'salt'=>$salt,
         ]);
 
+        
         $user= USER::orderBy('id','asc')
         ->paginate(20);
         
