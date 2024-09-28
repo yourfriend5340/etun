@@ -854,17 +854,20 @@ if($i==5){
                   }//end $i loop
 //dd($array);
                   $schedule= new Schedules();
-                  
+                  //客戶名字轉換成id
+                  $cusId=DB::table('customers')->select('customer_id')->where('firstname','=',$worksheet[4][0])->first();
+
+                  //dd($cusId->customer_id);
                   //刪除舊有資料
                   $delete=$schedule::where([
-                     ['customer_id', '=', $array[0][4][0]],
+                     ['customer_id', '=', $cusId->customer_id],
                      ['year', '=',  $array[0][1][10]],
                      ['month', '=', $array[0][1][13]],
                      ])->delete();
 
                   //判斷是否已上傳班表過
                   $count = $schedule::where([
-                     ['customer_id', '=', $array[0][4][0]],
+                     ['customer_id', '=', $cusId->customer_id],
                      ['year', '=',  $array[0][1][10]],
                      ['month', '=', $array[0][1][13]],
                      ])->count();
@@ -874,9 +877,10 @@ if($i==5){
                   for ($x=4;$x<=13;$x++)
                   {
                      if ($array[0][$x][1]!=null){
+                     $empId=DB::table('employees')->select('member_sn')->where('member_name','=',$array[0][$x][1])->first();
                      $company_id=$array[0][0][1];
-                     $customer_id=$array[0][4][0];
-                     $employee_id=$array[0][$x][1];
+                     $customer_id=$cusId->customer_id;
+                     $employee_id=$empId->member_sn;
                      $year=$array[0][1][10];
                      $month=$array[0][1][13];
                      

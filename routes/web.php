@@ -68,9 +68,12 @@ Route::middleware('auth')->group(function () {
 Route::get('/patrol_record', [App\Http\Controllers\PatrolRecordController::class, 'index'])->name('patrol_record');
 Route::get('/patrol_record_desc', [App\Http\Controllers\PatrolRecordController::class, 'show_result_desc'])->name('patrol_record_desc');
 Route::get('/patrol_record_asc', [App\Http\Controllers\PatrolRecordController::class, 'show_result_asc'])->name('patrol_record_asc');
-Route::get('/patrol_record/request/name={search_id}&start_time={start_time}&end_time={end_time}&upload_time={upload_time}',[App\Http\Controllers\PatrolRecordController::class,'show'])->name('patrol_record.request');
-Route::get('/patrol_record/request_desc/name={search_id}&start_time={start_time}&end_time={end_time}&upload_time={upload_time}',[App\Http\Controllers\PatrolRecordController::class,'show_desc'])->name('patrol_record.request_desc');
+Route::get('/patrol_record/request/name={search_id}&start_time={start_time}&end_time={end_time}&upload_time={upload_time}',
+            [App\Http\Controllers\PatrolRecordController::class,'show'])->name('patrol_record.request');
+Route::get('/patrol_record/request_desc/name={search_id}&start_time={start_time}&end_time={end_time}&upload_time={upload_time}',
+            [App\Http\Controllers\PatrolRecordController::class,'show_desc'])->name('patrol_record.request_desc');
 Route::POST('patrol_record/import',[App\Http\Controllers\PatrolRecordController::class,'import'])->name('patrol_record.import');
+Route::POST('/patrol_record/export',[App\Http\Controllers\PatrolRecordController::class,'export'])->name('patrol_record.export');
 });
 
 Route::get('/employee', [App\Http\Controllers\EmployeeController::class, 'show'])->name('employee');

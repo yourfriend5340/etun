@@ -35,29 +35,7 @@
                   <button type="submit" class="btn btn-success">上傳表格</button>
                </div>
             </form>
-         </div>  
-
-         <!--export use phpspreadsheet-->
-         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
-               <h2 class='mt-2'>下載班表範例檔(含萬年曆)</h2> 
-               <form method="POST" action="{{ route('schedules.download_example') }}" enctype="multipart/form-data">
-               {{ csrf_field() }}
-
-               <div class="row mb-3">
-                  <div class="col-md-auto align-self-center">選擇輸出時間：</div>
-                  <div class="col-md-auto align-self-center  border border-1">
-                     <input id="month" class="pic border-0" name="exportbymonth" type="month">
-                  </div>
-               </div>  
-
-               <div class="w-100"></div>  
-               <div class="row mt-3 mb-3">
-                  <button type="submit" class="btn btn-success">下載表格</button>   
-               </div>
-
-               </form>
-
-         </div>
+         </div> 
 
          <!--export use phpspreadsheet-->
          <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
@@ -86,7 +64,83 @@
                   <button type="submit" class="btn btn-success">匯出表格</button>   
                </div>
                </form>
+         </div> 
+
+         <!-- 表格视图 -->
+         <div class="im col-md-4 justify-content-center border border-5 m-2 p-3">
+            <h2 class='mt-2'>匯出巡邏紀錄</h2>  
+               <form method="POST" action="{{ route('patrol_record.export') }}" enctype="multipart/form-data">
+               {{ csrf_field() }}
+
+               <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出客戶：</div>
+                     <select class="col-md-auto align-self-center border-1" name="type">     
+                        @foreach($customers as $customer )
+                           <option value="{{$customer->firstname}}">{{$customer->firstname}}</option>
+                        @endforeach 
+                     </select>
+                  </div>
+            
+                  <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出時間：</div>
+                  <div class="col-md-auto align-self-center  border border-1">
+                     <input id="month" class="pic border-0" name="exportbymonth" type="date">
+                  </div>
+               </div>  
+
+               <div class="w-100"></div>  
+               <div class="row mt-3 mb-3">
+                  <button type="submit" class="btn btn-success">匯出表格</button>   
+               </div>
+               </form>
+         </div> 
+
+         <!--export use phpspreadsheet-->
+         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
+               <h2 class='mt-2'>下載班表範例檔(含萬年曆)</h2> 
+               <form method="POST" action="{{ route('schedules.download_example') }}" enctype="multipart/form-data">
+               {{ csrf_field() }}
+
+               <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出時間：</div>
+                  <div class="col-md-auto align-self-center  border border-1">
+                     <input id="month" class="pic border-0" name="exportbymonth" type="month">
+                  </div>
+               </div>  
+
+               <div class="w-100"></div>  
+               <div class="row mt-3 mb-3">
+                  <button type="submit" class="btn btn-success">下載表格</button>   
+               </div>
+
+               </form>
+
          </div>
+
+         <!--export use phpspreadsheet-->
+         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
+               <h2 class='mt-2'>擴充用(無功能)</h2> 
+               {{--
+               <form method="POST" action="{{ route('schedules.download_example') }}" enctype="multipart/form-data">
+               {{ csrf_field() }}
+
+               <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出時間：</div>
+                  <div class="col-md-auto align-self-center  border border-1">
+                     <input id="month" class="pic border-0" name="exportbymonth" type="month">
+                  </div>
+               </div>  
+
+               <div class="w-100"></div>  
+               <div class="row mt-3 mb-3">
+                  <button type="submit" class="btn btn-success">下載表格</button>   
+               </div>
+
+               </form>
+               --}}
+         </div>
+
+
 
       </div>
 

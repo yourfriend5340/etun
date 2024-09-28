@@ -2,10 +2,12 @@
 
 namespace App\Http\Controllers;
 use App\Models\PatrolRecord;
+use App\Models\Customer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\Patrol_Import;
+use App\Exports\PatrolRecordExport;
 
 class PatrolRecordController extends Controller
 {
@@ -274,5 +276,13 @@ class PatrolRecordController extends Controller
         ]);
     }
 
+    public function export(Request $request){
+
+        $id=customer::where('firstname',$request->input('type'))->pluck('customer_id')->first();
+        $date=$request->input('exportbymonth');
+        $file_name = 'patrolrecord_'.date('Y_m_d_H_i_s').'.xlsx'; 
+        return Excel::download(new PatrolRecordExport($id,$date), $file_name);
+
+    }
 
 }

@@ -16,17 +16,15 @@ class CreatePunchRecordTable extends Migration
         Schema::create('punch_record', function (Blueprint $table) {
             $table->id();
             $table->string('employee_id');
+            $table->string('customer_id');
             $table->integer('year');
             $table->integer('month');
             $table->integer('day');
-            for ($i=1;$i<=10;$i++)
-            {
-                $table->string('PunchInTime'.$i);
-                $table->string('scheduleStart'.$i);
-                $table->string('PunchOutTime'.$i);
-                $table->string('scheduleEnd'.$i);
-
-            }
+            $table->string('class');
+            $table->datetime('start');
+            $table->datetime('end');
+            $table->datetime('PunchInTime');
+            $table->datetime('PunchOutTime')->nullable();
 
             $table->timestamps();
         });
