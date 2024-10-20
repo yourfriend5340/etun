@@ -6,7 +6,7 @@
 <div class="container container-fluid">
     <form>  
         <div class="row justify-content-center my-1">     
-            <div class="col-md-auto align-self-center"><font color='red'>*</font>員工名稱(未定義薪資或鐘點人員)：</div>
+            <div class="col-md-auto align-self-center" title="若名單找不到，請確認此員工有設定'在職'，且把月薪欄的數字清空"><font color='red'>*</font>員工名稱(未定義薪資或鐘點的"在職"人員)：</div>
             <div class="col-md-auto input-group-sm align-self-center">
                 <select class="form-select form-select-sm" aria-label="Default select example" name="name" id="name" autocomplete="on">
                     @if ($errors->any())
@@ -48,8 +48,8 @@
                 <input class="inp" type="text" id="add_employee" value="{{$input}}" readonly>
 
             </div>
-            <div class="w-100"></div>
-            <div class="col-md-auto align-self-center"><font color='red'>*</font>客戶名稱：</div>
+           
+            <div class="col-md-auto align-self-center" title="只顯示現有客戶，若沒出現，請於客戶資料中修改客戶狀態"><font color='red'>*</font>客戶名稱：</div>
             <div class="col-md-auto input-group-sm align-self-center mx-0 px-0">
             <select class="form-select form-select-sm border-1 mx-0 px-0" aria-label="Default select example" name="addname" id="addname">
                     @if ($errors->any())

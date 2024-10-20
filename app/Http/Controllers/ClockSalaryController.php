@@ -20,7 +20,10 @@ class ClockSalaryController extends Controller
          abort(403,'抱歉，你沒有使用此功能權限');
       }
 
-      $name=Employee::select('member_name','member_sn')->where('salary','=',null)->distinct()->get();
+      $name=Employee::select('member_name','member_sn')->where([
+         ['salary','=',null],
+         ['status','=','在職']
+         ])->distinct()->get();
       return view('edit_clock_salary',['name'=>$name]);
    }
 
@@ -33,8 +36,8 @@ class ClockSalaryController extends Controller
          ['member_sn','=',$inputname],
          ['salary','=',null],
          ])->get()->first();
-      $cus=Customer::select('customer_sn','firstname')->get();
-      $name=Employee::select('member_name','member_sn')->where('salary','=',null)->distinct()->get();
+      $cus=Customer::select('customer_sn','firstname')->where('status','=',1)->get();
+      $name=Employee::select('member_name','member_sn')->where([['salary','=',null],['status','=','在職']])->distinct()->get();
       $record=ClockSalary::select('id','member_sn','member_name','customer','salary')->where('member_sn','=',$inputname)->orderBy('id','asc')->get();
       return view('edit_clock_salary',['input'=>$employee->member_name,'name'=>$name,'records'=>$record,'customers'=>$cus]);
    }
