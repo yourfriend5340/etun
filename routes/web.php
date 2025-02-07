@@ -91,6 +91,20 @@ Route::get('/announcement/request/{Request_id}', [App\Http\Controllers\Announcem
 Route::get('/announcement/delete/{Delete_id}', [App\Http\Controllers\AnnouncementsController::class, 'destroy'])->name('announcement.delete');
 Route::POST('/announcement/update', [App\Http\Controllers\AnnouncementsController::class, 'update'])->name('announcement.update');
 
+Route::get('/contactgroup', [App\Http\Controllers\ContactController::class, 'groupindex'])->name('contact.group');
+Route::get('/contactgroup_asc', [App\Http\Controllers\ContactController::class, 'groupshow'])->name('contact_group.asc');
+Route::POST('/contactgroup/store', [App\Http\Controllers\ContactController::class, 'groupstore'])->name('contact_group.store');
+Route::get('/contactgroup/delete/{Delete_id}', [App\Http\Controllers\ContactController::class, 'groupdestroy'])->name('contact_group.delete');
+Route::get('/contactgroup/request/{Request_id}', [App\Http\Controllers\ContactController::class, 'grouprequest'])->name('contact_group.request');
+Route::POST('/contactgroup/update', [App\Http\Controllers\ContactController::class, 'groupupdate'])->name('contact_group.update');
+
+Route::get('/contact', [App\Http\Controllers\ContactController::class, 'index'])->name('contact');
+Route::get('/contact_asc', [App\Http\Controllers\ContactController::class, 'show'])->name('contact.asc');
+Route::POST('/contact/store', [App\Http\Controllers\ContactController::class, 'store'])->name('contact.store');
+Route::get('/contact/delete/{Delete_id}', [App\Http\Controllers\ContactController::class, 'destroy'])->name('contact.delete');
+Route::get('/contact/request/{Request_id}', [App\Http\Controllers\ContactController::class, 'request'])->name('contact.request');
+Route::POST('/contact/update', [App\Http\Controllers\ContactController::class, 'update'])->name('contact.update');
+
 Route::get('/clocksalary', [App\Http\Controllers\ClockSalaryController::class, 'index'])->name('clocksalary');
 Route::get('/clocksalary/{id}', [App\Http\Controllers\ClockSalaryController::class, 'show_result'])->name('clocksalary_request');
 Route::get('/clocksalary/add/empname={empname}&name={cusid}&salary={addsalary}', [App\Http\Controllers\ClockSalaryController::class, 'add'])->name('clocksalary_add');
@@ -119,6 +133,8 @@ Route::POST('/table_attendance', [TableController::class, 'attendance'])->name('
 Route::POST('/table_salary', [TableController::class, 'salary'])->name('table.salary');
 Route::POST('/table_resign', [TableController::class, 'resign'])->name('table.resign');
 Route::POST('/table_leave', [TableController::class, 'leave'])->name('table.leave');
+Route::POST('/table_export_access_salary', [TableController::class, 'export_access_salary'])->name('table.export_access_salary');
+Route::POST('/table_import_access_salary', [TableController::class, 'import_access_salary'])->name('table.import_access_salary');
 
 Route::POST('ajaxRequest',[AjaxController::class,'ajaxRequestPost'])->name('ajaxRequest');
 Route::POST('ajaxRequestCustomer',[AjaxController::class,'ajaxRequestCustomer'])->name('ajaxRequestCustomer');

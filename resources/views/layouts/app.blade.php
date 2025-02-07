@@ -154,7 +154,11 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
                             <li><a class="dropdown-item" href="{{route('announcement')}}">新增公告</a></li>
-                            <li><a class="dropdown-item" href="{{route('announcement_desc')}}">異動/刪除公告總覽</a></li>
+                            <li><a class="dropdown-item" href="{{route('announcement_desc')}}">異動/刪除 公告總覽</a></li>
+                            <li><a class="dropdown-item" href="{{route('contact.group')}}">新增群組</a></li>
+                            <li><a class="dropdown-item" href="{{route('contact_group.asc')}}">異動/刪除 群組總覽</a></li>
+                            <li><a class="dropdown-item" href="{{route('contact')}}">新增聯絡資訊</a></li>
+                            <li><a class="dropdown-item" href="{{route('contact.asc')}}">異動/刪除 資訊總覽</a></li>
                         </ul>
                     </div>            
                     @endcan
@@ -233,6 +237,7 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
                             <li><a class="dropdown-item" href={{route('table')}}>離職、請假單輸出</a></li>
+
                             {{--
                             <li><a class="dropdown-item" href="#">員工打卡功能(API)</a></li>
                             <li><a class="dropdown-item" href="#">員工巡邏功能(API)</a></li>

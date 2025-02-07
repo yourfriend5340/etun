@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Phpoffice\Phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf;
+use App\Services\AccessSalaryService;
 
 class TableController extends Controller
 {
@@ -388,10 +389,6 @@ class TableController extends Controller
         // Save the new .xlsx file
         $writer->save('php://output');  */
 
-
-
-
-
         //檔案讀取器
         //$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setReadDataOnly(true);
@@ -405,5 +402,28 @@ class TableController extends Controller
         
         header('Cache-Control: max-age=0');
         $writer->save('php://output');
+    }
+
+    //注入service
+    /** @var AccessSalaryService */
+    protected $accessSalaryService;
+
+    /**
+     * UserController constructor.
+     * @param AccessSalaryService $emailService
+     */
+    public function __construct(AccessSalaryService $accessSalaryService)
+    {
+        $this->accessSalaryService = $accessSalaryService;
+    }
+
+    //薪資試算表匯出
+    public function export_access_salary(Request $request){
+        $this->accessSalaryService->export();
+    }
+
+    //試算薪資表匯入
+    public function import_access_salary(Request $request){
+
     }
 }

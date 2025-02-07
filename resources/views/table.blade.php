@@ -99,7 +99,49 @@
 
          </div>
 
+         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
+               <h2 class='mt-2'>輸出薪資試算表</h2> 
+               <form method="POST" action="{{ route('table.export_access_salary') }}" enctype="multipart/form-data">
+               {{ csrf_field() }}
 
+               <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
+                     <select class="col-md-auto align-self-center border-1" name="name">     
+                        @foreach($employees as $employee )
+                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
+                        @endforeach
+                     </select>
+                  </div>
+
+               <div class="w-100"></div>  
+               <div class="row mt-3 mb-3">
+                  <button type="submit" class="btn btn-success">輸出</button>   
+               </div>
+
+               </form>
+         </div>
+
+         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
+               <h2 class='mt-2'>匯入已編輯薪資試算表</h2> 
+               <form method="POST" action="{{ route('table.import_access_salary') }}" enctype="multipart/form-data">
+               {{ csrf_field() }}
+
+               <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
+                     <select class="col-md-auto align-self-center border-1" name="name">     
+                        @foreach($employees as $employee )
+                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
+                        @endforeach
+                     </select>
+                  </div>
+
+               <div class="w-100"></div>  
+               <div class="row mt-3 mb-3">
+                  <button type="submit" class="btn btn-success">匯入</button>   
+               </div>
+
+               </form>
+         </div>
 
       </div>
 

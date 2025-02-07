@@ -19,12 +19,12 @@ class AdminEloquentUserProvider extends EloquentUserProvider{
         $plain = $credentials['password'];
         $authPassword = $user->getAuthPassword();
 
-        dd('fromAdminEloquentUSER', $user,$plain,$user->getAuthPassword());
+        //dd('fromAdminEloquentUSER', $user,$plain,$user->getAuthPassword());
         //dd(sha1($authPassword['salt'] . sha1($authPassword['salt'] . sha1($plain)))==$authPassword['password']);
         //'password' => sha1($authPassword['salt'] . sha1($authPassword['salt'] . sha1($plain))),
         //return sha1($authPassword['salt'].$plain) == $authPassword['password'];
-        //dd(sha1($authPassword['salt'] . sha1($authPassword['salt'] . sha1($plain)))==$authPassword['password']);
-        return sha1($authPassword['salt'] . sha1($authPassword['salt'] . sha1($plain)))==$authPassword['password'];
+        //dd(sha1($authPassword['salt'] . sha1($authPassword['salt'] . sha1($plain))) == $authPassword['password']);
+        return sha1($authPassword['salt'] . sha1($authPassword['salt'] . sha1($plain))) == $authPassword['password'];
         //原EloquentUserProvider /* return $this->hasher->check($plain, $user->getAuthPassword()); */
     }
 
