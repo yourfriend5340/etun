@@ -10,7 +10,8 @@
             <tr class="col text-left">
             <td>ID</td>
             <td>群組名稱</td>
-
+            <td>名稱</td>
+            <td>電話</td>
             @can('admin')
             <td>更新</td>
             <td>刪除</td>
@@ -28,7 +29,8 @@
                 <tr>
                     <td>{{$group->id}}</td>
                     <td>{{$group->groupName}}</td>
-
+                    <td>{{$group->contactName}}</td>
+                    <td>{{$group->contactPhone}}</td>
                     <td>
                         <input class="btn btn-light btn-md active" type="submit" value="更新" onclick="submit_onclick_request({{$group->id}})">
                     </td>
@@ -59,14 +61,14 @@
     function submit_onclick(id){
 
         if (confirm('確定要刪除ID： '+id+' 號資料嗎？')==true)
-        {window.location.href="/contactgroup/delete/"+id;}
+        {window.location.href="/contact/delete/"+id;}
 
     }
 
     function submit_onclick_request(id){
 
         if (confirm('確定要調閱ID： '+id+' 號資料嗎？')==true)
-        {window.location.href="/contactgroup/request/"+id;}
+        {window.location.href="/contact/request/"+id;}
 
     }
 

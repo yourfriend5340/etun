@@ -7,37 +7,47 @@
 
 
             
-            <form method="POST" action="{{ route('contact_group.update') }}" enctype="multipart/form-data" class="row">
+            <form method="POST" action="{{ route('contact.update') }}" enctype="multipart/form-data" class="row">
               {{ csrf_field() }}
 
-            @foreach($groups as $group )
-            <div class="row mt-2 align-items-center justify-content-center">    
-                <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">組織名稱：</div>
-                <div class="col-md-auto border-0 d-inline-flex align-items-center">
-                    <input type="hidden" name="old_group_name" value={{$group->groupName}}>
-                    <input class="group_name border-1" name="group_name" placeholder="請輸入" value={{$group->groupName}}>
-                </div>
-                
+                <div class="row mt-2 align-items-center justify-content-center"> 選擇群組：
+                    <select class="form-select form-select-sm w-25" aria-label="Default select example" name="group_name">
+                        <option value="">請選擇</option>
+                        @foreach($groups as $group )
+                        <option value="{{$group->id}}" @if($gid == $group->id) selected @endif>{{$group->groupName}}</option>
+                        @endforeach
+                  
+                     </select>
 
 
-                <div class="col-md-auto justify-content-center py-2"> 
-                    <input class="btn btn-success" type="submit" value="確認送出">
+                <div class="row border-0 d-inline-flex align-items-center py-2 justify-content-center">新增名稱：
+                    <input class="group_name border-1 w-25" name="group_user_name" value="{{$contacts->contactName}}">
                 </div>
-            </div>
-            @endforeach
+
+                <div class="row border-0 d-inline-flex align-items-center py-2 justify-content-center">新增電話：
+                    <input class="group_name border-1 w-25" name="group_user_phone" value="{{$contacts->contactPhone}}"  
+                    onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
+                    onkeyup="value=value.replace(/-[^\d.]/g,'')" />
+                    <input type="hidden" name="old_id" value="{{$contacts->id}}">
+                </div>
+
+                <div class="row justify-content-center py-2"> 
+                    <input class="btn btn-success w-50" type="submit" value="確認送出">
+                </div>
+                </div>  
             </form> 
-        </div>
+        
 
-        @if ($errors->any())
-        <div class="alert alert-danger">
-            <ul>
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
+            @if ($errors->any())
+            <div class="alert alert-danger">
+                <ul>
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
         </div>
-        @endif
-
 @endsection
 
 

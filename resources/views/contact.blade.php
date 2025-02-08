@@ -8,16 +8,30 @@
             <form method="POST" action="{{ route('contact.store') }}" enctype="multipart/form-data" class="row">
               {{ csrf_field() }}
 
-                <div class="row mt-2 align-items-center justify-content-center">    
-                    <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">群組名稱：</div>
-                    <div class="col-md-auto border-0 d-inline-flex align-items-center">
-                        <input class="group_name border-1" name="group_name" placeholder="請輸入">
-                    </div>
+                <div class="row mt-2 align-items-center justify-content-center"> 選擇群組：
+                    <select class="form-select form-select-sm w-25" aria-label="Default select example" name="group_name">
+                        <option value="">請選擇</option>
+                        @foreach($groups as $group )
+                        <option value="{{$group->groupName}}">{{$group->groupName}}</option>
+                        @endforeach
+                  
+                     </select>
+                </div>    
 
-                    <div class="col-md-auto justify-content-center py-2"> 
-                        <input class="btn btn-success" type="submit" value="確認送出">
-                    </div>
+                <div class="row border-0 d-inline-flex align-items-center py-2 justify-content-center">新增名稱：
+                    <input class="group_name border-1 w-25" name="group_user_name" placeholder="請輸入">
                 </div>
+
+                <div class="row border-0 d-inline-flex align-items-center py-2 justify-content-center">新增電話：
+                    <input class="group_name border-1 w-25" name="group_user_phone" placeholder="請輸入06-1234567、0911-123456"  
+                    onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
+                    onkeyup="value=value.replace(/-[^\d.]/g,'')" />
+                </div>
+
+                <div class="row justify-content-center py-2"> 
+                    <input class="btn btn-success w-50" type="submit" value="確認送出">
+                </div>
+                
             </form> 
 
 
