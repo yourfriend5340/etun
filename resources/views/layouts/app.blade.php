@@ -182,6 +182,10 @@
                         <ul class="dropdown-menu px-0" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
                             <li><a class="dropdown-item" href="{{route('customer')}}">新增客戶資料</a></li>
                             <li><a class="dropdown-item" href="{{route('customer_asc')}}">更新/刪除客戶資料及總覽</a></li>
+                            <li><a class="dropdown-item" href="{{route('customer_group')}}">客戶群組定義</a></li>
+                            <li><a class="dropdown-item" href="{{route('customer_group_asc')}}">更新/刪除客戶群組及總覽</a></li>
+                            <li><a class="dropdown-item" href="{{route('customer.active')}}">客戶狀態定義</a></li>
+                            <li><a class="dropdown-item" href="{{route('customer_active_asc')}}">更新/刪除客戶狀態及總覽</a></li>
                         </ul>
                     </div>
 

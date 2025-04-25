@@ -13,6 +13,7 @@ class Announcements extends Model
         'id',
         'title',
         'announcement',
+        'top',
         
     ];
 }

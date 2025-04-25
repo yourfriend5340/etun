@@ -136,18 +136,20 @@ class TableController extends Controller
         $sheet->setCellValue('B3', $name);   
         $sheet->setCellValue('B4', $SSN);   
         
-        $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
-        $drawing->setName('sign');
-        $drawing->setDescription('sign');
-        $drawing->setPath('/Users/hsi/sites/etun/storage/app/patrolPIC/帛漢/莊忠諺/sign.png'); // put your path and image here
-        $drawing->setCoordinates('B9');
-        $drawing->setHeight(300);
-        $drawing->setWidth(400);
-        //$drawing->setOffsetX(110);
-        //$drawing->setRotation(25);
-        //$drawing->getShadow()->setVisible(true);
-        //$drawing->getShadow()->setDirection(45);
-        $drawing->setWorksheet($spreadsheet->getActiveSheet());
+        // $drawing = new \PhpOffice\PhpSpreadsheet\Worksheet\Drawing();
+        // $drawing->setName('sign');
+        // $drawing->setDescription('sign');
+        // $drawing->setPath('/Users/hsi/sites/etun/storage/app/patrolPIC/帛漢/莊忠諺/sign.png'); // put your path and image here
+        // $drawing->setCoordinates('B9');
+        // $drawing->setHeight(300);
+        // $drawing->setWidth(400);
+
+
+                //$drawing->setOffsetX(110);
+                //$drawing->setRotation(25);
+                //$drawing->getShadow()->setVisible(true);
+                //$drawing->getShadow()->setDirection(45);
+        //$drawing->setWorksheet($spreadsheet->getActiveSheet());
 
         $file_name = '請假單_'.$name.'_'.date('Y_m_d');
         // Write a new .xlsx file

@@ -110,6 +110,9 @@ class SchedulesController extends Controller
       // 要求上傳的文件必須是表格格式
       $this->validate($request, ['select_file'  => 'required|mimes:xls,xlsx']);
 
+
+
+      
       // 如果是 POST 方法才讀文件
       if ($request->isMethod('POST')){
          $file = $request->file('select_file');
@@ -131,6 +134,7 @@ class SchedulesController extends Controller
             //$bool = Storage::disk('uploads')->put($filename,file_get_contents($realPath));
             $bool= true;
 
+            
             //判斷是否上傳成功
                if($bool){
                   
@@ -273,6 +277,9 @@ class SchedulesController extends Controller
                   //dd($this->isTime($worksheet[20][33]));
                   //dd($worksheet[16][24]);
 
+                  //客戶名字轉換成id
+                  $cusId=DB::table('customers')->select('customer_id')->where('firstname','=',$worksheet[4][0])->first();
+
                   //檢查各班時間格式
                   $stack=[];
                   for ($i=16;$i<=20;$i++){
@@ -283,7 +290,7 @@ class SchedulesController extends Controller
                   for ($i=16;$i<=20;$i++){
                      array_push($stack, $worksheet[$i][30], $worksheet[$i][33]);
                   }
-               //$stack=str_replace("Disney World","Wibibi","Welcome to Disney World.");
+                  //$stack=str_replace("Disney World","Wibibi","Welcome to Disney World.");
                  //dd($worksheet[17][27]);
                   $key= array_search(null,$stack);
                   $count=count($stack);
@@ -308,14 +315,31 @@ class SchedulesController extends Controller
                         return back()->with('danger','除非是最後一班，定義各班別的時間欄位，各班的結束時間，必定等於下一班的開始時間');
                      }
                   }
-                  
+
                   //檢查定義好的班別，並加入array中
+                  $class_defind_list = [];
                   $shift=array('A','B','C','D','E','F','G','H','I','J');
-                  $unlock=[null];
+                  $unlock=[];
                   $offset=0;
+                  //dd($worksheet[18][24]!== null);
+                  for ($i=16;$i<=20;$i++){
+                     if($worksheet[$i][23] !== '' && in_array($worksheet[$i][23],$shift) && $worksheet[$i][24] !== null && $worksheet[$i][27] !== null)
+                     {
+                        array_push($class_defind_list,$worksheet[$i][23]);
+                     }
+                  }
+                                 
+                  for ($i=16;$i<=20;$i++){
+                     if($worksheet[$i][29] != '' && in_array($worksheet[$i][29],$shift) && $worksheet[$i][30] !== null && $worksheet[$i][33] !== null)
+                     {
+                        array_push($class_defind_list,$worksheet[$i][29]);
+                     }
+                  }
+                        
+
                   for ($i=0;$i<=$count-2;$i+=2){
                      if ($stack[$i]!=null && $stack[$i+1]!=null){
-                        array_push($unlock,$shift[$offset]);
+                        array_push($unlock,$class_defind_list[$offset]);
                         $offset=$offset+1;
                      }
                   }
@@ -364,7 +388,9 @@ class SchedulesController extends Controller
                   $stack=array_diff($stack,array(null));
                   $stack=array_chunk($stack, 2);
 
-
+                  //反轉值與索引
+                  $unlock=array_flip($unlock);
+                  
                   //查每月最後一天是幾號
                   $MonthBeginDate=date("Y-$month-01", strtotime(date("Y-m-d")));
                   $MonthLastDate=substr(date('Y-m-d', strtotime("$MonthBeginDate +1 month -1 day")),-2,2);
@@ -374,9 +400,10 @@ class SchedulesController extends Controller
                      
                      if($worksheet[$i][1]!=null){
                         $name=$worksheet[$i][1];
-
+                        $employee_id = DB::table('employees')->where('member_name',$name)->pluck('member_sn')->first();
+                       
                         $res = schedules::where([  
-                                    ['employee_id','=',$name],      
+                                    ['employee_id','=',$employee_id],      
                                     ['year', '=', "$year"],
                                     ['month', '=', "$month"],
                                     ])->get()->toArray();
@@ -391,7 +418,7 @@ class SchedulesController extends Controller
 
                         //查詢31天，即excel第2到32行
                         for ($j=2;$j<=32;$j++){
-                           if($worksheet[$i][$j]!=null){
+                           if($worksheet[$i][$j]!= null){
                               $str_count=strlen($worksheet[$i][$j]);//查詢每欄排了幾個班
 
                                  //讀取第n個班
@@ -399,6 +426,13 @@ class SchedulesController extends Controller
                                     $request_schedule=substr($worksheet[$i][$j],$x,1);//取得排班表所排的班別代號
 
                                     //取得上班下班時間
+                                    
+                                    $offset = $unlock[$request_schedule];
+                                    $start_time = $stack[$offset][0];
+                                    $end_time = $stack[$offset][1];
+
+               
+                                    /*
                                     if($request_schedule=='A'){
                                        $start_time=$stack[0][0];
                                        $end_time=$stack[0][1];
@@ -443,11 +477,12 @@ class SchedulesController extends Controller
                                        $start_time=$stack[9][0];
                                        $end_time=$stack[9][1];
                                     }
-/*
-if($i==5){
-   dd($i,$j,$x,$request_schedule,$start_time,$end_time,$worksheet);
-}
-*/
+                                    */
+                                       /*
+                                       if($i==5){
+                                          dd($i,$j,$x,$request_schedule,$start_time,$end_time,$worksheet);
+                                       }
+                                       */
 
                                     //$j=2, 也就是每月第一天排班，查詢上月最後一天有無排班衝突
                                     if($j==2){
@@ -462,16 +497,16 @@ if($i==5){
                                              $beforemonth=12;
                                              $beforeyear=$year-1;
                                           }
-
+                                          
+                                    //dd($offset,$start_time,$end_time);
                                        //計算最後一天是幾日   
                                        $BeforeMonthBeginDate=date("Y-$beforemonth-01");
-                                       $BeforeMonthLastDate=substr(date('Y-m-d', strtotime("$MonthBeginDate +1 month -1 day")),-2,2);   
+                                       $BeforeMonthLastDate=substr(date('Y-m-d', strtotime("$MonthBeginDate  -1 day")),-2,2);   
                                        //dd($BeforeMonthBeginDate,$BeforeMonthLastDate);
                            
-
                                        //取得上月班表
                                           $res2 = schedules::where([  
-                                                ['employee_id','=',$name],      
+                                                ['employee_id','=',$employee_id],      
                                                 ['year', '=', "$beforeyear"],
                                                 ['month', '=', $beforemonth],
                                                 ])->get()->toArray();
@@ -493,9 +528,10 @@ if($i==5){
                                        }
 
                                        for($check=0;$check<$array_count;$check++){
+                                          $cusName = DB::table('customers')->where('customer_id',$res2[$check]['customer_id'])->pluck('firstname')->first();
 
                                           //if($res2[$check]['customer_id']!=$customer){
-                                          //dd($res2);
+                       
                                              if(isset($res2[$check]['day'.$BeforeMonthLastDate])){//檢查db中有無上月最後一日排班
                                                 $dayX_work=$res2[$check]['day'.$BeforeMonthLastDate];
                                                 $dayX_work_count=strlen($dayX_work);
@@ -517,8 +553,8 @@ if($i==5){
                                                    //查詢上月班表有無隔日上班狀況
                                                    if($dayX_work_end_time<$dayX_work_start_time){
                                                       if(strtotime($start_time) < strtotime($dayX_work_end_time)){
-
-                                                         return back()->with('danger',$name.'於'.$year.'年'.($month-1).'月'.$MonthLastDate.'日於'.$res2[$check]['customer_id'].'有排'.$dayX_work_name.
+                        
+                                                         return back()->with('danger',$name.'於'.$year.'年'.($month-1).'月'.$BeforeMonthLastDate.'日於'.$cusName.'有排'.$dayX_work_name.
                                                                   '班，上班時間是：'.$dayX_work_start_time.'，下班時間是：'.$dayX_work_end_time.'，排班表中有排：'.$request_schedule.'班'.
                                                                   '，上班時間是：'.$start_time.'，下班時間是：'.$end_time);
                                                       }
@@ -538,10 +574,11 @@ if($i==5){
 
                                     for($y=0;$y<$array_count;$y++){
                                        
-                                       if($res[$y]['customer_id']!=$customer){
+                                       if($res[$y]['customer_id']!=$cusId->customer_id){
                                           
                                           if(isset($res[$y]['day'.$j-1])){//檢查db中有無當日排班
-                                  
+                                             $cusName = DB::table('customers')->where('customer_id',$res[$y]['customer_id'])->pluck('firstname')->first();
+                                             
                                              $dayX_work=$res[$y]['day'.$j-1];
                                              $dayX_work_count=strlen($dayX_work);
 
@@ -551,14 +588,15 @@ if($i==5){
                                                 $dayX_work_end_time=$res[$y][$dayX_work_name.'_end'];
                                                 //dd($res[$y]['customer_id'].'__'.($j-1).'日，'.$dayX_work_start_time.'__'.$dayX_work_end_time,$dayX_work_name);   
                                                 //dd($dayX_work,$j,$start_time,$end_time,$dayX_work_start_time,$dayX_work_end_time);
-
+                                                
                                                 //計算excel中的時間，和db中的時間有無交集，若有，重複排班
                                                 if(strtotime($start_time)>=strtotime($dayX_work_start_time)){
+                                              
                                                    if(strtotime($start_time)>=strtotime($dayX_work_end_time)){
 
                                                       //考慮資料庫中的班表有無隔日的問題，若有，即重覆排班
                                                       if(strtotime($dayX_work_end_time)<strtotime($dayX_work_start_time)){
-                                                         return back()->with('danger',$name.'於'.$year.'年'.$month.'月'.($j-1).'日於'.$res[$y]['customer_id'].'有排'.$dayX_work_name.
+                                                         return back()->with('danger',$name.'於'.$year.'年'.$month.'月'.($j-1).'日於'.$cusName.'有排'.$dayX_work_name.
                                                          '班，上班時間是：'.$dayX_work_start_time.'，下班時間是：'.$dayX_work_end_time.'，排班表中有排：'.$request_schedule.'班'.
                                                          '，上班時間是：'.$start_time.'，下班時間是：'.$end_time);
                                                       }
@@ -568,14 +606,14 @@ if($i==5){
 
                                                    }
                                                    else{
-                                                      return back()->with('danger',$name.'於'.$year.'年'.$month.'月'.($j-1).'日於'.$res[$y]['customer_id'].'有排'.$dayX_work_name.
+                                                      return back()->with('danger',$name.'於'.$year.'年'.$month.'月'.($j-1).'日於'.$cusName.'有排'.$dayX_work_name.
                                                       '班，上班時間是：'.$dayX_work_start_time.'，下班時間是：'.$dayX_work_end_time.'，排班表中有排：'.$request_schedule.'班'.
                                                       '，上班時間是：'.$start_time.'，下班時間是：'.$end_time);
                                                    }
                                                 }
                                                 else{
                                                    if(strtotime($end_time)>strtotime($dayX_work_start_time)){
-                                                      return back()->with('danger',$name.'於'.$year.'年'.$month.'月'.($j-1).'日於'.$res[$y]['customer_id'].'有排'.$dayX_work_name.
+                                                      return back()->with('danger',$name.'於'.$year.'年'.$month.'月'.($j-1).'日於'.$cusName.'有排'.$dayX_work_name.
                                                       '班，上班時間是：'.$dayX_work_start_time.'，下班時間是：'.$dayX_work_end_time.'，排班表中有排：'.$request_schedule.'班'.
                                                       '，上班時間是：'.$start_time.'，下班時間是：'.$end_time);
                                                    }
@@ -854,8 +892,7 @@ if($i==5){
                   }//end $i loop
 //dd($array);
                   $schedule= new Schedules();
-                  //客戶名字轉換成id
-                  $cusId=DB::table('customers')->select('customer_id')->where('firstname','=',$worksheet[4][0])->first();
+
 
                   //dd($cusId->customer_id);
                   //刪除舊有資料
@@ -893,7 +930,7 @@ if($i==5){
                            
                            //print(('day'.$y-1)."_is_".${'day'.$y-1}."<br>");
                      }
-
+//dd($array,$stack,$unlock);
                       $schedule::create([
                          'customer_id'=>$customer_id,
                          'employee_id'=>$employee_id,
@@ -930,26 +967,27 @@ if($i==5){
                          'day29'=> ${'day29'},
                          'day30'=> ${'day30'},
                          'day31'=> ${'day31'},
-                         'A'=> $array[0][16][24],
-                         'A_end'=> $array[0][16][27],
-                         'B'=> $array[0][17][24],
-                         'B_end'=> $array[0][17][27],
-                         'C'=> $array[0][18][24],
-                         'C_end'=> $array[0][18][27],
-                         'D'=> $array[0][19][24],
-                         'D_end'=> $array[0][19][27],
-                         'E'=> $array[0][20][24],
-                         'E_end'=> $array[0][20][27],
-                         'F'=> $array[0][16][30],
-                         'F_end'=> $array[0][16][33],
-                         'G'=> $array[0][17][30],
-                         'G_end'=> $array[0][17][33],
-                         'H'=> $array[0][18][30],
-                         'H_end'=> $array[0][18][33],
-                         'I'=> $array[0][19][30],
-                         'I_end'=> $array[0][19][33],
-                         'J'=> $array[0][20][30],
-                         'J_end'=> $array[0][20][33],
+                         $array[0][16][23]       => $array[0][16][24],
+                         $array[0][16][23].'_end'=> $array[0][16][27],
+                         $array[0][17][23]       => $array[0][17][24],
+                         $array[0][17][23].'_end'=> $array[0][17][27],
+                         $array[0][18][23]       => $array[0][18][24],
+                         $array[0][18][23].'_end'=> $array[0][18][27],
+                         $array[0][19][23]       => $array[0][19][24],
+                         $array[0][19][23].'_end'=> $array[0][19][27],
+                         $array[0][20][23]       => $array[0][20][24],
+                         $array[0][20][23].'_end'=> $array[0][20][27],
+                         
+                         $array[0][16][28]=> $array[0][16][30],
+                         $array[0][16][28].'_end'=> $array[0][16][33],
+                         $array[0][17][28]=> $array[0][17][30],
+                         $array[0][17][28].'_end'=> $array[0][17][33],
+                         $array[0][18][28]=> $array[0][18][30],
+                         $array[0][18][28].'_end'=> $array[0][18][33],
+                         $array[0][19][28]=> $array[0][19][30],
+                         $array[0][19][28].'_end'=> $array[0][19][33],
+                         $array[0][20][28]=> $array[0][20][30],
+                         $array[0][20][28].'_end'=> $array[0][20][33],
                          ]
                     );
                   }
@@ -1155,55 +1193,61 @@ if($i==5){
       $activeWorksheet->setCellValue('Q24', '0000-000000');
 
       $activeWorksheet->setCellValue('X16', '排班代號說明');
-      $activeWorksheet->setCellValue('X17', 'A');
-      $activeWorksheet->setCellValueExplicit('Y17', '00:00',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AA17', '-');
-      $activeWorksheet->setCellValueExplicit('AB17', '02:00',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+      for($i=17;$i<=21;$i++)
+      {
+         $activeWorksheet->setCellValue('AA'.$i, '-');
+         $activeWorksheet->setCellValue('AG'.$i, '-');
+      }
+      // $activeWorksheet->setCellValue('X17', 'A');
+      // $activeWorksheet->setCellValueExplicit('Y17', '00:00',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AA17', '-');
+      // $activeWorksheet->setCellValueExplicit('AB17', '02:00',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
       
-      $activeWorksheet->setCellValue('X18', 'B');
-      $activeWorksheet->setCellValueExplicit('Y18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AA18', '-');
-      $activeWorksheet->setCellValueExplicit('AB18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('X18', 'B');
+      // $activeWorksheet->setCellValueExplicit('Y18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AA18', '-');
+      // $activeWorksheet->setCellValueExplicit('AB18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('X19', 'C');
-      $activeWorksheet->setCellValueExplicit('Y19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AA19', '-');
-      $activeWorksheet->setCellValueExplicit('AB19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('X19', 'C');
+      // $activeWorksheet->setCellValueExplicit('Y19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AA19', '-');
+      // $activeWorksheet->setCellValueExplicit('AB19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('X20', 'D');
-      $activeWorksheet->setCellValueExplicit('Y20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AA20', '-');
-      $activeWorksheet->setCellValueExplicit('AB20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('X20', 'D');
+      // $activeWorksheet->setCellValueExplicit('Y20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AA20', '-');
+      // $activeWorksheet->setCellValueExplicit('AB20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('X21', 'E');
-      $activeWorksheet->setCellValueExplicit('Y21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AA21', '-');
-      $activeWorksheet->setCellValueExplicit('AB21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('X21', 'E');
+      // $activeWorksheet->setCellValueExplicit('Y21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AA21', '-');
+      // $activeWorksheet->setCellValueExplicit('AB21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('AD17', 'F');
-      $activeWorksheet->setCellValueExplicit('AE17', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AG17', '-');
-      $activeWorksheet->setCellValueExplicit('AH17', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AD17', 'F');
+      // $activeWorksheet->setCellValueExplicit('AE17', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AG17', '-');
+      // $activeWorksheet->setCellValueExplicit('AH17', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('AD18', 'G');
-      $activeWorksheet->setCellValueExplicit('AE18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AG18', '-');
-      $activeWorksheet->setCellValueExplicit('AH18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AD18', 'G');
+      // $activeWorksheet->setCellValueExplicit('AE18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AG18', '-');
+      // $activeWorksheet->setCellValueExplicit('AH18', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('AD19', 'H');
-      $activeWorksheet->setCellValueExplicit('AE19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AG19', '-');
-      $activeWorksheet->setCellValueExplicit('AH19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AD19', 'H');
+      // $activeWorksheet->setCellValueExplicit('AE19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AG19', '-');
+      // $activeWorksheet->setCellValueExplicit('AH19', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('AD20', 'I');
-      $activeWorksheet->setCellValueExplicit('AE20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AG20', '-');
-      $activeWorksheet->setCellValueExplicit('AH20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AD20', 'I');
+      // $activeWorksheet->setCellValueExplicit('AE20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AG20', '-');
+      // $activeWorksheet->setCellValueExplicit('AH20', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValue('AD21', 'J');
-      $activeWorksheet->setCellValueExplicit('AE21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValue('AG21', '-');
-      $activeWorksheet->setCellValueExplicit('AH21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AD21', 'J');
+      // $activeWorksheet->setCellValueExplicit('AE21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValue('AG21', '-');
+      // $activeWorksheet->setCellValueExplicit('AH21', '',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
       $activeWorksheet->setCellValue('X22', '每班時數');
       $activeWorksheet->setCellValue('AH22', '小時');
@@ -1321,10 +1365,10 @@ if($i==5){
       $month=date("m",$timestamp);
 
       $option=$request->input('type');
-
+      $option_id = DB::table('customers')->where('firstname',$option)->pluck('customer_id')->first();
       //write to excel
       $exportschedules = DB::table('schedules')->where([  
-         ['customer_id','=',$option],      
+         ['customer_id','=',$option_id],      
          //['customer_id','=','台南好市多'],  
          ['year', '=', "$year"],
          ['month', '=', "$month"],
@@ -1353,46 +1397,77 @@ if($i==5){
       };
    }
 
+   $class = [];
+   $classStartTime = [];
+   $classEndTime = [];
+   $index = ['A','B','C','D','E','F','G','H','I','J'];
+   for($i=0;$i<10;$i++)
+   {
+      if($arrays[0][$index[$i]] !== "" && $arrays[0][$index[$i].'_end'] !== "")
+      {
+         array_push($class,$index[$i]);
+         array_push($classStartTime,$arrays[0][$index[$i]]);
+         array_push($classEndTime,$arrays[0][$index[$i].'_end']);
+      }
+   }
+   //dd($class,$classStartTime,$classEndTime);
    for ($i=0;$i<$num;$i++){
-      $activeWorksheet->setCellValue('B'.($i+5), $arrays[$i]['employee_id']);
+      $employeeName = DB::table('employees')->select('member_name')->where('member_sn',$arrays[$i]['employee_id'])->first();
+
+      $activeWorksheet->setCellValue('B'.($i+5), $employeeName->member_name);
    }
 
-      $activeWorksheet->setCellValue('A5', $arrays[0]['customer_id']);
+      $activeWorksheet->setCellValue('A5', $option);
 
-      $activeWorksheet->setCellValue('B5', $arrays[0]['employee_id']);
+      //$activeWorksheet->setCellValue('B5', $arrays[0]['employee_id']);
       //var_dump($arrays[$counter]['employee_id']);
       $activeWorksheet->setCellValue('K2', $arrays[0]['year']);
       $activeWorksheet->setCellValue('N2', $arrays[0]['month']);
 
-      $activeWorksheet->setCellValueExplicit('Y17', $arrays[0]['A'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AB17', $arrays[0]['A_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      for($i=0;$i<count($class);$i++)
+      {
+         if(count($class) <= 5){
+            $activeWorksheet->setCellValueExplicit('X'.($i+17), $class[$i],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $activeWorksheet->setCellValueExplicit('Y'.($i+17), $classStartTime[$i],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $activeWorksheet->setCellValueExplicit('AB'.($i+17), $classEndTime[$i],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+         }
+         else{
+            $activeWorksheet->setCellValueExplicit('AD'.($i+17), $class[$i],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $activeWorksheet->setCellValueExplicit('AE'.($i+17), $classStartTime[$i],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $activeWorksheet->setCellValueExplicit('AH'.($i+17), $classEndTime[$i],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('Y18', $arrays[0]['B'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AB18', $arrays[0]['B_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+         }
+      }
 
-      $activeWorksheet->setCellValueExplicit('Y19', $arrays[0]['C'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AB19', $arrays[0]['C_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('Y17', $arrays[0]['A'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AB17', $arrays[0]['A_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('Y20', $arrays[0]['D'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AB20', $arrays[0]['D_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('Y18', $arrays[0]['B'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AB18', $arrays[0]['B_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('Y21', $arrays[0]['E'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AB21', $arrays[0]['E_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('Y19', $arrays[0]['C'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AB19', $arrays[0]['C_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('AE17', $arrays[0]['F'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AH17', $arrays[0]['F_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('Y20', $arrays[0]['D'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AB20', $arrays[0]['D_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('AE18', $arrays[0]['G'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AH18', $arrays[0]['G_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('Y21', $arrays[0]['E'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AB21', $arrays[0]['E_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('AE19', $arrays[0]['H'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AH19', $arrays[0]['H_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AE17', $arrays[0]['F'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AH17', $arrays[0]['F_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('AE20', $arrays[0]['I'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AH20', $arrays[0]['I_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AE18', $arrays[0]['G'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AH18', $arrays[0]['G_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
 
-      $activeWorksheet->setCellValueExplicit('AE21', $arrays[0]['J'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-      $activeWorksheet->setCellValueExplicit('AH21', $arrays[0]['J_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AE19', $arrays[0]['H'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AH19', $arrays[0]['H_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+      // $activeWorksheet->setCellValueExplicit('AE20', $arrays[0]['I'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AH20', $arrays[0]['I_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+
+      // $activeWorksheet->setCellValueExplicit('AE21', $arrays[0]['J'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+      // $activeWorksheet->setCellValueExplicit('AH21', $arrays[0]['J_end'],\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
          
 
       header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

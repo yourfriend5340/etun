@@ -31,9 +31,9 @@ class AnnouncementsController extends Controller
 
     public function show_result_desc()
     {
-        $announcement= Announcements::orderBy('id','desc')->paginate(10);
-
-        return view("show_announcement",["announcements"=>$announcement]);
+        $topAnn = Announcements::where('top',1)->first();
+        $announcement= Announcements::where('top',0)->orderBy('id','desc')->paginate(20);
+        return view("show_announcement",["announcements"=>$announcement,"topAnn"=>$topAnn]);
     }
 
     public function store(Request $request){
@@ -58,13 +58,22 @@ class AnnouncementsController extends Controller
         
         $title = $request->input('title');
         $text = $request->input('text_area');
-        
+        $top = $request->input('top');
+        //dd($top);
+        //若有選擇頂置，先將top歸零
+        if($top === '1' )
+        {
+            //dd(filter_var($top, FILTER_VALIDATE_BOOLEAN));
+            Announcements::where('top','=', 1)->update(['top' => 0]);
+        }
+        //dd($title,$text,$top);
 
             $data=[
             'title'=>$title,
-            'announcement'=>$text
+            'announcement'=>$text,
+            'top'=>(bool)$top,
             ];
-
+            //dd($data);
             $ann= Announcements::create($data);
             //$ann= Announcements::orderBy('id','asc')->paginate(20);
 
@@ -74,6 +83,14 @@ class AnnouncementsController extends Controller
     public function destroy(Request $request,$id){
         
         $des=Announcements::where('id','=',$id)->delete();
+
+        return redirect()->route('announcement_desc');        
+    }
+
+    public function top(Request $request,$id){
+        
+        Announcements::where('top','=', 1)->update(['top' => 0]);
+        Announcements::where('id',$id)->update(['top'=> 1]);
 
         return redirect()->route('announcement_desc');        
     }

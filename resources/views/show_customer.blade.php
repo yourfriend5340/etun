@@ -2,7 +2,8 @@
 
 @section('content')
 
-<div class="con container-fluid table-responsive table-bordered p-0">
+<div class="row mx-1">
+    <p class="p-test mt-1 mb-0 fs-3">客戶資料總覽</p>
     <div class="d-flex justify-content-end">
   
         <a class="btn btn-secondary m-2" href="{{route('customer_asc')}}" role="button">遞增</a>
@@ -21,6 +22,7 @@
             {{--<td>客戶active</td>--}}
             <td>客戶地址</td>
             <td>電話</td>
+            <td>聯絡人</td>
             <td>帳號</td>
             <td>經度</td>
             <td>緯度</td>
@@ -30,11 +32,11 @@
             @can('admin')
             <td>更新</td>
             <td>刪除</td>
-            <td>聯絡人</td>
+
             @elsecan('super_manager')
             <td>更新</td>
             <td>刪除</td>
-            <td>聯絡人</td>
+
             @endcan
             
             </tr>
@@ -51,6 +53,7 @@
                     {{--<td>{{$customer->active}}</td>--}}
                     <td class="text-start">{{$customer->addr}}</td>
                     <td>{{$customer->tel}}</td>
+                    <td>{{$customer->person}}</td>
                     <td>{{$customer->account}}</td>
                     <td>{{$customer->lng}}</td>
                     <td>{{$customer->lat}}</td>
@@ -62,9 +65,7 @@
                     <td>
                         <input class="btn btn-light btn-md active" type="button" value="刪除" onclick="submit_onclick({{$customer->customer_id}})">
                     </td>
-                    <td>
-                        <input class="btn btn-light btn-md active" type="button" value="編輯" onclick="submit_onclick1({{$customer->customer_id}})">
-                    </td>
+
 
                     @elsecan('super_manager')
                     <td>
@@ -73,9 +74,7 @@
                     <td>
                         <input class="btn btn-light btn-md active" type="button" value="刪除" onclick="submit_onclick({{$customer->customer_id}})">
                     </td>
-                    <td>
-                        <input class="btn btn-light btn-md active" type="button" value="編輯" onclick="submit_onclick1({{$customer->customer_id}})">
-                    </td>
+
                     @endcan
                 </tr>
             @endforeach

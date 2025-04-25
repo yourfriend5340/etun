@@ -43,8 +43,185 @@ class AuthUserController extends Controller
             'account'=>$user['member_account']
         ];
         
+        //以下整理並回傳聯絡人資訊
+        $group_name=DB::table('contact_group')->select('groupName')->get();
+        $count_group= count($group_name);
+
+        $contact=DB::table('contact')
+            ->join('contact_group', 'contact.gid', '=', 'contact_group.id')
+            ->select('contact.contactName','contact.contactPhone','groupName')
+            ->orderby('groupName','asc')
+            ->orderby('contact.id','asc')
+            ->get()->toarray();
+        $count_contact = count($contact);
+
+        $year = date("Y");
+        $month = date("m");
+       
+        $schedule=DB::table('schedules')
+                    ->join('customers',function($join){
+                        $join->on('schedules.customer_id','=','customers.customer_id');    
+                    })
+                    ->where([
+                        ['employee_id',$user['member_sn']],
+                        ['year',$year],
+                        ['month',$month]
+                    ])
+                    ->orwhere([
+                        ['employee_id',$user['member_sn']],
+                        ['year',$year],
+                        ['month',$month+1]
+                    ])
+                    ->select('customers.firstname','schedules.*')
+                    ->get()
+                     ->map(function($schedule){
+                         return[
+                             'customerName'=>$schedule->firstname,
+                                'month'=>$schedule->year.'-'.$schedule->month,
+                                '1'=>$schedule->day1,
+                                '2'=>$schedule->day2,
+                                '3'=>$schedule->day3,
+                                '4'=>$schedule->day4,
+                                '5'=>$schedule->day5,
+                                '6'=>$schedule->day6,
+                                '7'=>$schedule->day7,
+                                '8'=>$schedule->day8,
+                                '9'=>$schedule->day9,
+                                '10'=>$schedule->day10,
+                                '11'=>$schedule->day11,
+                                '12'=>$schedule->day12,
+                                '13'=>$schedule->day13,
+                                '14'=>$schedule->day14,
+                                '15'=>$schedule->day15,
+                                '16'=>$schedule->day16,
+                                '17'=>$schedule->day17,
+                                '18'=>$schedule->day18,
+                                '19'=>$schedule->day19,
+                                '20'=>$schedule->day20,
+                                '21'=>$schedule->day21,
+                                '22'=>$schedule->day22,
+                                '23'=>$schedule->day23,
+                                '24'=>$schedule->day24,
+                                '25'=>$schedule->day25,
+                                '26'=>$schedule->day26,
+                                '27'=>$schedule->day27,
+                                '28'=>$schedule->day28,
+                                '29'=>$schedule->day29,
+                                '30'=>$schedule->day30,
+                                '31'=>$schedule->day31,
+                                'A'=>[$schedule->A,$schedule->A_end],
+                                'B'=>[$schedule->B,$schedule->B_end],
+                                'C'=>[$schedule->C,$schedule->C_end],
+                                'D'=>[$schedule->D,$schedule->D_end],
+                                'E'=>[$schedule->E,$schedule->E_end],
+                                'F'=>[$schedule->F,$schedule->F_end],
+                                'G'=>[$schedule->G,$schedule->G_end],
+                                'H'=>[$schedule->H,$schedule->H_end],
+                                'I'=>[$schedule->I,$schedule->I_end],
+                                'J'=>[$schedule->J,$schedule->J_end],
+                                
+                         ];
+                     })
+                    ->toarray();
+
+        //整理array資訊
+        /*
+        {
+            "cusName": "AAA",
+            "month": "2025/4",
+            "defind": [
+            {
+                "A":["07:00","08:00"],
+                "B":["08:00","09:00"]
+            }],
+
+            "A": [1,2,3,4,5],
+            "B": [6,7,8,9,10]
+            }
+        */ 
+
+        $allClassList=['A','B','C','D','E','F','G','H','I','J'];
+        $defind = array();
+        
+        for($i=0;$i<count($schedule);$i++){
+            //過濾空欄位
+            foreach($schedule[$i] as $k=>$v){
+                if($schedule[$i][$k]=="" || $v ==","){
+                    unset($schedule[$i][$k]);
+                }
+            }
+
+            //將班表定義時間整理
+            for($j=0;$j<count($allClassList);$j++){
+                if($schedule[$i][$allClassList[$j]][0] == "" || $schedule[$i][$allClassList[$j]][1] == ""){
+                    unset($schedule[$i][$allClassList[$j]]);
+                }
+                else{
+                    if(!isset($schedule[$i]["Defind"][$allClassList[$j]])){
+                        $schedule[$i]["Defind"][$allClassList[$j]]=[];
+                    }
+
+                    if(!isset($schedule[$i][$allClassList[$j]])){
+                        $schedule[$i][$allClassList[$j]]=[];
+                    }
+
+                    array_push($schedule[$i]["Defind"][$allClassList[$j]],
+                        $schedule[$i][$allClassList[$j]][0] , $schedule[$i][$allClassList[$j]][1]
+                    );
+
+                    $schedule[$i][$allClassList[$j]]=[];
+                }
+
+            }
+            //$offset = 0;
+            for($k=1;$k<=31;$k++){
+                
+                if(isset($schedule[$i][$k]) && $schedule[$i][$k] != null)
+                {            
+                    $class = $schedule[$i][$k];
+                    if(strlen($class) == 1)
+                    {
+                        array_push($schedule[$i][$class],$k);
+                    }
+                    else{
+                        for($n=1;$n<=strlen($class);$n++)
+                        {
+                            $oneClass = substr($class,$n-1,1);
+                            array_push($schedule[$i][$oneClass],$k);
+                        }
+
+                    }
+                    unset($schedule[$i][$k]);
+                }
+            }
+            //$schedule[$i]['customerName'] = urlencode($schedule[$i]['customerName']);
+        }
+
+        // 利用json_encode將資料轉成JSON格式
+        //$data_json_url = json_encode($schedule);
+
+        // 利用urldecode將資料轉回中文
+        //$data_json = urldecode($data_json_url);
+
+        //建立各群組的array
+        for($i=0;$i<$count_group;$i++){
+            $gpName = $group_name[$i]->groupName;
+
+            $index = 1;
+            for($j=0;$j<$count_contact;$j++){
+                if($contact[$j]->groupName === $gpName){
+                    $name = $contact[$j]->contactName;    
+                    $phone = $contact[$j]->contactPhone;
+
+                    $contactArr[$gpName]["user".$index]["name"] = $name;
+                    $contactArr[$gpName]["user".$index]["phone"] = $phone;
+                    $index++;
+                }
+            }
+        }
+
         //return response(['user' => auth()->user()->only('name','email'), 'token' => $token]);
-        return response(['user' => $data, 'token' => $token]);
+        return response(['user' => $data, 'contactData'=>$contactArr,'ClassSchedule'=>$schedule,'token' => $token]);
     }
 
 

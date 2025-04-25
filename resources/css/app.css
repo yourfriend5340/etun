@@ -89,3 +89,8 @@ li,
 .inp2 {
     top: 5px;
 }
+
+
+tr td[scope="top"] {
+    background-color: rgb(230, 255, 255);
+}

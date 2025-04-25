@@ -34,7 +34,7 @@
     </div>
 </div>--}}
 
-<div class="container container-fluid table-responsive table-bordered p-0">
+<div class="row table-responsive table-bordered mx-1">
     <div class="d-flex justify-content-end">
   
         <a class="btn btn-secondary m-2" href="{{route('user_asc')}}" role="button">遞增</a>

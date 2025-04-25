@@ -2,7 +2,7 @@
 
 @section('content')
 
-   <div class="container-fluid">   
+   <div class="row mx-1">   
       <div class="row justify-content-center">
 
          <!--export use phpspreadsheet-->

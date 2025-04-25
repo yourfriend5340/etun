@@ -28,9 +28,10 @@ class CustomersController extends Controller
 
     public function show(Customer $customer)
     {
-        return view("customer");
+        $status=DB::table('cus_status')->orderby('id')->get();
+        $group=DB::table('cus_group')->orderby('id')->get();
+        return view("customer",["group"=>$group,"status"=>$status]);
     }
-
     public function store(Request $request){
         try{
             $rules=[
@@ -78,6 +79,7 @@ class CustomersController extends Controller
         $cus_account = $request->input('member_account');
         $cus_password = $request->input('member_password');
         $cus_password_text = $cus_password;
+        $person = $request->input('person');
         
         $salt =  substr(md5(uniqid(rand(), true)), 0, 9);
 
@@ -101,7 +103,7 @@ class CustomersController extends Controller
             $data=[
             'customer_sn'=>$cus_id,
             'customer_group_id'=>$cus_group,
-            'status'=>$cus_status,
+            'active'=>$cus_status,
             //'active'=>$cus_active,
             'firstname'=>$cus_name,
             'addr'=>$cus_addr,
@@ -113,6 +115,7 @@ class CustomersController extends Controller
             'password'=>$cus_password,
             'password_text'=>$cus_password_text,
             'salt'=>$salt,
+            'person'=>$person
             ];
 
             $customer= Customer::create($data);
@@ -177,6 +180,7 @@ class CustomersController extends Controller
         $cus_account = $request->input('member_account');
         $cus_password = $request->input('member_password');
         $cus_password_text = $cus_password;
+        $person = $request->input('person');
 
         $salt =  substr(md5(uniqid(rand(), true)), 0, 9);
 
@@ -195,7 +199,7 @@ class CustomersController extends Controller
             $data=[
 
             'customer_group_id'=>$cus_group,
-            'status'=>$cus_status,
+            'active'=>$cus_status,
             //'active'=>$cus_active,
             'firstname'=>$cus_name,
             'addr'=>$cus_addr,
@@ -207,6 +211,7 @@ class CustomersController extends Controller
             'password'=>$cus_password,
             'password_text'=>$cus_password_text,
             'salt'=>$salt,
+            'person'=>$person
             ];
 
             $customer=Customer::where('customer_sn','=',$cus_id)->update($data);
@@ -223,7 +228,7 @@ class CustomersController extends Controller
         //return view("show_customer",["customers"=>$customer]);
         $cus=DB::table('customers')
             ->join('cus_group', 'customers.customer_group_id', '=', 'cus_group.id')
-            ->join('cus_status','customers.customer_group_id', '=', 'cus_status.id')
+            ->join('cus_status','customers.active', '=', 'cus_status.id')
             ->orderby('customer_id','asc')
             ->paginate(20);
         
@@ -237,7 +242,7 @@ class CustomersController extends Controller
         //return view("show_customer",["customers"=>$customer]);
         $cus=DB::table('customers')
             ->join('cus_group', 'customers.customer_group_id', '=', 'cus_group.id')
-            ->join('cus_status','customers.customer_group_id', '=', 'cus_status.id')
+            ->join('cus_status','customers.active', '=', 'cus_status.id')
             ->orderby('customer_id','desc')
             ->paginate(20);
 
@@ -258,29 +263,73 @@ class CustomersController extends Controller
         if (! Gate::allows('group_admin')) {
             abort(403,'抱歉，你沒有使用此功能權限');
         }
-        $customer=DB::table('customers')->where('customer_id','=',$Request_id)->get();
-        $group=$customer->pluck('customer_group_id')->first();
-        $status=$customer->pluck('status')->first();
-        //$active=$customer->pluck('active')->first();
+        $customer=DB::table('customers')
+                        ->join('cus_group','customers.customer_group_id','cus_group.id')
+                        ->join('cus_status','customers.active','cus_status.id')
+                        ->where('customer_id','=',$Request_id)->get();
 
-        if($group==1)
-        {$group='VIP客戶';}
-        else
-        {$group='普通客戶';}
-
-        if($status==1)
-        {$status='現有客戶';}
-        else
-        {$status='非現有客戶';}
-
-        //if($active==1)
-        //{$active='現有客戶';}
-        //else
-        //{$active='非現有客戶';}
-       
+        $group=DB::table('cus_group')->get();
+        $status=DB::table('cus_status')->get();
 
         //return view("edit_customer",["customers"=>$customer,"group"=>$group,"status"=>$status,"active"=>$active]);
-        return view("edit_customer",["customers"=>$customer,"group"=>$group,"status"=>$status]);
+        return view("edit_customer",["customers"=>$customer,"groups"=>$group,"status"=>$status]);
 
     }
+
+    public function group_show(Customer $customer){
+        
+        return view("customer_group");
+    }
+    public function group_store(Request $request){
+        try{
+            $rules=[
+            "group" => "required|unique",
+            ];
+
+            $message = [
+                // 欄位驗證
+                "group.unique" =>'"客戶名稱"必為唯一',
+                "group.required" => '"客戶名稱"為必填資料',
+            ];
+            $validResult = $request->validate($rules, $message);
+dd($validResult);
+        }
+        catch (ValidationException $exception) {
+            $errorMessage =$exception->validator->getMessageBag()->getMessages();
+            return $errorMessage;
+        }
+
+        $cus_group = $request->input('group');
+        // $count = $customer::where('customer_sn', '=', $cus_id)->count();
+        // $data=[
+        //     'group'=>$cus_group,
+        //     ];
+
+        // $customer= Customer::create($data);
+        // $customer= Customer::orderBy('customer_id','asc')
+        // ->paginate(20);
+
+        return redirect()->route('customer_group_asc');
+    }
+
+    public function group_destroy(Request $request,$Delete_id){}
+    public function group_update(Request $request){}
+
+    public function group_show_result_asc(Request $request){
+        $cus=DB::table('cus_group')
+            ->orderby('id','asc')
+            ->paginate(20);
+        
+        return view("show_customer_group",["customers"=>$cus]);
+    }
+
+
+    public function active_show(Customer $customer){
+        $status=DB::table('cus_status')->orderby('id')->get();
+        return view("customer",["group"=>$group,"status"=>$status]);
+    }
+    public function active_store(Request $request){}
+    public function active_destroy(Request $request,$Delete_id){}
+    public function active_update(Request $request){}
+    public function active_show_result_asc(Request $request){}
 }

@@ -2,9 +2,10 @@
 
 @section('content')
 
-<div class="container container-fluid  p-0">
+<div class="row mx-1">
+<p class="p-test mt-1 mb-0 fs-3">更新、刪除QRcode</p>
    <form>  
-        <div class="row justify-content-center mx-1">     
+        <div class="row">     
             <div class="col-md-auto align-self-center py-2"><font color='red'>*</font>客戶名稱：</div>
             <div class="col-md-3 input-group-sm align-self-center py-2 pe-1">
                     <select class="form-select form-select-sm" aria-label="Default select example" name="name" id="name" autocomplete="on">
@@ -24,7 +25,8 @@
             </div>
         </div>
     </form>
-
+</div>
+<div class="contain mx-1">
     @if (isset($qrcodes))
     <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
         <thead>

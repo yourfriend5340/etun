@@ -3,10 +3,10 @@
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<div class="container container-fluid gx-0">
-    
+<div class="row mx-1 gx-0">
+    <p class="p-test mt-1 mb-0 fs-3">輸出QRcode</p>
     <form>  
-        <div class="row justify-content-center mx-1">     
+        <div class="row">     
             <div class="col-md-auto align-self-center py-2 m-0"><font color='red'>*</font>客戶名稱：</div>
             <div class="col-md-auto input-group-sm align-self-center py-2 m-0">
                     <select class="form-select form-select-sm" aria-label="Default select example" name="name" id="name" autocomplete="on">
@@ -43,7 +43,7 @@
     @endif
 </div>
 
-<div class="container container-fluid table-responsive">
+<div class="row mx-1">
 
     @if (isset($qr_info))
     <form method="POST" action="{{ route('qrcode.print') }}" enctype="multipart/form-data" class="row">

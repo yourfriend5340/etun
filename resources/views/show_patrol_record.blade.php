@@ -3,12 +3,12 @@
 @section('content')
 
 
-<div class="container container-fluid">
-    
+<div class="row mx-1">
+<p class="p-test mt-1 mb-0 fs-3">巡邏紀錄查詢</p>
     <form>  
-        <div class="row justify-content-between mx-1">     
+        <div class="row">     
             <div class="col-md-auto align-self-center py-2 me-0 pe-0"><font color='red'>*</font>客戶名稱：</div>
-            <div class="col-md-3 input-group-sm align-self-center py-2">
+            <div class="col-md-auto input-group-md align-self-center py-2">
                 {{--<input class="patrol w-100" name="name" id="name" placeholder="輸入客戶名稱">--}}
                     <select class="form-select form-select-sm" aria-label="Default select example" name="name" id="name">
                         {{--<option value="">請選擇</option>--}}
@@ -23,15 +23,15 @@
                     </select>                
             </div> 
     
-            <div class="col-md-2 align-self-center py-2"><font color='red'>*</font>起始巡邏:
+            <div class="col-md-auto align-self-center py-2"><font color='red'>*</font>起始巡邏:
                 <input class="patrol" name="start_time" id="start_time" type="date">
             </div>
 
-            <div class="col-md-2 align-self-center py-2"><font color='red'>*</font>結束巡邏:
+            <div class="col-md-auto align-self-center py-2"><font color='red'>*</font>結束巡邏:
                 <input class="patrol" name="end_time" id="end_time" type="date">
             </div>
 
-            <div class="col-md-2 align-self-center py-2">上傳日期:
+            <div class="col-md-auto align-self-center py-2">上傳日期:
                 <input class="patrol" name="upload_time" id="upload_time" type="date">
             </div>
 
@@ -56,7 +56,7 @@
     @endif
 </div>
 
-<div class="container container-fluid table-responsive table-bordered p-0">
+<div class="contain table-responsive table-bordered mx-1">
 
     @if (isset($patrol_records))
     {{--
@@ -76,6 +76,7 @@
             <td>巡邏場所</td>
             <td>巡邏日期</td>
             <td>巡邏時間</td>
+            <td>照片</td>
             <td>匯入方式</td>
             <td>上傳時間</td>
 
@@ -86,17 +87,35 @@
         <tbody>
 
             @foreach($patrol_records as $patrol_record )
-                <tr>
-                    {{--<td>{{$patrol_record->id}}</td>--}}
-                    <td>{{$patrol_record->firstname}}</td>
-                    <td>{{$patrol_record->patrol_RD_No}}</td>
-                    <td class="text-start">{{$patrol_record->patrol_RD_Name}}</td>
-                    <td>{{$patrol_record->patrol_RD_DateB}}</td>
-                    <td>{{$patrol_record->patrol_RD_TimeB}}</td>
-                    <td>{{$patrol_record->patrol_upload_user}}</td>
-                    <td>{{$patrol_record->patrol_upload_date}}</td>
-                    
-                </tr>
+                @if($patrol_record->picturePath == '')
+                    <tr>
+                        {{--<td>{{$patrol_record->id}}</td>--}}
+                        <td>{{$patrol_record->firstname}}</td>
+                        <td>{{$patrol_record->patrol_RD_No}}</td>
+                        <td class="text-start">{{$patrol_record->patrol_RD_Name}}</td>
+                        <td>{{$patrol_record->patrol_RD_DateB}}</td>
+                        <td>{{$patrol_record->patrol_RD_TimeB}}</td>
+                        <td> - </td>
+                        <td>{{$patrol_record->patrol_upload_user}}</td>
+                        <td>{{$patrol_record->patrol_upload_date}}</td>
+                        
+                    </tr>
+                @else
+                    <tr>
+                        <td scope="top">{{$patrol_record->firstname}}</td>
+                        <td scope="top">{{$patrol_record->patrol_RD_No}}</td>
+                        <td class="text-start" scope="top">{{$patrol_record->patrol_RD_Name}}</td>
+                        <td scope="top">{{$patrol_record->patrol_RD_DateB}}</td>
+                        <td scope="top">{{$patrol_record->patrol_RD_TimeB}}</td>
+                        <td scope="top">
+                            <input class="btn btn-light btn-md active" id="btn" type="button" value="連結" onclick="submit_onclick_PIC({{$patrol_record->id}})">
+                            <input type="hidden" id="path{{$patrol_record->id}}" name="path" value={{$patrol_record->picturePath}} /> 
+                        </td>
+                        <td scope="top">{{$patrol_record->patrol_upload_user}}</td>
+                        <td scope="top">{{$patrol_record->patrol_upload_date}}</td>
+                        
+                    </tr>
+                @endif
             @endforeach
             
       </tbody>
@@ -141,10 +160,10 @@
                 }
                 
                 else{
-                    if (upload_time>end_time){
+                    if (upload_time>=end_time){
                         query='/patrol_record/request/name='+name+'&start_time='+start_time+'&end_time='+end_time+'&upload_time='+upload_time;
                 
-                        if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!\n網址是：'+query)==true)
+                        if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!')==true)
                         {window.location.href=query;}
                     }  
                 }    
@@ -159,7 +178,7 @@
                 else{
                     query='/patrol_record/request/name='+name+'&start_time='+start_time+'&end_time='+end_time+'&upload_time='+upload_time;
                 
-                    if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!\n網址是：'+query)==true)
+                    if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!')==true)
                     {window.location.href=query;}  
                 }  
             }
@@ -191,10 +210,10 @@
                 }
                 
                 else{
-                    if (upload_time>end_time){
+                    if (upload_time>=end_time){
                         query='/patrol_record/request_desc/name='+name+'&start_time='+start_time+'&end_time='+end_time+'&upload_time='+upload_time;
                 
-                        if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!\n網址是：'+query)==true)
+                        if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!')==true)
                         {window.location.href=query;}
                     }  
                 }    
@@ -209,11 +228,27 @@
                 else{
                     query='/patrol_record/request_desc/name='+name+'&start_time='+start_time+'&end_time='+end_time+'&upload_time='+upload_time;
                 
-                    if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!\n網址是：'+query)==true)
+                    if (confirm('你輸入的名字是：'+name+'\n開始巡邏時間：'+start_time+'\n結束巡邏時間：'+end_time+'\n上傳時間：'+upload_time+'\n\n確認後開始搜尋!!')==true)
                     {window.location.href=query;}  
                 }  
             }
         }
       }
   
+    function submit_onclick_PIC(id) {
+        var input = document.getElementById("path"+id);
+        var path = input.value;
+        var host = window.location.host;
+        var url = 'https://'+host+'/'+path;
+        var btn = document.getElementById('btn');
+        var btnRect = btn.getBoundingClientRect();
+        var x = btnRect.left + window.screenX ;
+        var y = btnRect.top + btnRect.height + window.screenY + (window.outerHeight - window.innerHeight);
+        var win = window.open(url, '_blank', 
+            `popup=yes,width=600,height=400,left=${x},top=${y}`);
+        
+        //window.open(path, '_blank', 'width=600,height=400');
+        //window.event.returnValue=false;
+    }
+
 </script>

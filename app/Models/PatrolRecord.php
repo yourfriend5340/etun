@@ -21,6 +21,7 @@ class PatrolRecord extends Model
         'patrol_RD_DateB',
         'patrol_upload_user',
         'patrol_upload_date',
+        'picturePath'
     ];
 
 }

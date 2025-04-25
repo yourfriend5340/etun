@@ -13943,7 +13943,7 @@ li,
 }
 
 .dropdown-item {
-  text-align: center;
+  text-align: left;
 }
 
 .dropdown-item:hover {
@@ -14005,8 +14005,8 @@ li,
   top: 5px;
 }
 
-Å .h_one {
-  background-color: #ddeeef;
+.h_one {
+  background-color: #ddeef4;
 }
 
 .h_two {
@@ -14015,4 +14015,8 @@ li,
 
 .h_three {
   background-color: #dde8f1;
+}
+
+tr td[scope="top"] {
+  background-color: rgb(249, 231, 230);
 }

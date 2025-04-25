@@ -3,8 +3,8 @@
 @section('content')
 
 
-<div class="container container-fluid table-responsive table-bordered p-0 mt-5">
-
+<div class="row table-responsive table-bordered mx-1">
+    <p class="p-test mt-1 mb-0 fs-3">組織資料總覽</p>
     <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
         <thead>
             <tr class="col text-left">

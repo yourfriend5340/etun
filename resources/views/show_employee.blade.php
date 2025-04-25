@@ -1,47 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
-{{--<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header">會員管理系統{{ __('Dashboard') }}</div>
 
-                <div class="card-body">
-                    @if (session('status'))
-                        <div class="alert alert-success" role="alert">
-                            {{ session('status') }}
-                        </div>
-                    @endif
+<div class="row table-responsive table-bordered mx-1">
+    <p class="p-test mt-1 mb-0 fs-3">人事資料總覽</p>
+    
+    <form>
+    <div class="row justify-content-between">
+        <div class="col-md-auto align-self-center py-2 justify-content-end">    
+            <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">員工姓名：</div>
+            <div class="col-md-4 border-0 d-inline-flex align-items-start align-items-center">
+                <input class="place d-inline-flex" id="empName" placeholder="輸入姓氏或全名">
 
-                    你已經登入{{ __('You are logged in!') }}
-                </div>
-
-                <div class="card-body alert">
-                    
-                        <a class="alert-link text-success" href="{{route('logout')}}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                            點此處登出
-                        </a>
-                    
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" style="display: none;">
-                            @csrf
-                        </form>
-
-                    
-                </div>
+                <input class="btn btn-success ms-3" type="submit" value="確認送出" onclick="submit_onclick_requestName()">
             </div>
         </div>
+        
+        @if (!isset($fromName))
+        <div class="col-md-5"></div>
+        <div class="col-md-auto align-self-center py-2 justify-content-end">
+            <a class="btn btn-secondary m-2" href="{{route('employee_asc')}}" role="button">遞增</a>
+            <a class="btn btn-secondary m-2" href="{{route('employee_desc')}}" role="button">遞減</a>
+        </div>
+        @endif
     </div>
-</div>--}}
+    </form>
 
-<div class="container container-fluid table-responsive table-bordered p-0">
-    <div class="d-flex justify-content-end">
-  
-        <a class="btn btn-secondary m-2" href="{{route('employee_asc')}}" role="button">遞增</a>
 
-        <a class="btn btn-secondary m-2" href="{{route('employee_desc')}}" role="button">遞減</a>
-
-    </div>
     <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
         <thead>
             <tr class="col text-left">
@@ -110,6 +95,18 @@
         if (confirm('確定要調閱ID： '+id+' 號資料嗎？')==true)
         {window.location.href="/employee/request/"+id;}
 
+    }
+
+    function submit_onclick_requestName(){
+   
+        var inputName = document.getElementById("empName");
+        var name = inputName.value;
+        
+        if (name!='')
+        {
+            window.location.href="/employee/requestName/"+name;
+            window.event.returnValue=false;
+        }       
     }
 
 </script>

@@ -823,4 +823,14 @@ class EmployeeController extends Controller
         return view("edit_employee",["employees"=>$employee,"organizes"=>$organize,"customers"=>$customer,'status'=>$status,'clock_status'=>$clockSalary_status]);
 
     }
+
+    public function requestName(Request $request,$requestName){
+        $employee= Employee::where('member_name','like','%'.$requestName.'%')
+            ->paginate(20);
+
+        //return view("update_employee",["employees"=>$employee,]);
+
+        return view("show_employee",["employees"=>$employee,'fromName'=>1]);
+
+    }
 }

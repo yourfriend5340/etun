@@ -10,7 +10,7 @@
 
             <form onsubmit="return false">
             <div class="row mt-2 align-items-center">
-                <div class="organize col-md-auto border-0 d-inline-flex align-self-center"><font color=red>*</font>客戶編號 :</div>
+                <div class="organize col-md-1 border-0 d-inline-flex align-self-center"><font color=red>*</font>客戶編號 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                 <input class="organize me-1 w-50" type="text"name="cid" id="cid" form="form1" value="{{ old('cid') }}"
                     oninput="value=value.replace(/[^A-Z0-9]/g,'')">
@@ -25,7 +25,7 @@
               {{ csrf_field() }}
             <div class="row mt-2 align-items-center">
 
-                <div class="organize col-md-auto border-0 d-inline-flex align-self-center"><font color=red>*</font>客戶群組 :</div>
+                <div class="organize col-md-1 border-0 d-inline-flex align-self-center"><font color=red>*</font>客戶群組 :</div>
                 <div class="organize col-md-auto border-0 align-self-center">
                     <select class="form-select form-select-sm" aria-label="Default select example" name="group">
 
@@ -34,8 +34,12 @@
                         @endif
 
                         <option value="">請選擇</option>
-                        <option value="0">普通客戶</option>
-                        <option value="1">VIP客戶</option>
+                        @foreach ($group as $g)
+                        
+                            <option value={{$g->id}}>{{$g->group}}</option>
+                        
+                        @endforeach
+
                       </select>
                 </div>
 
@@ -48,8 +52,10 @@
                         @endif
 
                         <option value="">請選擇</option>
-                        <option value="1">現有客戶</option>
-                        <option value="0">非現有客戶</option>
+                        @foreach ($status as $s)
+                        <option value={{$s->id}}>{{$s->status}}</option>
+                        @endforeach
+
                       </select>
                 </div>
 
@@ -74,19 +80,19 @@
 
 
             <div class="row mt-2 align-items-center">    
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>客戶名稱 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>客戶名稱 :</div>
                 <div class="col-md-5 border-0 d-inline-flex align-item-center">
                     <input class="pic border-1 w-100" name="name" placeholder="請輸入" value="{{ old('name') }}">
                 </div>
 
                 <div class="w-100"></div>
-                <div class="col-md-auto border-1 d-inline-flex align-item-between py-1"><font color=red>*</font>通訊地址 :</div>
+                <div class="col-md-1 border-1 d-inline-flex align-item-between py-1"><font color=red>*</font>通訊地址 :</div>
                 <div class="col-md-5 border-0 d-inline-flex align-item-center">
                     <input type="text" class="border-1 align-content-lg-around w-100" placeholder="請輸入住址" name="addr" value="{{ old('addr') }}">
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>電話號碼 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>電話號碼 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="phone" type="text" placeholder="061234567" value="{{ old('phone') }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
@@ -94,7 +100,14 @@
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>電腦位址 : </div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>聯絡人：</div>
+                <div class="col-md-5 border-0 d-inline-flex align-item-center">
+                    <input class="pic border-1 w-100" name="person" placeholder="請輸入" value="{{ old('person') }}">
+                </div>
+
+
+                <div class="row w-100"></div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>電腦位址 : </div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="ip" type="text" placeholder="192.168.0.1" value="{{ old('ip') }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
@@ -102,7 +115,7 @@
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址緯度 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址緯度 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="lat" type="text" placeholder="23.010551" value="{{ old('lat') }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
@@ -110,7 +123,7 @@
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址經度 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址經度 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="lng" type="text" placeholder="120.182540" value="{{ old('lng') }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 

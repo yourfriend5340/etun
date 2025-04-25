@@ -3,12 +3,12 @@
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <div class="container container-fluid">
-
+        <div class="row mx-1">
+        <p class="p-test mt-1 mb-0 fs-3">新增QRcode</p>
             <form method="POST" action="{{ route('qrcode.store') }}" enctype="multipart/form-data" class="row">
               {{ csrf_field() }}
 
-            <div class="row mt-2 align-items-center mx-1">    
+            <div class="row mt-2 align-items-center">    
                <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">客戶名稱：</div>
                <div class="col-md-auto border-0 d-inline-flex align-items-center">
                      <select class="form-select form-select-sm w-100" aria-label="Default select example" name="cus_name">
@@ -29,13 +29,13 @@
 
                <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">巡邏地點：</div>
                <div class="col-md-4 border-0 d-inline-flex align-items-start">
-                  <input class="place w-100 d-inline-flex" name="patrol_place" placeholder="{{old('patrol_place')}}">
+                  <input class="place w-50 d-inline-flex" name="patrol_place" placeholder="{{old('patrol_place')}}">
                </div>
                <div class="row w-100"></div>
 
 
                <div class="enter">
-                  <div class="row justify-content-center py-2"> 
+                  <div class="row mx-1 py-2"> 
                      <input class="btn btn-success w-25" type="submit" value="確認送出">
                   </div>
                </div>

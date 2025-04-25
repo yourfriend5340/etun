@@ -3,8 +3,8 @@
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <div class="container container-fluid">
-
+        <div class="row mx-1">
+        <p class="p-test mt-1 mb-0 fs-3">更新組織資料</p>
 
             
             <form method="POST" action="{{ route('organize.update') }}" enctype="multipart/form-data" class="row">
@@ -29,13 +29,13 @@
                 <div class="row w-100"></div>
 
                 <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">組織住址：</div>
-                <div class="col-md-4 border-0 d-inline-flex align-items-start">
-                    <input class="organize_addr border-1 w-100 d-inline-flex" name="organize_addr" placeholder="請輸入住址" value={{$organize->addr}}>
+                <div class="col-md-10 border-0 d-inline-flex align-items-start">
+                    <input class="organize_addr border-1 w-25 d-inline-flex" name="organize_addr" placeholder="請輸入住址" value={{$organize->addr}}>
                 </div>
                 
             @endforeach
             <div class="enter">
-                <div class="row justify-content-center py-2"> 
+                <div class="row py-2 mx-1"> 
                     <input class="btn btn-success w-25" type="submit" value="確認送出">
                 </div>
             </div>

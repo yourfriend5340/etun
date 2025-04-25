@@ -3,12 +3,12 @@
 @section('content')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <div class="container container-fluid">
-
+        <div class="row mx-1">
+        <p class="p-test mt-1 mb-0 fs-3">新增群組</p>
             <form method="POST" action="{{ route('contact_group.store') }}" enctype="multipart/form-data" class="row">
               {{ csrf_field() }}
 
-                <div class="row mt-2 align-items-center justify-content-center">    
+                <div class="row mt-2 align-items-center">    
                     <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">群組名稱：</div>
                     <div class="col-md-auto border-0 d-inline-flex align-items-center">
                         <input class="group_name border-1" name="group_name" placeholder="請輸入">

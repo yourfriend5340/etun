@@ -256,7 +256,7 @@ class PatrolRecordController extends Controller
 
         if ($request->file('file')!=null){
             $imageName = $json->Date.'_'.$json->Qrcode->time.'_'.$json->Qrcode->QrcodeID.'.'.$request->file('file')->extension();
-            $path = $request->file('file')->storeas('patrolPIC/'.$search_cus->firstname.'/'.$search_employee->member_name,$imageName);
+            $path = $request->file('file')->storeas('public/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID,$imageName);
         }
             $data=[
                 'customer_id'=>$search_cusid->customer_id,
@@ -267,6 +267,7 @@ class PatrolRecordController extends Controller
                 'patrol_RD_No'=>$json->Qrcode->QrcodeID,
                 'patrol_RD_Name'=>$search_cusid->patrol_RD_Name,
                 'patrol_upload_date'=>$now,
+                'picturePath'=>'storage/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID.'/'.$imageName
             ];
             $patrol= PatrolRecord::create($data);
             //dd($data);

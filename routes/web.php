@@ -53,12 +53,27 @@ Route::POST('/qrcode/update', [App\Http\Controllers\QrcodeController::class, 'up
 Route::POST('/qrcode/store',[App\http\Controllers\QrcodeController::class,'store'])->name('qrcode.store');
 
 Route::get('/customer', [App\Http\Controllers\CustomersController::class, 'show'])->name('customer');
-Route::get('/customer_desc', [App\Http\Controllers\CustomersController::class, 'show_result_desc'])->name('customer_desc');
-Route::get('/customer_asc', [App\Http\Controllers\CustomersController::class, 'show_result_asc'])->name('customer_asc');
 Route::get('/customer/delete/{Delete_id}', [App\Http\Controllers\CustomersController::class, 'destroy'])->name('customer.delete');
 Route::get('/customer/request/{Request_id}', [App\Http\Controllers\CustomersController::class, 'request'])->name('customer.request');
 Route::POST('/customer/update', [App\Http\Controllers\CustomersController::class, 'update'])->name('customer.update');
 Route::POST('/customer/store',[App\http\Controllers\CustomersController::class,'store'])->name('customer.store');
+Route::get('/customer_desc', [App\Http\Controllers\CustomersController::class, 'show_result_desc'])->name('customer_desc');
+Route::get('/customer_asc', [App\Http\Controllers\CustomersController::class, 'show_result_asc'])->name('customer_asc');
+
+Route::get('/custome_group', [App\Http\Controllers\CustomersController::class, 'group_show'])->name('customer_group');
+Route::get('/customer_group/delete/{Delete_id}', [App\Http\Controllers\CustomersController::class, 'group_destroy'])->name('customer_group.delete');
+Route::get('/customer_group/request/{Request_id}', [App\Http\Controllers\CustomersController::class, 'group_request'])->name('customer_group.request');
+Route::POST('/customer_group/update', [App\Http\Controllers\CustomersController::class, 'group_update'])->name('customer_group.update');
+Route::POST('/customer_group/store',[App\http\Controllers\CustomersController::class,'group_store'])->name('customer_group.store');
+Route::get('/customer_group_asc', [App\Http\Controllers\CustomersController::class, 'group_show_result_asc'])->name('customer_group_asc');
+
+
+Route::get('/customer_active', [App\Http\Controllers\CustomersController::class, 'active_show'])->name('customer.active');
+Route::get('/customer_active/delete/{Delete_id}', [App\Http\Controllers\CustomersController::class, 'active_destroy'])->name('customer_active.delete');
+Route::get('/customer_active/request/{Request_id}', [App\Http\Controllers\CustomersController::class, 'active_request'])->name('customer_active.request');
+Route::POST('/customer_active/update', [App\Http\Controllers\CustomersController::class, 'active_update'])->name('customer_active.update');
+Route::POST('/customer_active/store',[App\http\Controllers\CustomersController::class,'active_store'])->name('customer_active.store');
+Route::get('/customer_active_asc', [App\Http\Controllers\CustomersController::class, 'active_show_result_asc'])->name('customer_active_asc');
 
 Route::get('/user/delete/{Delete_id}', [App\Http\Controllers\Auth\UserController::class, 'destroy'])->name('user.delete');
 Route::get('/user_desc', [App\Http\Controllers\Auth\UserController::class, 'show_result_desc'])->name('user_desc');
@@ -81,12 +96,14 @@ Route::get('/employee_desc', [App\Http\Controllers\EmployeeController::class, 's
 Route::get('/employee_asc', [App\Http\Controllers\EmployeeController::class, 'show_result_asc'])->name('employee_asc');
 Route::get('/employee/delete/{Delete_id}', [App\Http\Controllers\EmployeeController::class, 'destroy'])->name('employee.delete');
 Route::get('/employee/request/{Request_id}', [App\Http\Controllers\EmployeeController::class, 'request'])->name('employee.request');
+Route::get('/employee/requestName/{Request_name}', [App\Http\Controllers\EmployeeController::class, 'requestName'])->name('employee.requestName');
 Route::POST('employee/store',[App\Http\Controllers\EmployeeController::class,'store'])->name('employee.store');
 Route::POST('/employee/update', [App\Http\Controllers\EmployeeController::class, 'update'])->name('employee.update');
 
 Route::get('/announcement', [App\Http\Controllers\AnnouncementsController::class, 'index'])->name('announcement');//->middleware('can:group_admin');
 Route::get('/announcement_desc', [App\Http\Controllers\AnnouncementsController::class, 'show_result_desc'])->name('announcement_desc');
 Route::POST('/announcement/store',[App\Http\Controllers\AnnouncementsController::class,'store'])->name('announcement.store');
+Route::get('/announcement/top/{id}',[App\Http\Controllers\AnnouncementsController::class,'top'])->name('announcement.top');
 Route::get('/announcement/request/{Request_id}', [App\Http\Controllers\AnnouncementsController::class, 'request'])->name('announcement.request');
 Route::get('/announcement/delete/{Delete_id}', [App\Http\Controllers\AnnouncementsController::class, 'destroy'])->name('announcement.delete');
 Route::POST('/announcement/update', [App\Http\Controllers\AnnouncementsController::class, 'update'])->name('announcement.update');

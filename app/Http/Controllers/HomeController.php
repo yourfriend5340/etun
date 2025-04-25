@@ -29,7 +29,8 @@ class HomeController extends Controller
     public function index()
     {
         $employee = Employee::paginate(10);
-        $announcement= Announcements::orderBy('id','desc')->paginate(4);
+        $topAnn = Announcements::where('top',1)->first();
+        $announcement= Announcements::where('top',0)->orderBy('id','desc')->limit(4)->get();
 
         $patrol=DB::table('patrol_records')->where('id', \DB::raw("(select max(`id`) from patrol_records)"))->get()->first();
         $request_id=($patrol->id)-20;
@@ -41,7 +42,7 @@ class HomeController extends Controller
         ->get();
         
         //dd($patrol);
-        return view("home",["employees"=>$employee,"announcements"=>$announcement,'patrol_records'=>$patrol]);
+        return view("home",["employees"=>$employee,"topAnn"=>$topAnn,"announcements"=>$announcement,'patrol_records'=>$patrol]);
 
 
     }

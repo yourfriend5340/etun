@@ -2,7 +2,7 @@
 
 @section('content')
 
-   <div class="container-fluid">   
+   <div class="contain">   
       <div class="row justify-content-center">
 
          <!-- 表格视图 -->

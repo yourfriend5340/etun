@@ -51,10 +51,11 @@
                         <option selected value="{{ old('group') }}">{{ old('group') }}</option>
                         @endif
 
-                        <option value="">請選擇</option>
-                        <option selected value="{{ $customer->customer_group_id }}">{{ $group }}</option>
-                        <option value="0">普通客戶</option>
-                        <option value="1">VIP客戶</option>
+                        <option selected value="{{ $customer->customer_group_id }}">{{ $customer->group }}</option>
+                        @foreach($groups as $g)
+                        <option value={{$g->id}}>{{$g->group}}</option>
+                        @endforeach
+                        
                       </select>
                 </div>
 
@@ -66,10 +67,11 @@
                         <option selected value="{{ old('status') }}">{{old('status')}}</option>
                         @endif
 
-                        <option value="">請選擇</option>
-                        <option selected value="{{ $customer->status }}">{{ $status }}</option>
-                        <option value="1">現有客戶</option>
-                        <option value="0">非現有客戶</option>
+  
+                        <option selected value="{{ $customer->id }}">{{ $customer->status }}</option>
+                        @foreach($status as $s)
+                        <option value={{$s->id}}>{{$s->status}}</option>
+                        @endforeach
                       </select>
                 </div>
 
@@ -94,19 +96,19 @@
 
 
             <div class="row mt-2 align-items-center">    
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>客戶名稱 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>客戶名稱 :</div>
                 <div class="col-md-5 border-0 d-inline-flex align-item-center">
                     <input class="pic border-1 w-100" name="name" placeholder="請輸入" value="{{ $customer->firstname }}">
                 </div>
 
                 <div class="w-100"></div>
-                <div class="col-md-auto border-1 d-inline-flex align-item-between py-1"><font color=red>*</font>通訊地址 :</div>
+                <div class="col-md-1 border-1 d-inline-flex align-item-between py-1"><font color=red>*</font>通訊地址 :</div>
                 <div class="col-md-5 border-0 d-inline-flex align-item-center">
                     <input type="text" class="border-1 align-content-lg-around w-100" placeholder="請輸入住址" name="addr" value="{{ $customer->addr }}">
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>電話號碼 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>電話號碼 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="phone" type="text" placeholder="061234567" value="{{ $customer->tel }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
@@ -114,7 +116,13 @@
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>電腦位址 : </div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>聯絡人 :</div>
+                <div class="col-md-5 border-0 d-inline-flex align-item-center">
+                    <input class="pic border-1 w-100" name="person" placeholder="請輸入" value="{{ $customer->person }}">
+                </div>
+
+                <div class="row w-100"></div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>電腦位址 : </div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="ip" type="text" placeholder="192.168.0.1" value="{{ $customer->ip }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
@@ -122,7 +130,7 @@
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址緯度 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址緯度 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="lat" type="text" placeholder="23.010551" value="{{ $customer->lat }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
@@ -130,7 +138,7 @@
                 </div>
 
                 <div class="row w-100"></div>
-                <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址經度 :</div>
+                <div class="col-md-1 border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>地址經度 :</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
                     <input class="border-1 w-100 d-inline-flex" name="lng" type="text" placeholder="120.182540" value="{{ $customer->lng }}"
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 

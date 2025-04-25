@@ -24,6 +24,7 @@ class Customer extends Model
         'ip',
         'status',
         'active',
-        'tel'
+        'tel',
+        'person'
     ];
 }
