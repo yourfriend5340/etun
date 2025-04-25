@@ -293,7 +293,7 @@ class TableController extends Controller
         $sheet->getColumnDimension('B')->setWidth(15.5);
         $sheet->getColumnDimension('C')->setWidth(15.5);
         $sheet->getColumnDimension('D')->setWidth(20.5);
-        $sheet->getColumnDimension('F')->setWidth(20.5);
+        $sheet->getColumnDimension('F')->setWidth(17.5);
 
         $sheet->getPageMargins()->setTop(0.5);
         //$sheet->getPageMargins()->setRight(0.25);        
