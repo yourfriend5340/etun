@@ -288,6 +288,7 @@ class TableController extends Controller
         for ($i=2;$i<=40;$i++){
             $sheet->getRowDimension("$i")->setRowHeight(20);
         }
+        //自定欄寬
         $sheet->getColumnDimension('A')->setWidth(5);
         $sheet->getColumnDimension('B')->setWidth(15.5);
         $sheet->getColumnDimension('C')->setWidth(15.5);
