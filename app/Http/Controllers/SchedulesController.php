@@ -1478,9 +1478,6 @@ class SchedulesController extends Controller
       $writer->save('php://output');
    }
 
-
-   
-
    public function download_example(Request $request){
       $spreadsheet = new Spreadsheet();
       $activeWorksheet = $spreadsheet->getActiveSheet();
@@ -1808,8 +1805,6 @@ class SchedulesController extends Controller
       $spreadsheet->getActiveSheet()->getStyle('B2:AD2')
       ->getBorders()->getOutline()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
    
-
-
       $activeWorksheet->setCellValue('B5','名字');
       $activeWorksheet->setCellValue('A5', '客戶名稱');
       $activeWorksheet->setCellValueExplicit('Y17', '7:00',\PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);

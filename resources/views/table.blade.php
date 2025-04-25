@@ -64,8 +64,9 @@
                            <option value="{{$emp->id}}">{{$emp->member_name}}</option>
                         @endforeach
                      </select>
+                     <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
                   </div>
-
+                  
                <div class="w-100"></div>  
                <div class="row mt-3 mb-3">
                   <button type="submit" class="btn btn-success">輸出</button>   

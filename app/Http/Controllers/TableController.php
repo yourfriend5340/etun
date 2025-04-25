@@ -276,6 +276,12 @@ class TableController extends Controller
         // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
         
+        //避免亂碼參數
+        $this->pdf = new Mpdf([
+            'autoScriptToLang' => true,
+            'autoLangToFont'   => true,
+            'useSubstitutions' => true,
+        ]);
         //設定預設格式
         $spreadsheet->getActiveSheet()->getPageSetup()
         ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
@@ -399,6 +405,7 @@ class TableController extends Controller
         //$reader->setReadDataOnly(true);
         //$spreadsheet = $reader->load("test2.xlsx");
 
+        //輸出pdf
         // $writer = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
         // $writer->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
         // $writer->setPreCalculateFormulas(false);
