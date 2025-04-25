@@ -17,7 +17,7 @@ class TableController extends Controller
     public function index(Request $request){
         $limit = $request->limit ?? 20;
 
-        $employee = Employee::orderBy('id','desc')->get();
+        $employee = Employee::where('status','在職')->orderBy('id','desc')->get();
         $customer = Customer::orderBy('customer_id','asc')->get();
         
         return view('table',['employees'=>$employee,'customers'=>$customer]);
@@ -284,20 +284,20 @@ class TableController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->getDefaultColumnDimension()->setWidth(13.5);//預設寬度
         $sheet->getDefaultRowDimension()->setRowHeight(30);//預設高度
-        $sheet->getRowDimension('1')->setRowHeight(36);
+        $sheet->getRowDimension('1')->setRowHeight(32);
         for ($i=2;$i<=40;$i++){
             $sheet->getRowDimension("$i")->setRowHeight(20);
         }
         $sheet->getColumnDimension('A')->setWidth(5);
         $sheet->getColumnDimension('B')->setWidth(15.5);
         $sheet->getColumnDimension('C')->setWidth(15.5);
-        $sheet->getColumnDimension('D')->setWidth(15.5);
+        $sheet->getColumnDimension('D')->setWidth(20.5);
         $sheet->getColumnDimension('F')->setWidth(16.5);
 
         $sheet->getPageMargins()->setTop(0.5);
         //$sheet->getPageMargins()->setRight(0.25);        
         //$sheet->getPageMargins()->setLeft(0.25);
-        $sheet->getPageMargins()->setBottom(0.5);
+        $sheet->getPageMargins()->setBottom(0.25);
 
         $styleCenterArray = [
             'borders' => [
@@ -353,8 +353,8 @@ class TableController extends Controller
         $sheet->mergeCells('B39:F39');
         $sheet->mergeCells('B40:F40');
 
-        $attendance=DB::table('customers')->select('firstname')->where('customer_id','=',$request->input('customer_id'))->get()->first();
-        $name=$attendance->firstname;
+        //$attendance=DB::table('customers')->select('firstname')->where('customer_id','=',$request->input('customer_id'))->get()->first();
+        $name=DB::table('employees')->where('id',$request->input('emp_id'))->pluck('member_name')->first();
         
         $sheet->setCellValue('A1', '萬宇股份有限公司');  
         $sheet->setCellValue('E1', '執   勤   簽   到   簿');  
@@ -373,13 +373,15 @@ class TableController extends Controller
         $sheet->setCellValue('B37', '※請確實穿著公司規定服裝，嚴禁喝酒、嚼檳榔、滑手機、打瞌睡、私自調班，違者依公司規定懲處');
         $sheet->setCellValue('B38', '※值班表請核對，如有錯誤，請立即告知，謝謝。此班表於次月初交回或傳回給公司，以利核薪作業');
         
-        for ($i=4;$i<=34;$i++){
-            $sheet->setCellValue("A$i", ($i-3));  
-            $sheet->setCellValue("E$i", $name);  
-        }
+        $sheet->setCellValue("F2", $name);  
+        
+        // for ($i=4;$i<=34;$i++){
+        //     $sheet->setCellValue("A$i", ($i-3));  
+        //     $sheet->setCellValue("E$i", $name);  
+        // }
         $file_name = '簽到本_'.$name.'_'.date('Y_m_d');
        
-       /*
+       
         // Write a new .xlsx file
         $writer = new Xlsx($spreadsheet);
 
@@ -389,21 +391,21 @@ class TableController extends Controller
         header('Cache-Control: max-age=0');
 
         // Save the new .xlsx file
-        $writer->save('php://output');  */
+        $writer->save('php://output');  
 
         //檔案讀取器
         //$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setReadDataOnly(true);
         //$spreadsheet = $reader->load("test2.xlsx");
 
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
-        $writer->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
-        $writer->setPreCalculateFormulas(false);
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$file_name.'.pdf"');
+        // $writer = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
+        // $writer->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+        // $writer->setPreCalculateFormulas(false);
+        // header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        // header('Content-Disposition: attachment;filename="'.$file_name.'.pdf"');
         
-        header('Cache-Control: max-age=0');
-        $writer->save('php://output');
+        // header('Cache-Control: max-age=0');
+        // $writer->save('php://output');
     }
 
     //注入service

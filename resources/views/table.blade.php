@@ -58,10 +58,10 @@
                {{ csrf_field() }}
 
                <div class="row mb-3">
-                  <div class="col-md-auto align-self-center">選擇輸出客戶：</div>
-                     <select class="col-md-auto align-self-center border-1" name="customer_id">     
-                        @foreach($customers as $customer )
-                           <option value="{{$customer->customer_id}}">{{$customer->firstname}}</option>
+                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
+                     <select class="col-md-auto align-self-center border-1" name="emp_id">     
+                        @foreach($employees as $emp )
+                           <option value="{{$emp->id}}">{{$emp->member_name}}</option>
                         @endforeach
                      </select>
                   </div>
