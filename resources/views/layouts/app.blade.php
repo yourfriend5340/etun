@@ -240,7 +240,7 @@
                             表單功能
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
-                            <li><a class="dropdown-item" href={{route('table')}}>離職、請假單輸出</a></li>
+                            <li><a class="dropdown-item" href={{route('table')}}>各式表單匯入匯出</a></li>
 
                             {{--
                             <li><a class="dropdown-item" href="#">員工打卡功能(API)</a></li>

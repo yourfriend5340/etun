@@ -14,7 +14,7 @@ class CreateCusGroupTable extends Migration
     public function up()
     {
         Schema::create('cus_group', function (Blueprint $table) {
-            $table->string('id');
+            $table->id('id')->from(0);
             $table->string('group');
             
         });

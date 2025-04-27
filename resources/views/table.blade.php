@@ -18,6 +18,7 @@
                            <option value="{{$employee->id}}">{{$employee->member_name}}</option>
                         @endforeach
                      </select>
+                     <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
                   </div>
 
                <div class="w-100"></div>  
@@ -42,6 +43,7 @@
                            <option value="{{$employee->id}}">{{$employee->member_name}}</option>
                         @endforeach 
                      </select>
+                     <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
                   </div>
 
                <div class="w-100"></div>  
@@ -89,6 +91,7 @@
                            <option value="{{$employee->id}}">{{$employee->member_name}}</option>
                         @endforeach
                      </select>
+                     <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
                   </div>
 
                <div class="w-100"></div>  
@@ -112,6 +115,7 @@
                            <option value="{{$employee->id}}">{{$employee->member_name}}</option>
                         @endforeach
                      </select>
+
                   </div>
 
                <div class="w-100"></div>  

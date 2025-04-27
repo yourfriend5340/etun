@@ -14,7 +14,7 @@ class CreateCusStatusTable extends Migration
     public function up()
     {
         Schema::create('cus_status', function (Blueprint $table) {
-            $table->string('id');
+            $table->id('id')->from(0);
             $table->string('status');
       
         });

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 use App\Models\Customer;
+use App\Models\CusGroup;
+use App\Models\CusStatus;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\DB;
@@ -283,16 +285,16 @@ class CustomersController extends Controller
     public function group_store(Request $request){
         try{
             $rules=[
-            "group" => "required|unique",
+            "group" => "required|unique:cus_group",
             ];
 
             $message = [
                 // 欄位驗證
-                "group.unique" =>'"客戶名稱"必為唯一',
-                "group.required" => '"客戶名稱"為必填資料',
+                "group.unique" =>'"客戶群組"必為唯一',
+                "group.required" => '"客戶群組"為必填資料',
             ];
             $validResult = $request->validate($rules, $message);
-dd($validResult);
+
         }
         catch (ValidationException $exception) {
             $errorMessage =$exception->validator->getMessageBag()->getMessages();
@@ -300,20 +302,62 @@ dd($validResult);
         }
 
         $cus_group = $request->input('group');
-        // $count = $customer::where('customer_sn', '=', $cus_id)->count();
-        // $data=[
-        //     'group'=>$cus_group,
-        //     ];
+        
+        $data=[
+            'group'=>$cus_group,
+            ];
 
-        // $customer= Customer::create($data);
-        // $customer= Customer::orderBy('customer_id','asc')
-        // ->paginate(20);
+        CusGroup::create($data);
 
         return redirect()->route('customer_group_asc');
     }
 
-    public function group_destroy(Request $request,$Delete_id){}
-    public function group_update(Request $request){}
+    public function group_destroy(Request $request,$Delete_id){
+        $count = CUSTOMER::where('customer_group_id',$Delete_id)->count();
+        
+        if($count != 0){
+            return back()->with('danger','客戶資料有設定此條資料，請先把客戶資料修正後再行刪除');
+        }
+        else{
+            DB::table('cus_group')->where('id','=',$Delete_id)->delete();
+            return redirect()->route('customer_group_asc');
+        }
+    }
+        
+    public function group_request(Request $request,$Request_id){
+        $group=DB::table('cus_group')->where('id',$Request_id)->first();
+
+        return view("edit_customer_group",["groups"=>$group]);
+    }
+
+    public function group_update(Request $request){
+        try{
+            $rules=[
+            "group" => "required|unique:cus_group",
+            ];
+
+            $message = [
+                // 欄位驗證
+                "group.unique" =>'"客戶群組"必為唯一',
+                "group.required" => '"客戶群組"為必填資料',
+            ];
+            $validResult = $request->validate($rules, $message);
+
+        }
+        catch (ValidationException $exception) {
+            $errorMessage =$exception->validator->getMessageBag()->getMessages();
+            return $errorMessage;
+        }
+
+        $cus_group = $request->input('group');
+        $data=[
+            'group'=>$cus_group,
+            ];
+
+        $customer=DB::table('cus_group')->where('id',$request->input('id'))->update($data);
+
+        return redirect()->route('customer_group_asc');
+    }
 
     public function group_show_result_asc(Request $request){
         $cus=DB::table('cus_group')
@@ -324,12 +368,99 @@ dd($validResult);
     }
 
 
+
+
+
+
+
+
     public function active_show(Customer $customer){
-        $status=DB::table('cus_status')->orderby('id')->get();
-        return view("customer",["group"=>$group,"status"=>$status]);
+        
+        return view("customer_active");
     }
-    public function active_store(Request $request){}
-    public function active_destroy(Request $request,$Delete_id){}
-    public function active_update(Request $request){}
-    public function active_show_result_asc(Request $request){}
+    public function active_store(Request $request){
+        try{
+            $rules=[
+            "status" => "required|unique:cus_status",
+            ];
+
+            $message = [
+                // 欄位驗證
+                "status.unique" =>'"客戶群組"必為唯一',
+                "status.required" => '"客戶群組"為必填資料',
+            ];
+            $validResult = $request->validate($rules, $message);
+
+        }
+        catch (ValidationException $exception) {
+            $errorMessage =$exception->validator->getMessageBag()->getMessages();
+            return $errorMessage;
+        }
+
+        $cus_status = $request->input('status');
+        
+        $data=[
+            'status'=>$cus_status,
+            ];
+
+        CusStatus::create($data);
+
+        return redirect()->route('customer_active_asc');
+    }
+
+    public function active_destroy(Request $request,$Delete_id){
+        $count = CUSTOMER::where('active',$Delete_id)->count();
+
+        if($count != 0){
+            return back()->with('danger','客戶資料有設定此條資料，請先把客戶資料修正後再行刪除');
+        }
+        else{
+            DB::table('cus_status')->where('id','=',$Delete_id)->delete();
+            return redirect()->route('customer_active_asc');
+        }
+    }
+        
+    public function active_request(Request $request,$Request_id){
+        $group=DB::table('cus_status')->where('id',$Request_id)->first();
+
+        return view("edit_customer_active",["groups"=>$group]);
+    }
+
+    public function active_update(Request $request){
+        try{
+            $rules=[
+            "status" => "required|unique:cus_status",
+            ];
+
+            $message = [
+                // 欄位驗證
+                "status.unique" =>'"客戶狀態"必為唯一',
+                "status.required" => '"客戶狀態"為必填資料',
+            ];
+            $validResult = $request->validate($rules, $message);
+
+        }
+        catch (ValidationException $exception) {
+            $errorMessage =$exception->validator->getMessageBag()->getMessages();
+            return $errorMessage;
+        }
+
+        $cus_status = $request->input('status');
+        $data=[
+            'status'=>$cus_status,
+            ];
+
+        $customer=DB::table('cus_status')->where('id',$request->input('id'))->update($data);
+
+        return redirect()->route('customer_active_asc');
+    }
+
+    public function active_show_result_asc(Request $request){
+        $cus=DB::table('cus_status')
+            ->orderby('id','asc')
+            ->paginate(20);
+        
+        return view("show_customer_active",["customers"=>$cus]);
+    }
+
 }

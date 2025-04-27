@@ -3,7 +3,7 @@
 @section('content')
 
 <div class="row mx-1">
-    <p class="p-test mt-1 mb-0 fs-3">客戶群組總覽</p>
+    <p class="p-test mt-1 mb-0 fs-3">客戶狀態總覽</p>
 
     <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
         <thead>
@@ -26,7 +26,7 @@
             @foreach($customers as $customer )
                 <tr>
                     <td>{{$customer->id}}</td>
-                    <td>{{$customer->group}}</td>
+                    <td>{{$customer->status}}</td>
 
 
                     @can('admin')
@@ -110,14 +110,14 @@
     function submit_onclick(id){
 
         if (confirm('確定要刪除ID： '+id+' 號資料嗎？')==true)
-        {window.location.href="/customer_group/delete/"+id;}
+        {window.location.href="/customer_active/delete/"+id;}
 
     }
 
     function submit_onclick_request(id){
 
         if (confirm('確定要調閱ID： '+id+' 號資料嗎？')==true)
-        {window.location.href="/customer_group/request/"+id;}
+        {window.location.href="/customer_active/request/"+id;}
 
     }
 

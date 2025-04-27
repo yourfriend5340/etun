@@ -277,11 +277,15 @@ class TableController extends Controller
         $spreadsheet = new Spreadsheet();
         
         //避免亂碼參數
-        $this->pdf = new Mpdf([
-            'autoScriptToLang' => true,
-            'autoLangToFont'   => true,
-            'useSubstitutions' => true,
-        ]);
+        // $this->pdf = new Mpdf([
+        //     'autoScriptToLang' => true,
+        //     'autoLangToFont'   => true,
+        //     'useSubstitutions' => true,
+        // ]);
+        $autoScriptToLang = true;
+        $autoLangToFont   = true;
+        $useSubstitutions = true;
+
         //設定預設格式
         $spreadsheet->getActiveSheet()->getPageSetup()
         ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
