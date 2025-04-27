@@ -66,9 +66,23 @@ class TableController extends Controller
         $sheet->setCellValue('A7', '離職日期：');
         $sheet->setCellValue('A9', '員工簽名：');    
 
-        $DBname=DB::table('employees')->select('SSN','member_name')->where('id','=',$request->input('id'))->get()->first();
-        $name=$DBname->member_name;
-        $SSN=$DBname->SSN;
+        if($request->input('inputName') == null)
+        {
+            $DBname=DB::table('employees')->select('SSN','member_name')->where('id','=',$request->input('id'))->get()->first();
+            $name=$DBname->member_name;
+            $SSN=$DBname->SSN;
+        }
+        else
+        {
+            $name=$request->input('inputName');
+            $count = DB::table('employees')->where('member_name',$name)->count();
+            
+            if($count == 0){
+                return back()->with('danger','查無此人!!');
+            }
+            $DBname=DB::table('employees')->select('SSN','member_name')->where('member_name','=',$name)->get()->first();
+            $SSN=$DBname->SSN;
+        }
 
         $sheet->setCellValue('B3', $name);  
         $sheet->setCellValue('B4', $SSN);    
@@ -129,9 +143,23 @@ class TableController extends Controller
         $sheet->setCellValue('A7', '請假日期：');
         $sheet->setCellValue('A9', '員工簽名：');    
 
-        $DBname=DB::table('employees')->select('SSN','member_name')->where('id','=',$request->input('id'))->get()->first();
-        $name=$DBname->member_name;
-        $SSN=$DBname->SSN;
+        if($request->input('inputName') == null)
+        {
+            $DBname=DB::table('employees')->select('SSN','member_name')->where('id','=',$request->input('id'))->get()->first();
+            $name=$DBname->member_name;
+            $SSN=$DBname->SSN;
+        }
+        else
+        {
+            $name=$request->input('inputName');
+            $count = DB::table('employees')->where('member_name',$name)->count();
+            
+            if($count == 0){
+                return back()->with('danger','查無此人!!');
+            }
+            $DBname=DB::table('employees')->select('SSN','member_name')->where('member_name','=',$name)->get()->first();
+            $SSN=$DBname->SSN;
+        }
         
         $sheet->setCellValue('B3', $name);   
         $sheet->setCellValue('B4', $SSN);   
@@ -213,7 +241,6 @@ class TableController extends Controller
          ]
       ];
 
-              
         $sheet->getStyle("A1")->applyFromArray($styleCenterArray);
         $sheet->getStyle("A1:D16")->applyFromArray($styleArray);
         $sheet->getStyle('C3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
@@ -275,16 +302,6 @@ class TableController extends Controller
     public function attendance(Request $request){
         // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
-        
-        //避免亂碼參數
-        // $this->pdf = new Mpdf([
-        //     'autoScriptToLang' => true,
-        //     'autoLangToFont'   => true,
-        //     'useSubstitutions' => true,
-        // ]);
-        $autoScriptToLang = true;
-        $autoLangToFont   = true;
-        $useSubstitutions = true;
 
         //設定預設格式
         $spreadsheet->getActiveSheet()->getPageSetup()
@@ -365,7 +382,19 @@ class TableController extends Controller
         $sheet->mergeCells('B40:F40');
 
         //$attendance=DB::table('customers')->select('firstname')->where('customer_id','=',$request->input('customer_id'))->get()->first();
-        $name=DB::table('employees')->where('id',$request->input('emp_id'))->pluck('member_name')->first();
+        if($request->input('inputName') == null)
+        {
+            $name=DB::table('employees')->where('id',$request->input('emp_id'))->pluck('member_name')->first();
+        }
+        else
+        {
+            $name=$request->input('inputName');
+            $count = DB::table('employees')->where('member_name',$name)->count();
+            
+            if($count == 0){
+                return back()->with('danger','查無此人!!');
+            }
+        }
         
         $sheet->setCellValue('A1', '萬宇股份有限公司');  
         $sheet->setCellValue('E1', '執   勤   簽   到   簿');  
@@ -396,7 +425,6 @@ class TableController extends Controller
         // Write a new .xlsx file
         $writer = new Xlsx($spreadsheet);
 
-
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
         header('Cache-Control: max-age=0');
@@ -413,6 +441,17 @@ class TableController extends Controller
         // $writer = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
         // $writer->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
         // $writer->setPreCalculateFormulas(false);
+        
+        //避免亂碼參數
+        // $this->pdf = new Mpdf([
+        //     'autoScriptToLang' => true,
+        //     'autoLangToFont'   => true,
+        //     'useSubstitutions' => true,
+        // ]);
+        //$autoScriptToLang = true;
+        //$autoLangToFont   = true;
+        //$useSubstitutions = true;
+        
         // header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         // header('Content-Disposition: attachment;filename="'.$file_name.'.pdf"');
         

@@ -19,6 +19,7 @@
                         @endforeach
                      </select>
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
+                     <em>(下拉選單僅顯示"在職"人員)</em>
                   </div>
 
                <div class="w-100"></div>  
@@ -44,6 +45,7 @@
                         @endforeach 
                      </select>
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
+                     <em>(下拉選單僅顯示"在職"人員)</em>
                   </div>
 
                <div class="w-100"></div>  
@@ -67,6 +69,7 @@
                         @endforeach
                      </select>
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
+                     <em>(下拉選單僅顯示"在職"人員)</em>
                   </div>
                   
                <div class="w-100"></div>  
@@ -92,6 +95,7 @@
                         @endforeach
                      </select>
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
+                     <em>&nbsp;</em>
                   </div>
 
                <div class="w-100"></div>  
@@ -108,15 +112,12 @@
                <form method="POST" action="{{ route('table.export_access_salary') }}" enctype="multipart/form-data">
                {{ csrf_field() }}
 
-               <div class="row mb-3">
-                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
-                     <select class="col-md-auto align-self-center border-1" name="name">     
-                        @foreach($employees as $employee )
-                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
-                        @endforeach
-                     </select>
-
+               <div class="row mb-3 align-items-center" style="min-height:50px">
+                  <div class="col-md-auto align-items-center">選擇月份：</div>
+                  <div class="col-md-auto align-items-center border">
+                     <input id="month" class="pic border-0" name="exportbymonth" type="month">
                   </div>
+               </div>
 
                <div class="w-100"></div>  
                <div class="row mt-3 mb-3">
@@ -131,14 +132,11 @@
                <form method="POST" action="{{ route('table.import_access_salary') }}" enctype="multipart/form-data">
                {{ csrf_field() }}
 
-               <div class="row mb-3">
-                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
-                     <select class="col-md-auto align-self-center border-1" name="name">     
-                        @foreach($employees as $employee )
-                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
-                        @endforeach
-                     </select>
+               <div class="row mb-3 align-items-center" style="min-height:50px">
+                  <div class="col-md-12 align-items-center">
+                        <input id="file" type="file" class="form-control" name="select_file" accept="">
                   </div>
+               </div>
 
                <div class="w-100"></div>  
                <div class="row mt-3 mb-3">
