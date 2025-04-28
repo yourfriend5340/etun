@@ -95,7 +95,7 @@
                         @endforeach
                      </select>
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
-                     <em>&nbsp;</em>
+                  <em>(下拉選單僅顯示"在職"人員)</em>
                   </div>
 
                <div class="w-100"></div>  
@@ -117,6 +117,7 @@
                   <div class="col-md-auto align-items-center border">
                      <input id="month" class="pic border-0" name="exportbymonth" type="month">
                   </div>
+                  <em>(所匯出的表單，僅顯示"在職"之員工)</em>
                </div>
 
                <div class="w-100"></div>  

@@ -12,7 +12,7 @@ use Phpoffice\Phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf;
 
 class AccessSalaryService
 {
-    public function export()
+    public function export($request)
     {
         // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
@@ -27,18 +27,15 @@ class AccessSalaryService
         
         // Retrieve the current active worksheet
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->getDefaultColumnDimension()->setWidth(9.5);//預設寬度
-        $sheet->getDefaultRowDimension()->setRowHeight(50);//預設高度
-        //$sheet->getRowDimension('1')->setRowHeight(26);
-        // for ($i=2;$i<=40;$i++){
-        //     $sheet->getRowDimension("$i")->setRowHeight(20);
-        // }
-        // $sheet->getColumnDimension('M')->setWidth(6);
-        // $sheet->getColumnDimension('O')->setWidth(6);
-        // $sheet->getColumnDimension('C')->setWidth(15.5);
-        // $sheet->getColumnDimension('D')->setWidth(15.5);
-        // $sheet->getColumnDimension('F')->setWidth(16.5);
+        $sheet->getDefaultColumnDimension()->setWidth(9);//預設寬度
+        $sheet->getDefaultRowDimension()->setRowHeight(30);//預設高度
 
+        $sheet->getColumnDimension('AF')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(16);
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getRowDimension('2')->setRowHeight(20);  
+        $sheet->getRowDimension('3')->setRowHeight(48);     
+   
         $sheet->getPageMargins()->setTop(0.5);
         $sheet->getPageMargins()->setLeft(0.5);
         $sheet->getPageMargins()->setRight(0.5);
@@ -79,71 +76,107 @@ class AccessSalaryService
       ];
 
         //$sheet->getStyle("A1:AD23")->applyFromArray($styleCenterArray);
-        $sheet->getStyle("A2:AB23")->applyFromArray($styleCenterArray);
+        //$sheet->getStyle("A2:AB44")->applyFromArray($styleCenterArray);
         // $sheet->getStyle("A35:A40")->applyFromArray($styleCenterArray);
         // $sheet->getStyle("B35:F40")->applyFromArray($styleArray);
         // $sheet->getStyle('B35:B40')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
         // $sheet->getStyle('A2:F34')->getFont()->setBold(true)->setSize(12);//设置字体加粗大小
         // $sheet->getStyle('B35:B40')->getFont()->setBold(true)->setSize(10);//设置字体加粗大小
 
-        //首行格式
-        $sheet->mergeCells('A1:L1');
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('B1:AB1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A1:AB1')->getFont()->setBold(true)->setSize(22);//设置字体加粗大小
-        $sheet->mergeCells('M1:N1');
-        $sheet->mergeCells('P1:Q1');
+        $time = strtotime($request->input('exportbymonth'));
+        $month = date("m",$time);
+        $year = date("Y",$time);
 
+        //首行格式
+        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('B1:R1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('S1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('A1:AF1')->getFont()->setBold(true)->setSize(22);//设置字体加粗大小
+        $sheet->getStyle('A2:AF2')->getFont()->setBold(true)->setSize(16);//设置字体加粗大小
+        $sheet->mergeCells('A1:N1');
         $sheet->setCellValue('A1', '萬宇股份有限公司');  
-        $sheet->setCellValue('M1', '113');
-        $sheet->setCellValue('O1', '年');
-        $sheet->setCellValue('P1', '12');
-        $sheet->setCellValue('R1', '月');
-        $sheet->setCellValue('S1', '薪');
-        $sheet->setCellValue('T1', '資');
-        $sheet->setCellValue('U1', '明');
-        $sheet->setCellValue('V1', '細');
-        $sheet->setCellValue('W1', '表');  
+        $sheet->mergeCells('O1:P1');
+        $sheet->setCellValue('O1', $year);
+        $sheet->setCellValue('Q1', '年');
+        
+        $sheet->mergeCells('R1:S1');
+        $sheet->setCellValue('R1', $month);
+        $sheet->setCellValue('S1', '月');
+        $sheet->mergeCells('T1:AF1');
+        $sheet->setCellValue('T1', '薪資試算表');
+        $sheet->mergeCells('AD2:AF2');
 
         //第二行格式
-        $sheet->mergeCells('D2:O2');
-        $sheet->mergeCells('Q2:AA2');
-        $sheet->setCellValue('D2', '加項');
-        $sheet->setCellValue('Q2', '減項');  
+        $sheet->mergeCells('A2:D2');
+        $sheet->mergeCells('E2:P2');
+        $sheet->mergeCells('R2:AB2');
+        $sheet->setCellValue('E2', '加項');
+        $sheet->setCellValue('R2', '減項');  
         
         //第三行格式
         $sheet->setCellValue('A3', '序號');
         $sheet->setCellValue('B3', '姓名');
-        $sheet->setCellValue('C3', '總時數');
-        $sheet->setCellValue('P3', '應領薪資');
-        $sheet->setCellValue('AB3', '總合計'); 
-        $sheet->setCellValue('AC3', '勞投保薪');
-        $sheet->setCellValue('AD3', '健投保薪');
-        $sheet->setCellValue('AE3', '帳號');
+        $sheet->setCellValue('C3','客戶');
+        $sheet->setCellValue('D3', '總時數');
+        $sheet->setCellValue('Q3', '應領薪資');
+        $sheet->setCellValue('AC3', '總合計'); 
+        $sheet->setCellValue('AD3', '勞投保薪');
+        $sheet->setCellValue('AE3', '健投保薪');
+        $sheet->setCellValue('AF3', '帳號');
+        //$sheet->setCellValue('AE4','812-0000104540124452');
 
-        // $sheet->mergeCells('B37:F37');
-        // $sheet->mergeCells('B38:F38');
-        // $sheet->mergeCells('B39:F39');
-        // $sheet->mergeCells('B40:F40');
+        $employee = Employee::where('status','在職')->get();
+        $empCount = count($employee);
 
-   
-        // $sheet->setCellValue('E1', '執   勤   簽   到   簿');  
-        // $sheet->setCellValue('A2', '年份');
+        for ($i=0;$i<$empCount;$i++){
+            $sheet->setCellValue('A'.($i+4),($i+1));
+            $sheet->setCellValue("B".($i+4),$employee[$i]->member_name );    
+        }
 
-        
-        $name = 'test';
-        for ($i=4;$i<=10;$i++){
-            $sheet->setCellValue("A$i", ($i-3));  
-            $sheet->setCellValue("E$i", $name);  
+        //此三條參數會變動
+        $filterRange = $empCount+3;
+        $columnRange = $empCount+4;
+        //設定filter範圍
+        $sheet->setAutoFilter("A3:AE$filterRange");
+        //設定框線的範圍
+        $sheet->getStyle("A2:AC$columnRange")->applyFromArray($styleCenterArray);
+        $sheet->getStyle("AD2:AF$columnRange")->applyFromArray($styleCenterArray);
+        //最後一欄的合計
+        $sheet->setCellValue('A'.($columnRange), '合計');
+        $sheet->mergeCells('A'.($columnRange).':'.'C'.($columnRange));
+        $sheet->getRowDimension($columnRange)->setRowHeight(30);     
+
+        //自動換行
+        $range = 'AE'.$filterRange;
+        $sheet->getStyle("A4:$range")->getAlignment()->setWrapText(true);
+
+        //加總函數寫入
+        $sunColumn = ['D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB','AC'];
+        for($i=0;$i<count($sunColumn);$i++)
+        {
+          $SUMRANGE = '=SUBTOTAL(9,'.$sunColumn[$i].'4:'.$sunColumn[$i].$filterRange.')';
+
+          $sheet->setCellValue($sunColumn[$i].$columnRange , $SUMRANGE);
+        }
+
+        for($i=4;$i<=$filterRange;$i++)
+        {
+          $SUMRANGE = '=SUM(E'.$i.':'.'P'.$i.')';
+          $sheet->setCellValue("Q$i",$SUMRANGE);
+
+          $DEERANGE = '=Q'.$i.'-SUM(R'.$i.':'.'AB'.$i.')';
+          $sheet->setCellValue("AC$i",$DEERANGE);
+
+          $sheet->getRowDimension($i)->setRowHeight(30);     
         }
         $file_name = '薪資試算表_'.date('Y_m');
 
-      header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
-      header('Cache-Control: max-age=0');
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
+        header('Cache-Control: max-age=0');
 
-      $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
-      $writer->save('php://output');
-      exit;
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $writer->save('php://output');
+        exit;
     }
 }

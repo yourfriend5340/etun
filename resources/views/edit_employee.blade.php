@@ -24,13 +24,13 @@
                         {{--<option value="">請選擇</option>--}}
                         
                         @if ($errors->any())
-                        <option value="{{ old('organize') }}">{{ old('organize') }}</option>
+                        <option value="{{ old('organize') }}" selected>{{ old('organize') }}</option>
                         @endif
 
                         @foreach($organizes as $organize )
                         <option value="{{$organize->company}}">{{$organize->company}}</option>
                         @endforeach
-                        <option value="{{$employee->organize}}" selected>{{ $employee->organize}}</option>
+                        <option value="{{$employee->organize}}">{{ $employee->organize}}</option>
 
                     </select>
                 </div>
@@ -40,10 +40,9 @@
                     <select class="form-select form-select-sm" aria-label="Default select example" name="area">
 
                         @if ($errors->any())
-                        <option selected value="{{ old('area') }}">{{ old('area') }}</option>
+                        <option value="{{ old('area') }}" selected>{{ old('area') }}</option>
                         @endif
 
-                        <option value="{{$employee->area}}" selected>{{$employee->area}}</option>
                         <option value="基隆市">1.基隆市</option>
                         <option value="臺北市">2.臺北市</option>
                         <option value="新北市">3.新北市</option>
@@ -78,37 +77,55 @@
 
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>身份證字號:</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
-                    <input class="pic border-1 w-75 d-inline-flex" name="SSN" placeholder="R123456789" value="{{ $employee->SSN }}" readonly>
+                    <input class="pic border-1 w-75 d-inline-flex" name="SSN" placeholder="R123456789" 
+                    @if ( (old('SSN') ) !== null ) value="{{old('SSN')}}" 
+                    @else  value="{{$employee->SSN}}"
+                    @endif>
                 </div>
 
                 <div class="col-md-auto border-0 d-inline-flex align-item-center"><font color=red>*</font>出生日期:</div>
                 <div class="organize col-md-auto border-1 align-self-center">
-                    <input class="border-1" type="date" name="Birthday" value="{{$employee->Birthday}}">
+                    <input class="border-1" type="date" name="Birthday"                     
+                    @if ( (old('Birthday') ) !== null ) value="{{old('Birthday')}}" 
+                    @else  value="{{$employee->Birthday}}"
+                    @endif>
                 </div>
 
                 <div class="w-100"></div>
 
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>手機:</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
-                    <input class="col-md-auto border-1 w-75 d-inline-flex" type="tel" name="mobile" placeholder="0912-345678" value="{{ $employee->mobile }}">
+                    <input class="col-md-auto border-1 w-75 d-inline-flex" type="tel" name="mobile" placeholder="0912-345678" 
+                    @if ( (old('mobile') ) !== null ) value="{{old('mobile')}}" 
+                    @else  value="{{ $employee->mobile }}"
+                    @endif>
                 </div>
 
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>電話:</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
-                    <input class="border-1 w-75 d-inline-flex" name="member_phone" type="tel" placeholder="06-1234567" value="{{ $employee->member_phone }}">
+                    <input class="border-1 w-75 d-inline-flex" name="member_phone" type="tel" placeholder="06-1234567"                     
+                    @if ( (old('member_phone') ) !== null ) value="{{old('member_phone')}}" 
+                    @else  value="{{ $employee->member_phone }}"
+                    @endif>
                 </div>
 
                 <div class="w-100"></div>
                 
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>  身高:</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
-                    <input class="pic border-1 w-75" name="Height" type="text" placeholder="cm" value="{{ $employee->Height }}"
+                    <input class="pic border-1 w-75" name="Height" type="text" placeholder="cm" 
+                    @if ( (old('Height') ) !== null ) value="{{old('Height')}}" 
+                    @else  value="{{ $employee->Height }}"
+                    @endif
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
                     onkeyup="value=value.replace(/[^\d.]/g,'')" />
                 </div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=white>*</font>體重:</div>
                 <div class="col-md-auto border-0 d-inline-flex align-item-center">
-                    <input class="border-1 w-75 d-inline-flex" name="Weight" type="text" placeholder="kg" value="{{ $employee->Weight }}"
+                    <input class="border-1 w-75 d-inline-flex" name="Weight" type="text" placeholder="kg" 
+                    @if ( (old('Weight') ) !== null ) value="{{old('Weight')}}" 
+                    @else  value="{{ $employee->Weight }}"
+                    @endif
                     onbeforepaste="clipboardData.setData('text',clipboardData.getData('text').replace(/[^\d]/g,''))" 
                     onkeyup="value=value.replace(/[^\d.]/g,'')" />
                 </div>
@@ -117,12 +134,11 @@
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>性別:</div>
                 <div class="organize col-md-auto border-0 align-self-center">
                     <select class="form-select form-select-sm" name="Gender" aria-label="Default select example">
-                        <option value="">請選擇</option>
 
                         @if ($errors->any())
-                        <option selected value="{{ old('Gender') }}">{{ old('Gender') }}</option>
+                        <option value="{{ old('Gender') }}" selected>{{ old('Gender') }}</option>
                         @endif
-                        <option value="{{ $employee->Gender }}" selected>{{ $employee->Gender }}</option>
+                        <option value="{{ $employee->Gender }}">{{ $employee->Gender }}</option>
                         <option value="男">男</option>
                         <option value="女">女</option>
                       </select>
@@ -146,12 +162,11 @@
                 <div class="col-md-auto border-0 d-inline-flex align-item-center py-1"><font color=red>*</font>役別:</div>
                 <div class="organize col-md-auto border-0 align-self-center">
                     <select class="form-select form-select-sm w-auto" aria-label="Default select example" name="Branch">
-                        <option value="">請選擇</option>
 
                         @if ($errors->any())
-                        <option selected value="{{ old('Branch') }}">{{ old('Branch') }}</option>
+                        <option value="{{ old('Branch') }}" selected>{{ old('Branch') }}</option>
                         @endif
-                        <option value="{{ $employee->Branch }}" selected>{{ $employee->Branch }}</option>
+                        <option value="{{ $employee->Branch }}">{{ $employee->Branch }}</option>
                         <option value="陸">陸</option>
                         <option value="海">海</option>
                         <option value="空">空</option>
@@ -159,8 +174,6 @@
                         <option value="free">免役</option>
                       </select>
                 </div>
-
-
 
                 <div class="w-100"></div>
 
@@ -172,12 +185,18 @@
                 <div class="w-100"></div>
                 <div class="col-md-auto border-1 d-inline-flex align-item-between py-1"><font color=red>*</font>戶籍地址:</div>
                 <div class="col-md-5 border-0 d-inline-flex align-item-center">
-                    <input type="text" class="border-1 align-content-lg-around w-100" placeholder="請輸入住址" name="addr" value="{{ $employee->addr }}">
+                    <input type="text" class="border-1 align-content-lg-around w-100" placeholder="請輸入住址" name="addr" 
+                    @if ( (old('addr') ) !== null ) value="{{old('addr')}}" 
+                    @else  value="{{ $employee->addr }}"
+                    @endif>
                 </div>
                 <div class="w-100"></div>
                 <div class="col-md-auto border-1 d-inline-flex align-item-between py-1"><font color=red>*</font>通訊地址:</div>
                 <div class="col-md-5 border-0 d-inline-flex align-item-center">
-                    <input type="text" class="border-1 align-content-lg-around w-100" placeholder="請輸入住址" name="current_addr" value="{{ $employee->current_addr }}">
+                    <input type="text" class="border-1 align-content-lg-around w-100" placeholder="請輸入住址" name="current_addr" 
+                    @if ( (old('current_addr') ) !== null ) value="{{old('current_addr')}}" 
+                    @else  value="{{ $employee->current_addr }}"
+                    @endif>
                 </div>
 
                 <div class="w-100"></div>

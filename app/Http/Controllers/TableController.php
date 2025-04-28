@@ -246,6 +246,7 @@ class TableController extends Controller
         $sheet->getStyle('C3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $sheet->getStyle('C2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
+
         $sheet->mergeCells('A1:D1');
         for ($i=2;$i<=16;$i++){
             $str="A$i:B$i";
@@ -282,9 +283,6 @@ class TableController extends Controller
         $sheet->setCellValue('C3', $name);
         $sheet->setCellValue('C4', $DB_salary);
         $sheet->setCellValue('C15',($DB_salary-1000) );
-
-
-
 
         $file_name = 'Salary_'.$name.'_'.date('Y_m_d');
         // Write a new .xlsx file
@@ -474,7 +472,7 @@ class TableController extends Controller
 
     //薪資試算表匯出
     public function export_access_salary(Request $request){
-        $this->accessSalaryService->export();
+        $this->accessSalaryService->export($request);
     }
 
     //試算薪資表匯入
