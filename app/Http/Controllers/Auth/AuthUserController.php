@@ -370,14 +370,14 @@ class AuthUserController extends Controller
             if($age_years<40){
                 if($years==4){
                     if($months>=10){
-                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                        $data=(['message' => "punch in success!!!",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 5 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
                             }
                 }
                 if($years>4){
-                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                        $data=(['message' => "punch in success!!!",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 5 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
@@ -386,14 +386,14 @@ class AuthUserController extends Controller
             if($age_years>=40 && $age_years<65){
                 if($years==2){
                     if($months>=10){
-                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                        $data=(['message' => "punch in success!!!",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 3 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
                             }
                 }
                 if($years>2){
-                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                        $data=(['message' => "punch in success!!!",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 3 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
@@ -402,14 +402,14 @@ class AuthUserController extends Controller
             if($age_years>=65){
                 if($years<1){
                     if($months>=10){
-                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                        $data=(['message' => "punch in success!!!",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
                             }
                 }
                 if($years>=1){
-                        $data=(['message' => "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)",
+                        $data=(['message' => "punch in success!!!",
                                 'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
                                 'annoucement'=>$announce_arr
                                 ]);
@@ -451,7 +451,7 @@ class AuthUserController extends Controller
             //return "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)";
         }
         else{
-            return '打卡失敗，請於您的工作場地及上班前十分鐘或上班開始後二十分鐘內進行打卡。';
+            return '打卡失敗，請於您的工作場地及上班前十分鐘或該班開始後二十分鐘內進行打卡。';
         }
 
     }
@@ -576,7 +576,7 @@ class AuthUserController extends Controller
             $lng2 = ($lng2 * pi() ) / 180;
         }
         else{
-            return "打卡失敗，可能不是你的上班時間，請於您的工作場地及上班前十分鐘再試行打卡。";
+            return "打卡失敗，可能不是你的上班時間，請於您的工作場地及上班前十分鐘，或是該班開始後二十分鐘內，再試行打卡。";
         }
         $earthRadius = 6368000; //地球平均半徑(公尺)
 
