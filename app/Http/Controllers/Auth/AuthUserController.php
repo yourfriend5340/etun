@@ -269,11 +269,14 @@ class AuthUserController extends Controller
         for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
             $queryDate='day'.$day;
             $classList=$schedule[$i]->$queryDate;
+            if($classList == ""){
+                continue;
+            }
             $countClassList=strlen($classList);
-            //dd($classList,$countClassList);
 
             for($j=1;$j<=$countClassList;$j++){
-                $queryClassName=substr($classList, $j-1, $j);//讀第j個班
+                $queryClassName=substr($classList, $j-1, $j);//讀第j個班 
+                //$queryClassName = 'B';
                 $queryClassEndTime=$queryClassName.'_end';//組合語法
                 $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
                 $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
@@ -281,28 +284,33 @@ class AuthUserController extends Controller
                 $time=$year.'-'.$month.'-'.$day.' '.$time;
                 $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
                 $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
-                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classStartTime)));//第j個班開始時十分鐘開放打卡
-                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classStartTime)));//第j個班開始時十分鐘開放打卡
-                //dd($schedule);
-                
-                if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){//現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
-                    $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
-                    $cusId=$schedule[$i]->customer_id;
-                    $class=$queryClassName;
-                    //dd($cusId,$class,$classStartTime,$classEndTime);
-                    $lat2=$queryLocation->lat;
-                    $lng2=$queryLocation->lng;
-                    break;
+                if( strtotime($classEndTime) < strtotime($classStartTime))
+                { 
+                    $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
+                }
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classStartTime)));//第j個班開始時二十分鐘開放打卡
+
+                //dd($schedule,$classStartTime,$classEndTime,$allowPunchStartTime,$allowPunchEndTime,$queryClassName);
+
+                //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                 if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                     $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                     $cusId=$schedule[$i]->customer_id;
+                     $class=$queryClassName;
+                     //dd($cusId,$class,$classStartTime,$classEndTime);
+                     $lat2=$queryLocation->lat;
+                     $lng2=$queryLocation->lng;
+                     break;
                 }
 
-                //else {
-                //    return "打卡失敗，超過打卡時間或查無班表！！";
-                //} 
+                // else {
+                //     return "打卡失敗，超過打卡時間或查無班表！！";
+                // } 
             }
             //dd($now,strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime));
         }
                 
-
         //計算距離演算法
         //先判斷參數是否有設定，若無被設定表示沒有班，跳錯誤訊息
         if(isset($lat2) && isset($lng2))
@@ -311,7 +319,7 @@ class AuthUserController extends Controller
             $lng2 = ($lng2 * pi() ) / 180;
         }
         else{
-            return "打卡失敗，可能不是你的上班時間，請於您的工作場地及上班前十分鐘再試行打卡。";
+            return "打卡失敗，請於您的工作場地及上班前十分鐘或上班開始後二十分鐘內進行打卡。";
         }
         $earthRadius = 6368000; //地球平均半徑(公尺)
 
@@ -415,7 +423,7 @@ class AuthUserController extends Controller
                  ['month','=',$month],
                  ['day','=',$day],
                  ['class','=',$class]   
-            ])->get()->toarray();
+            ])->get();
             //dd($check,count($check));
             //dd($cusId,$class,$classStartTime);
             //本日第一筆的第n班紀錄
@@ -443,7 +451,7 @@ class AuthUserController extends Controller
             //return "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)";
         }
         else{
-            return 'punch in failure,please punch in your workplace in the work time!';
+            return '打卡失敗，請於您的工作場地及上班前十分鐘或上班開始後二十分鐘內進行打卡。';
         }
 
     }
@@ -463,17 +471,20 @@ class AuthUserController extends Controller
         $announce=DB::table('announcements')->latest()->take(5)->get();
         $employeeName=DB::table('employees')->where('member_sn','=',$employeeID)->first()->member_name;
 
-        //查詢當天排班表
+        //查詢當月排班表
         $schedule=DB::table('schedules')->where([
-                    ['employee_id','=',$employeeID],
-                    ['year','=',$year],
-                    ['month','=',$month]
-                    ])->get()->toarray();
-        //dd($announce,count($announce),$employeeName,count($schedule),$schedule);
+        ['employee_id','=',$employeeID],
+        ['year','=',$year],
+        ['month','=',$month]
+        ])->get()->toarray();
 
+        //判斷是不是昨天的夜班
         for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
-            $queryDate='day'.$day;
+            $queryDate='day'.$day-1;
             $classList=$schedule[$i]->$queryDate;
+            if($classList == ""){
+                continue;
+            }
             $countClassList=strlen($classList);
             //dd($classList,$countClassList);
 
@@ -483,26 +494,79 @@ class AuthUserController extends Controller
                 $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
                 $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
                 //dd(strtotime($classEndTime)-strtotime($classStartTime));)
-                $time=$year.'-'.$month.'-'.$day.' '.$time;
-                $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
-                $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
-                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classStartTime)));//第j個班開始時十分鐘開放打卡
-                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classStartTime)));//第j個班開始時十分鐘開放打卡
-                //dd($schedule);
+                $classStartTime= $year.'-'.$month.'-'.($day-1).' '.$classStartTime;
+                $classEndTime= $year.'-'.$month.'-'.($day-1).' '.$classEndTime;
+                if(strtotime($classEndTime) < strtotime($classStartTime) )
+                {
+                    $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));//第j個班下班前十分鐘開放打卡
+                }
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classEndTime)));//第j個班下班前十分鐘開放打卡
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classEndTime)));//第j個班下班時間後二十分鐘開放打卡
+                //dd($queryClassName,$schedule,$classStartTime,$classEndTime,$allowPunchStartTime,$allowPunchEndTime);
                 
-                if(strtotime($now) <= strtotime($classEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){//現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
-                    $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
-                    $cusId=$schedule[$i]->customer_id;
-                    $class=$queryClassName;
-                    //dd($cusId,$class,$classStartTime,$classEndTime);
-                    $lat2=$queryLocation->lat;
-                    $lng2=$queryLocation->lng;
-                    break;
+                //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                    
+                    //若在時限內，確認有無昨天夜班，且無打下班卡紀錄
+                    $count = DB::table('punch_record')->where([
+                                ['year',$year],
+                                ['month',$month],
+                                ['day',($day-1)],
+                                ['class',$queryClassName],
+                                ['PunchOutTime', null]
+                            ])->count();
+
+                    if($count == 1)
+                    {
+                        $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                        $cusId=$schedule[$i]->customer_id;
+                        $class=$queryClassName;
+                        $lat2=$queryLocation->lat;
+                        $lng2=$queryLocation->lng;
+                        $day = $day-1;
+                        break;
+                    }
                 }
             }
             //dd($now,strtotime($now) <= strtotime($classEndTime) && strtotime($now) >= strtotime($allowPunchStartTime));
         }
-                
+
+        //上面檢查夜班程式，因無查詢到，故無設定gps座標，再查詢今日班表
+        if(!isset($lat2) && !isset($lng2))
+        {
+            for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
+                $queryDate='day'.$day;
+                $classList=$schedule[$i]->$queryDate;
+                $countClassList=strlen($classList);
+                //dd($classList,$countClassList);
+
+                for($j=1;$j<=$countClassList;$j++){
+                    $queryClassName=substr($classList, $j-1, $j);//讀第j個班
+                    $queryClassEndTime=$queryClassName.'_end';//組合語法
+                    $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
+                    $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
+                    //dd(strtotime($classEndTime)-strtotime($classStartTime));)
+                    $time=$year.'-'.$month.'-'.$day.' '.$time;
+                    $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                    $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                    $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classEndTime)));//第j個班下班前十分鐘開放打卡
+                    $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classEndTime)));//第j個班下班時間後二十分鐘開放打卡
+                    //dd($queryClassName,$schedule,$classStartTime,$classEndTime,$allowPunchStartTime,$allowPunchEndTime);
+                    
+                    //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                    if(strtotime($now) <= strtotime($classEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                        $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                        $cusId=$schedule[$i]->customer_id;
+                        $class=$queryClassName;
+                        //dd($cusId,$class,$classStartTime,$classEndTime);
+                        $lat2=$queryLocation->lat;
+                        $lng2=$queryLocation->lng;
+                        break;
+                    }
+                }
+                //dd($now,strtotime($now) <= strtotime($classEndTime) && strtotime($now) >= strtotime($allowPunchStartTime));
+            }
+        }       
 
         //計算距離演算法
         //先判斷參數是否有設定，若無被設定表示沒有班，跳錯誤訊息
@@ -538,10 +602,10 @@ class AuthUserController extends Controller
                  ['year','=',$year],
                  ['month','=',$month],
                  ['day','=',$day],
-                 ['class','=',$class]   
+                 ['class','=',$class],
+                 ['PunchOutTime',null]   
             ])->get()->toarray();
-            //dd($check,count($check),$check[0]['id']);
-            //dd($cusId,$class,$classStartTime);
+
             if (count($check)==1){
                 $DBdata=[
                     'PunchOutTime'=>$now,
@@ -551,14 +615,12 @@ class AuthUserController extends Controller
                 return "打下班卡成功";
             }
             else{
-                return "打卡失敗，查無上班打卡記錄，請補打卡";
+                return "打卡失敗，查無上班打卡記錄，請補打上班卡及下班卡";
             }
-            //dd($now,$year,$month,$day,$time);
-            
-            //return "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)";
+
         }
         else{
-            return 'punch in failure,please punch in your workplace in the work time!';
+            return '打卡失敗，請在你工作所在地打卡!';
         }
     }
 }
