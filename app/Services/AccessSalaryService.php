@@ -125,12 +125,104 @@ class AccessSalaryService
         $sheet->setCellValue('AF3', '帳號');
         //$sheet->setCellValue('AE4','812-0000104540124452');
 
-        $employee = Employee::where('status','在職')->get();
-        $empCount = count($employee);
+        //以下取得在職員工資料、當月班表、當月出勤表
+        //在排班表中join客戶名稱進來以利寫入excel
+        $empSchedule = DB::table('schedules')
+          ->join('customers','schedules.customer_id','customers.customer_id')
+          ->join('employees','schedules.employee_id','employees.member_sn')
+          ->where([
+              ['year',$year],
+              ['month',$month]
+            ])
+          ->orderby('schedules.employee_id')
+          ->get(array(('schedules.*'),'customers.firstname','employees.member_name'));//只join firstname欄位
 
+        $empPunch = DB::table('punch_record')
+          ->where([
+              ['year',$year],
+              ['month',$month]
+            ])
+          ->orderby('employee_id')
+          ->get();  
+         //dd($empSchedule,$empPunch); 
+        $empCount = count($empSchedule); 
+        //$test=[];
         for ($i=0;$i<$empCount;$i++){
+            //寫入序號
             $sheet->setCellValue('A'.($i+4),($i+1));
-            $sheet->setCellValue("B".($i+4),$employee[$i]->member_name );    
+
+            //寫入名字及客戶名稱
+            $sheet->setCellValue("B".($i+4),$empSchedule[$i]->member_name );    
+            $sheet->setCellValue('C'.($i+4),$empSchedule[$i]->firstname);
+            
+            //開始計算時數
+            $empId = $empSchedule[$i]->employee_id;
+            $cusId = $empSchedule[$i]->customer_id;
+            $totalTime = 0;
+
+            //第幾天
+            for($j=1;$j<=31;$j++){
+              $day = 'day'.$j;
+
+              if(isset($empSchedule[$i]->$day) && $empSchedule[$i]->$day != ""){
+                $class = $empSchedule[$i]->$day;
+
+                if($class != ""){
+                  $lenCount = strlen($class);
+
+                    //取每一天的班，並取班別計算上班時間(一天可多班)
+                    for($k=0;$k<$lenCount;$k++){
+                      $temp = substr($class,$k,1);
+                      $tempEnd = $temp.'_end';
+                      $classStart = $empSchedule[$i]->$temp;
+                      $classEnd = $empSchedule[$i]->$tempEnd;
+
+                      //排班表該班時數
+                      $scheduleTime = (strtotime($classEnd) - strtotime($classStart)) / 60 / 60;
+
+                      $startTime = "";
+                      $endTime = "";
+                      $punchInTime = "";
+                      $punchOutTime = "";
+                      //查詢出勤表中時數
+                      for($m=0;$m<count($empPunch);$m++){
+
+                        //查詢出勤表中，符合員工id、客戶id、幾號的哪一班的資訊
+                        if($empPunch[$m]->employee_id == $empId && $empPunch[$m]->customer_id == $cusId 
+                        && $empPunch[$m]->class == $temp && $empPunch[$m]->day == $j){
+                            
+                            $startTime = $empPunch[$m]->start;
+                            $endTime = $empPunch[$m]->end;
+                            $punchInTime = $empPunch[$m]->PunchInTime;
+                            $punchOutTime = $empPunch[$m]->PunchOutTime;
+
+                            //遲到容許時間20分鐘
+                            $allowLatePunchInTime = date('Y-m-d H:i:s',strtotime("+ 20 minute",strtotime($startTime)) );
+                            $allowLatePunchOutTime = date('Y-m-d H:i:s',strtotime("- 10 minute",strtotime($endTime)) );
+                            if(strtotime($punchInTime) < strtotime($allowLatePunchInTime)){
+                                $punchInTime = $startTime;
+                            }
+
+                            //容許提前10分鐘下班
+                            if(strtotime($punchOutTime) > strtotime($allowLatePunchOutTime) ){
+                              $punchOutTime = $endTime;
+                            }
+                            $workTime = round(((strtotime($punchOutTime) - strtotime($punchInTime)) / 60 / 60),1);
+                            $totalTime = $totalTime + $workTime;
+                            //dd($empPunch,$empSchedule,$day,$temp,$empId,$cusId,$scheduleTime,$punchInTime,$punchOutTime,$allowLatePunchInTime,$allowLatePunchOutTime,$workTime);
+                            
+                        }
+                      }
+                      //查無打卡紀錄
+                      if($punchInTime == "" && $punchOutTime == ""){
+                          $totalTime = $totalTime - $scheduleTime;
+
+                      }
+                    }
+                }
+              }
+            }
+            $sheet->setCellValue("D".($i+4),$totalTime);
         }
 
         //此三條參數會變動
@@ -170,6 +262,8 @@ class AccessSalaryService
           $sheet->getRowDimension($i)->setRowHeight(30);     
         }
         $file_name = '薪資試算表_'.date('Y_m');
+
+
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');

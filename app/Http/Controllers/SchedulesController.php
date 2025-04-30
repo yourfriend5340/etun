@@ -1716,7 +1716,7 @@ class SchedulesController extends Controller
       $activeWorksheet->setCellValue('AG22', '12');
 
       for ($i=5;$i<=14;$i++){
-         $activeWorksheet->setCellValue("AH"."$i",'=(COUNTIF(C'.$i.':AG'.$i.',"A")+COUNTIF(C'.$i.':AG'.$i.',"B")+COUNTIF(C'.$i.':AG'.$i.',"C")+COUNTIF(C'.$i.':AG'.$i.',"D")+COUNTIF(C'.$i.':AG'.$i.',"E")+COUNTIF(C'.$i.':AG'.$i.',"F")+COUNTIF(C'.$i.':AG'.$i.',"G")+COUNTIF(C'.$i.':AG'.$i.',"H")+COUNTIF(C'.$i.':AG'.$i.',"I")+COUNTIF(C'.$i.':AG'.$i.',"J"))*AG22');
+         $activeWorksheet->setCellValue("AH"."$i",'=(COUNTIF(C'.$i.':AG'.$i.',"*A*")+COUNTIF(C'.$i.':AG'.$i.',"*B*")+COUNTIF(C'.$i.':AG'.$i.',"*C*")+COUNTIF(C'.$i.':AG'.$i.',"*D*")+COUNTIF(C'.$i.':AG'.$i.',"*E*")+COUNTIF(C'.$i.':AG'.$i.',"*F*")+COUNTIF(C'.$i.':AG'.$i.',"*G*")+COUNTIF(C'.$i.':AG'.$i.',"*H*")+COUNTIF(C'.$i.':AG'.$i.',"*I*")+COUNTIF(C'.$i.':AG'.$i.',"*J*"))*AG22');
       };
 
       $activeWorksheet->setCellValue('AH15', '=SUM(AH5:AH13)');
