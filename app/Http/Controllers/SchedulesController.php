@@ -1028,7 +1028,7 @@ class SchedulesController extends Controller
       $spreadsheet->getActiveSheet()->getColumnDimension('A')->setWidth(12);
       $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(9);
       $spreadsheet->getActiveSheet()->getColumnDimension('AH')->setWidth(6);
-      $spreadsheet->getActiveSheet()->getColumnDimension('AG')->setWidth(3.5);
+      $spreadsheet->getActiveSheet()->getColumnDimension('AG')->setWidth(5);
 
       $spreadsheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight(20);
       $spreadsheet->getActiveSheet()->getRowDimension('1')->setRowHeight(25);
@@ -1262,10 +1262,11 @@ class SchedulesController extends Controller
 
       $activeWorksheet->setCellValue('X23', '值班人員簽名');
       $activeWorksheet->setCellValue('AD23', '主管簽名');
-      $activeWorksheet->setCellValue('AG22', '2');
-
+      $activeWorksheet->setCellValue('AG22', '=ROUND((NUMBERVALUE(TEXT(AB17-Y17,"[m]"))/60),1)');
+      $activeWorksheet->getStyle('AG22')->getNumberFormat()->setFormatCode('0.0');
+      
       for ($i=5;$i<=14;$i++){
-         $activeWorksheet->setCellValue("AH"."$i",'=(COUNTIF(C'.$i.':AG'.$i.',"A")+COUNTIF(C'.$i.':AG'.$i.',"B")+COUNTIF(C'.$i.':AG'.$i.',"C")+COUNTIF(C'.$i.':AG'.$i.',"D")+COUNTIF(C'.$i.':AG'.$i.',"E")+COUNTIF(C'.$i.':AG'.$i.',"F")+COUNTIF(C'.$i.':AG'.$i.',"G")+COUNTIF(C'.$i.':AG'.$i.',"H")+COUNTIF(C'.$i.':AG'.$i.',"I")+COUNTIF(C'.$i.':AG'.$i.',"J"))*AG22');
+         $activeWorksheet->setCellValue("AH"."$i",'=(COUNTIF(C'.$i.':AG'.$i.',"*A*")+COUNTIF(C'.$i.':AG'.$i.',"*B*")+COUNTIF(C'.$i.':AG'.$i.',"*C*")+COUNTIF(C'.$i.':AG'.$i.',"*D*")+COUNTIF(C'.$i.':AG'.$i.',"*E*")+COUNTIF(C'.$i.':AG'.$i.',"*F*")+COUNTIF(C'.$i.':AG'.$i.',"*G*")+COUNTIF(C'.$i.':AG'.$i.',"*H*")+COUNTIF(C'.$i.':AG'.$i.',"*I*")+COUNTIF(C'.$i.':AG'.$i.',"*J*"))*AG22');
       };
 
       $activeWorksheet->setCellValue('AH15', '=SUM(AH5:AH13)');
@@ -1500,7 +1501,7 @@ class SchedulesController extends Controller
       $spreadsheet->getActiveSheet()->getColumnDimension('A')->setWidth(12);
       $spreadsheet->getActiveSheet()->getColumnDimension('B')->setWidth(9);
       $spreadsheet->getActiveSheet()->getColumnDimension('AH')->setWidth(6);
-      $spreadsheet->getActiveSheet()->getColumnDimension('AG')->setWidth(3.5);
+      $spreadsheet->getActiveSheet()->getColumnDimension('AG')->setWidth(5);
 
       $spreadsheet->getActiveSheet()->getDefaultRowDimension()->setRowHeight(20);
       $spreadsheet->getActiveSheet()->getRowDimension('1')->setRowHeight(25);
@@ -1713,7 +1714,8 @@ class SchedulesController extends Controller
       $activeWorksheet->setCellValue('B27', '註解說明區');
       $activeWorksheet->setCellValue('X23', '值班人員簽名');
       $activeWorksheet->setCellValue('AD23', '主管簽名');
-      $activeWorksheet->setCellValue('AG22', '12');
+      $activeWorksheet->setCellValue('AG22', '=ROUND((NUMBERVALUE(TEXT(AB17-Y17,"[m]"))/60),1)');
+      $activeWorksheet->getStyle('AG22')->getNumberFormat()->setFormatCode('0.0');
 
       for ($i=5;$i<=14;$i++){
          $activeWorksheet->setCellValue("AH"."$i",'=(COUNTIF(C'.$i.':AG'.$i.',"*A*")+COUNTIF(C'.$i.':AG'.$i.',"*B*")+COUNTIF(C'.$i.':AG'.$i.',"*C*")+COUNTIF(C'.$i.':AG'.$i.',"*D*")+COUNTIF(C'.$i.':AG'.$i.',"*E*")+COUNTIF(C'.$i.':AG'.$i.',"*F*")+COUNTIF(C'.$i.':AG'.$i.',"*G*")+COUNTIF(C'.$i.':AG'.$i.',"*H*")+COUNTIF(C'.$i.':AG'.$i.',"*I*")+COUNTIF(C'.$i.':AG'.$i.',"*J*"))*AG22');
