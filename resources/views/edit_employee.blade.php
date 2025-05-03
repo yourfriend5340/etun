@@ -310,7 +310,7 @@
                       </select>
                 </div>
 
-                <div class="col-md-auto border-0 align-self-center py-1 ps-3">點哨:</div>
+                {{--<div class="col-md-auto border-0 align-self-center py-1 ps-3">點哨:</div>
                 <div class="status col-md-auto border-0 align-self-center">
                     <select class="form-select form-select-sm" aria-label="Default select example" name="work_place">
                         <option value="{{ $employee->work_place }}" selected>{{ $employee->work_place }}</option>
@@ -321,71 +321,149 @@
 
                     </select>
                 </div>
-
+                --}}
 
                     <div class="col-md-auto border-0 align-self-center py-1">職稱:
                         <input class="border-1 py-0 my-0" name="position" type="text" value="{{ $employee->position }}">
                     </div>
+                    <div class="row w-100"></div>
 
                     @can('group_admin')
+                    {{--
+                        @if ($status==0 && $clock_status==0)
+
+                            {{--choice
+                                <div class="col col-md-auto py-1 align-self-center pt-2">
+                                    <input class="inp" name="userInput" type="radio" value="0"> 月薪
+
+                                    <input class="inp2" name="userInput" type="radio" value="1"> 時薪
+                                </div>
+                                <div class="col col-md-auto py-1">
+                                    <input type="button" value="切換輸入格式" onclick="choice()">
+                                </div>
+                                <div class="col col-md-auto py-1 align-self-center">(尚未定義薪資)</div>
+                            {{--choice
+
+                            <div class="row py-1" id="choice_salary">
+                            </div>{{--end choice salary
+                        @endif
+
+                        @if($status==1 && $clock_status==0) 
+                            <div class="col-md-auto border-0 align-self-center py-1"><font color=white>*</font>薪資:
+                                <input class="border-1 py-0 my-0" name="salary" type="number" value="{{ $employee->salary }}">
+                            </div>
+                        @endif
+
+                        @if($status==0 && $clock_status==1) 
+                            <div class="col-md-auto border-0 align-self-center py-1">薪資：鐘點人員，修改薪資請至功能表點選薪資修改功能</div>
+                        @endif
                     
-                    @if ($status==0 && $clock_status==0)
-                    <div class="row w-100"></div>
-                    {{--choice--}}
-                        <div class="col col-md-auto py-1 align-self-center pt-2">
-                            <input class="inp" name="userInput" type="radio" value="0"> 月薪
-
-                            <input class="inp2" name="userInput" type="radio" value="1"> 時薪
+                        <div class="w-100"></div>
+                        <div class="col-md-auto border-0 align-self-center py-1">員工到職日期:
+                            <input class="pic border-1" name="regist" type="date" value="{{ $employee->register }}">
                         </div>
-                        <div class="col col-md-auto py-1">
-                            <input type="button" value="切換輸入格式" onclick="choice()">
+                        <div class="col-md-auto border-0 align-self-center py-1">員工離職日期:
+                            <input class="pic border-1" name="leave" type="date" value="{{ $employee->leave }}">
                         </div>
-                        <div class="col col-md-auto py-1 align-self-center">(尚未定義薪資)</div>
-                    {{--choice--}}
+                    --}}
+                        <div class="col col-md-auto border-0 align-self-center py-1" >薪資定義:</div>
+                        <div class="col col-md-auto align-self-center">
+                            <select class="form-select form-select-sm" aria-label="Default select example" name="work_place" id="work_place">
+                                
+                                @if ($errors->any())
+                                <option value="{{ old('work_place') }}" selected>{{ old('work_place') }}</option>
+                                @endif
+                                <option value="">請選擇</option>
+                                @foreach($customers as $customer )
+                                <option value="{{$customer->firstname}}">{{$customer->firstname}}</option>
+                                @endforeach
 
-                    <div class="row py-1" id="choice_salary">
-                    </div>{{--end choice salary--}}
-                    @endif
-
-                    @if($status==1 && $clock_status==0) 
-                        <div class="col-md-auto border-0 align-self-center py-1"><font color=white>*</font>薪資:
-                            <input class="border-1 py-0 my-0" name="salary" type="number" value="{{ $employee->salary }}">
+                            </select>
                         </div>
-                    @endif
-
-                    @if($status==0 && $clock_status==1) 
-                        <div class="col-md-auto border-0 align-self-center py-1">薪資：鐘點人員，修改薪資請至功能表點選薪資修改功能</div>
-                    @endif
+                        <div class="col col-md-auto align-self-center py-1">
+                            <select class="form-select form-select-sm" aria-label="Default select example" name="salary_type" id="salary_type">
+                                <option value="時薪">時薪</option>
+                                <option value="月薪">月薪</option>
+                            </select>
+                        </div>
+                        <div class="col col-md-auto border-0  py-1">薪水:
+                                <input class="border-1 py-0 my-0" type="number" value="{{ old('salary') }}" id="salary">
+                                <input type="button" value="儲存" onclick="example()" />
+                                <input type="button" value="刪除" onclick="example2()" />    
+                        </div>
+                        <textarea class="textarea" id="text2" style="font-size:large" 
+                        rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" 
+                        readonly>@foreach ($clock_status as $s){{$s->customer.','.$s->salaryType.','.$s->salary.','}}@endforeach</textarea>
                     
-                    <div class="w-100"></div>
-                    <div class="col-md-auto border-0 align-self-center py-1">員工到職日期:
-                        <input class="pic border-1" name="regist" type="date" value="{{ $employee->register }}">
-                    </div>
-                    <div class="col-md-auto border-0 align-self-center py-1">員工離職日期:
-                        <input class="pic border-1" name="leave" type="date" value="{{ $employee->leave }}">
-                    </div>
+                        <div class="w-100"></div>
+                        <div class="col-md-auto border-0 align-self-center py-1">員工到職日期:
+                            <input class="pic border-1" name="regist" type="date" value="{{ $employee->register }}">
+                        </div>
+                        <div class="col-md-auto border-0 align-self-center py-1">員工離職日期:
+                            <input class="pic border-1" name="leave" type="date" value="{{ $employee->leave }}">
+                        </div>
+                    
+
+                    @elsecan('super_manager')
+                                            <div class="col col-md-auto border-0 align-self-center py-1" >薪資定義:</div>
+                        <div class="col col-md-auto align-self-center">
+                            <select class="form-select form-select-sm" aria-label="Default select example" name="work_place" id="work_place">
+                                
+                                @if ($errors->any())
+                                <option value="{{ old('work_place') }}" selected>{{ old('work_place') }}</option>
+                                @endif
+                                <option value="">請選擇</option>
+                                @foreach($customers as $customer )
+                                <option value="{{$customer->firstname}}">{{$customer->firstname}}</option>
+                                @endforeach
+
+                            </select>
+                        </div>
+                        <div class="col col-md-auto align-self-center py-1">
+                            <select class="form-select form-select-sm" aria-label="Default select example" name="salary_type" id="salary_type">
+                                <option value="時薪">時薪</option>
+                                <option value="月薪">月薪</option>
+                            </select>
+                        </div>
+                        <div class="col col-md-auto border-0  py-1">薪水:
+                                <input class="border-1 py-0 my-0" type="number" value="{{ old('salary') }}" id="salary">
+                                <input type="button" value="儲存" onclick="example()" />
+                                <input type="button" value="刪除" onclick="example2()" />    
+                        </div>
+                        <textarea class="textarea" id="text2" style="font-size:large" 
+                        rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" 
+                        readonly>@foreach ($clock_status as $s){{$s->customer.','.$s->salaryType.','.$s->salary.','}}@endforeach</textarea>
+                    
+                        <div class="w-100"></div>
+                        <div class="col-md-auto border-0 align-self-center py-1">員工到職日期:
+                            <input class="pic border-1" name="regist" type="date" value="{{ $employee->register }}">
+                        </div>
+                        <div class="col-md-auto border-0 align-self-center py-1">員工離職日期:
+                            <input class="pic border-1" name="leave" type="date" value="{{ $employee->leave }}">
+                        </div>
+                    @endcan
+            </div>
+
+            <div class="w-100"></div>
+            <div class="row">
+                <div class="col-md-auto border-0 align-self-center py-1">查核寄出日期:
+                    <input class="pic border-1" name="check_send" type="date" value="{{ $employee->check_send }}">
                 </div>
-                @endcan
-                <div class="w-100"></div>
+            
+                <div class="col-md-auto border-0 align-self-center py-1">查核寄回日期:
+                    <input class="pic border-1" name="check_back" type="date" value="{{ $employee->check_back }}">
+                </div>
                 <div class="row">
-                    <div class="col-md-auto border-0 align-self-center py-1">查核寄出日期:
-                        <input class="pic border-1" name="check_send" type="date" value="{{ $employee->check_send }}">
-                    </div>
-                
-                    <div class="col-md-auto border-0 align-self-center py-1">查核寄回日期:
-                        <input class="pic border-1" name="check_back" type="date" value="{{ $employee->check_back }}">
-                    </div>
-                    <div class="row">
-                    <div class="col-md-auto border-0 align-self-center py-1">約定寄出日期:
-                        <input class="pic border-1" name="agreement_send" type="date" value="{{ $employee->agreement_send }}">
-                    </div>
-                
-                    <div class="col-md-auto border-0 align-self-center py-1">約定寄回日期:
-                        <input class="pic border-1" name="agreement_back" type="date" value="{{ $employee->agreement_back }}">
-                    </div>
+                <div class="col-md-auto border-0 align-self-center py-1">約定寄出日期:
+                    <input class="pic border-1" name="agreement_send" type="date" value="{{ $employee->agreement_send }}">
                 </div>
+            
+                <div class="col-md-auto border-0 align-self-center py-1">約定寄回日期:
+                    <input class="pic border-1" name="agreement_back" type="date" value="{{ $employee->agreement_back }}">
+                </div>
+            </div>
 
-                @can('group_admin')
+            @can('group_admin')
                 <div class="row">
                     <div class="col-md-auto border-0 align-self-center py-1">勞保加保日期:
                         <input class="pic border-1" name="labor_date" type="date" value="{{ $employee->labor_date }}">
@@ -415,12 +493,13 @@
                 <div class="col-md-auto border-0 align-self-center py-1">團險加保日期:
                     <input class="pic border-1" name="group_date" type="date" value="{{ $employee->group_date }}">
                 </div>
-                <div class="col-md-auto border-0 align-self-center py-1">顧補加保日期:
+                <div class="col-md-auto border-0 align-self-center py-1">誠實加保日期:
                     <input class="pic border-1" name="care_date" type="date" value="{{ $employee->care_date }}">
                 </div>
                 </div>
-                @endcan
-                <div class="row">
+            @endcan
+
+            <div class="row">
                 <div class="col-md-auto border-0 align-self-center py-1">最後體檢日期:
                     <input class="pic border-1" name="checkup" type="date" value="{{ $employee->checkup }}">
                 </div>
@@ -430,8 +509,6 @@
             </div>
 
             <hr>
-
-   
 
             <div class="row">
                 <p class="my-0">App功能開通</p>
@@ -452,9 +529,6 @@
             </div>
             </form> 
         </div>
-
-
-
 
         @endforeach
 
@@ -610,10 +684,12 @@
         }
     }
 
+
     function example(){
             var salary = document.getElementById("salary").value;
+            var salary_type = document.getElementById("salary_type").value;
             var place = document.getElementById("work_place").value;
-            var textnode=document.createTextNode(place+','+salary+',');
+            var textnode=document.createTextNode(place+','+salary_type+','+salary+',');
             
             if (salary!="" && place!=""){
             var area=document.getElementById("text2");

@@ -4,13 +4,26 @@
 
 <div class="row mx-1">
     <p class="p-test mt-1 mb-0 fs-3">客戶資料總覽</p>
-    <div class="d-flex justify-content-end">
-  
-        <a class="btn btn-secondary m-2" href="{{route('customer_asc')}}" role="button">遞增</a>
+    <form>
+    <div class="row justify-content-between">
+        <div class="col-md-auto align-self-center py-2 justify-content-end">    
+            <div class="col-md-auto border-0 d-inline-flex align-items-center py-2">客戶姓名：</div>
+            <div class="col-md-4 border-0 d-inline-flex align-items-start align-items-center">
+                <input class="place d-inline-flex" id="cusName" name="cusName" placeholder="輸入姓氏或全名">
 
-        <a class="btn btn-secondary m-2" href="{{route('customer_desc')}}" role="button">遞減</a>
-
+                <input class="btn btn-success ms-3" type="submit" value="確認送出" onclick="submit_onclick_requestName()">
+            </div>
+        </div>
+        
+        @if (!isset($fromName))
+        <div class="col-md-5"></div>
+        <div class="col-md-auto align-self-center py-2 justify-content-end">
+            <a class="btn btn-secondary m-2" href="{{route('customer_asc')}}" role="button">遞增</a>
+            <a class="btn btn-secondary m-2" href="{{route('customer_desc')}}" role="button">遞減</a>
+        </div>
+        @endif
     </div>
+    </form>
     <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
         <thead>
             <tr class="col text-left">
@@ -109,6 +122,18 @@
         if (confirm('確定要調閱ID： '+id+' 號資料嗎？')==true)
         {window.location.href="/customer/request/"+id;}
 
+    }
+
+    function submit_onclick_requestName(){
+
+        var inputName = document.getElementById("cusName");
+        var name = inputName.value;
+        
+        if (name!='')
+        {
+            window.location.href="/customer/requestName/"+name;
+            window.event.returnValue=false;
+        }       
     }
 
 </script>

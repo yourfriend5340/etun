@@ -278,6 +278,16 @@ class CustomersController extends Controller
 
     }
 
+    public function requestName(Request $request,$requestName){
+        $customer= Customer::where('firstname','like','%'.$requestName.'%')
+            ->paginate(20);
+
+        //return view("update_employee",["employees"=>$employee,]);
+
+        return view("show_customer",["customers"=>$customer,'fromName'=>1]);
+
+    }
+
     public function group_show(Customer $customer){
         
         return view("customer_group");

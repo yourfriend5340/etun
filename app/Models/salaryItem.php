@@ -16,6 +16,8 @@ class salaryItem extends Model
         'serialNum',
         'item',
         'month',
-        'amount'
+        'amount',
+        'empid',
+        'cusid'
     ];
 }

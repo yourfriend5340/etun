@@ -169,7 +169,7 @@
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
                             <li><a class="dropdown-item" href="{{route('employee')}}">新增人事資料</a></li>
-                            @can('group_admin')<li><a class="dropdown-item" href="{{route('clocksalary')}}">鐘點人員薪資修改</a></li>@endcan
+                            {{--@can('group_admin')<li><a class="dropdown-item" href="{{route('clocksalary')}}">鐘點人員薪資修改</a></li>@endcan--}}
                             <li><a class="dropdown-item" href="{{route('employee_desc')}}">更新@can('group_admin')/刪除@endcan 人事資料及總覽</a></li>
 
                         </ul>

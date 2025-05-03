@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redirect;
 
 
 
@@ -73,7 +74,7 @@ class EmployeeController extends Controller
 
     public function store(Request $request)
     {
-        
+
         try{
             $rules=[
             "uid" => "bail|required|integer|unique:employees,member_sn",
@@ -218,8 +219,6 @@ class EmployeeController extends Controller
         $path = $request->file('OthersCard')->storeas('credential/OthersCard',$OthersCard_imageName);
         }
 
-        if($salary!=null)//判斷月薪時薪人員
-        {
         $data=[
             'member_name'=>$name,
             'member_sn'=>$membersn,
@@ -248,9 +247,9 @@ class EmployeeController extends Controller
             'department'=>$department,
             'graduate'=>$graduate,
             'status'=>$status,
-            'work_place'=>$work_place,
+            //'work_place'=>$work_place,
             'position'=>$position,
-            'salary'=>$salary,
+            //'salary'=>$salary,
             'register'=>$regist_day,
             'leave'=>$leave_day,
             'check_send'=>$check_send,
@@ -273,97 +272,98 @@ class EmployeeController extends Controller
         ];
         //dd($data);
         $employee= Employee::create($data);
-        }
-        
-        else{
-            $data=[
-            'member_name'=>$name,
-            'member_sn'=>$membersn,
-            'member_phone'=>$phone,
-            'member_account'=>$member_account,
-            'member_password'=>$member_password,
-            'member_password_text'=>$member_password_text,
-            'organize'=>$organize,
-            'area'=>$area,
-            'SSN'=>$SSN,
-            'Gender'=>$gender,
-            'Blood_type'=>$blood,
-            'Birthday'=>$birthday,
-            'Height'=>$height,
-            'Weight'=>$weight,
-            'Branch'=>$branch,
-            'mobile'=>$mobile,
-            'mail'=>$mail,
-            'pic_route1'=>'/etun/storage/app/credential/IDCard_front/'.$IDCard_front_imageName,
-            'pic_route2'=>'/etun/storage/app/credential/IDCard_back/'.$IDCard_back_imageName,
-            'pic_route3'=>'/etun/storage/app/credential/EmployeeCard/'.$EmployeeCard_imageName,
-            'pic_route4'=>'/etun/storage/app/credential/OthersCard/'.$OthersCard_imageName,
-            'driver'=>$drive,
-            'language'=>$language,
-            'school'=>$school,
-            'department'=>$department,
-            'graduate'=>$graduate,
-            'status'=>$status,
-            'work_place'=>$work_place,
-            'position'=>$position,
-            //'salary'=>$salary,
-            'register'=>$regist_day,
-            'leave'=>$leave_day,
-            'check_send'=>$check_send,
-            'check_back'=>$check_back,
-            'agreement_send'=>$agreement_send,
-            'agreement_back'=>$agreement_back,
-            'labor_date'=>$labor_date,
-            'labor_account'=>$labor_account,
-            'retirement_account'=>$retirement_account,
-            'health_date'=>$health_date,
-            'health_account'=>$health_account,
-            'life_date'=>$life_date,
-            'group_date'=>$group_date,
-            'care_date'=>$care_date,
-            'memo'=>$memo,
-            'salt'=>$salt,
-            'addr'=>$addr,
-            'current_addr'=>$current_addr,
-            'checkup'=>$checkup
-            ];
-            //dd($data);
-            $employee= Employee::create($data);
+    
+        //儲存鐘點費
+        $clock = [];
+        $month = [];
+        $clock_salary=$request->input('clock_salary');
+        $clock_salary_array=array_filter(explode(',',$clock_salary));
+        $num=count($clock_salary_array);
+        //dd($clock_salary_array);
+        $coffset = 0;
+        $moffset = 0;
 
-            //儲存鐘點費
-            $clock_salary=$request->input('clock_salary');
-
-            $clock_salary_array=array_filter(explode(',',$clock_salary));
-            $num=count($clock_salary_array);
-
-            for($i=0;$i<$num;$i+=2){
-                for($j=$i+2;$j<$num;$j+=2)
-                {
-                    if($clock_salary_array[$i]==$clock_salary_array[$j]){
-                        $clock_salary_array[$j]="";
-                        $clock_salary_array[$j+1]="";
-                    }
-                }
+        for($i=0;$i<$num;$i+=3){
+            if($clock_salary_array[$i+1] == '時薪'){
+                $clock[$coffset]['name']= $clock_salary_array[$i];
+                $clock[$coffset]['type']= $clock_salary_array[$i+1];
+                $clock[$coffset]['amount'] = $clock_salary_array[$i+2];
+                $coffset++;
             }
-            $clock_salary_array=array_filter($clock_salary_array);
-            $clock_salary_array=explode(',',implode(',',$clock_salary_array));
-            //dd($clock_salary_array[0]);
-            $num=count($clock_salary_array);
-            
-            for ($i=0;$i<=$num-2;$i+=2){
+            else{
+                $month[$moffset]['name']= $clock_salary_array[$i];
+                $month[$moffset]['type']= $clock_salary_array[$i+1];
+                $month[$moffset]['amount'] = $clock_salary_array[$i+2];
+                $moffset++;
+            }
+        }
 
-                $data=[
-                'member_sn'=>$membersn,
-                'member_name'=>$name,
-                'customer'=>$clock_salary_array[$i],
-                'salary'=>$clock_salary_array[$i+1],
-                ];
+        $cnum=count($clock);
+        $mnum=count($month);
+        for ($i=0;$i<$cnum;$i++){
+            $data=[
+            'member_sn'=>$membersn,
+            'member_name'=>$name,
+            'customer'=>$clock[$i]['name'],
+            'salaryType'=>$clock[$i]['type'],
+            'salary'=>$clock[$i]['amount'],
+            ];
 
+            $count = DB::table('clock_salary')->where([
+                ['member_sn',$membersn],
+                ['customer',$clock[$i]['name']],
+
+            ])->count();
+
+            if($count == 0)
+            {    
                 $store = ClockSalary::create($data);
             }
+            else{
+                DB::table('clock_salary')->where([
+                    ['member_sn',$membersn],
+                    ['customer',$clock[$i]['name']]
+                ])->update(['salary'=>$clock[$i]['amount'],'salaryType'=>$clock[$i]['type']]);
+                
+                //$errorMessage = '查到'.$name.'已在'.$clock[$i]['name'].'設定'.$clock[$i]['type'].'，請利用修改功能調整';
+                // return Redirect::back()->withErrors($errorMessage)->withInput();
+                // break;
+            }
         }
+
+        for ($i=0;$i<$mnum;$i++){
+            $data=[
+            'member_sn'=>$membersn,
+            'member_name'=>$name,
+            'customer'=>$month[$i]['name'],
+            'salaryType'=>$month[$i]['type'],
+            'salary'=>$month[$i]['amount'],
+            ];
+
+            $count = DB::table('clock_salary')->where([
+                ['member_sn',$membersn],
+                ['customer',$month[$i]['name']],
+            ])->count();
+
+            if($count == 0)
+            {    
+                $store = ClockSalary::create($data);
+            }
+            else{
+                DB::table('clock_salary')->where([
+                    ['member_sn',$membersn],
+                    ['customer',$month[$i]['name']]
+                ])->update(['salary'=>$month[$i]['amount'],'salaryType'=>$month[$i]['type']]);
+
+                //$errorMessage = '查到'.$name.'已在'.$month[$i]['name'].'設定'.$month[$i]['type'].'，請利用修改功能調整';
+                // return Redirect::back()->withErrors($errorMessage)->withInput();
+                // break;
+            }
+        }
+
         
-        return redirect()->route('employee_desc');
+        
+
     }
 
     /**
@@ -515,9 +515,9 @@ class EmployeeController extends Controller
         $department = $request->input('Department');
         $graduate = $request->input('graduate');
         $status = $request->input('status');
-        $work_place = $request->input('work_place');
+        //$work_place = $request->input('work_place');
         $position = $request->input('position');
-        $salary = $request->input('salary');
+        //$salary = $request->input('salary');
         $clock_salary = $request->input('clock_salary');
         $regist_day = $request->input('regist');
         $leave_day = $request->input('leave');
@@ -641,8 +641,8 @@ class EmployeeController extends Controller
         }
 */
         if($request!=0){
-            if($salary!=null){
-                $data=[
+
+            $data=[
                 //'member_name'=>$name,
                 //'member_sn'=>$membersn,
                 'member_phone'=>$phone,
@@ -670,9 +670,9 @@ class EmployeeController extends Controller
                 'department'=>$department,
                 'graduate'=>$graduate,
                 'status'=>$status,
-                'work_place'=>$work_place,
+                //'work_place'=>$work_place,
                 'position'=>$position,
-                'salary'=>$salary,
+                //'salary'=>$salary,
                 'register'=>$regist_day,
                 'leave'=>$leave_day,
                 'check_send'=>$check_send,
@@ -692,96 +692,100 @@ class EmployeeController extends Controller
                 'addr'=>$addr,
                 'current_addr'=>$current_addr,
                 'checkup'=>$checkup,
-                ];
-            }
-            else{
-                $data=[
-                    //'member_name'=>$name,
-                    //'member_sn'=>$membersn,
-                    'member_phone'=>$phone,
-                    'member_account'=>$member_account,
-                    'member_password'=>$member_password,
-                    'member_password_text'=>$member_password_text,
-                    'organize'=>$organize,
-                    'area'=>$area,
-                    'SSN'=>$SSN,
-                    'Gender'=>$gender,
-                    'Blood_type'=>$blood,
-                    'Birthday'=>$birthday,
-                    'Height'=>$height,
-                    'Weight'=>$weight,
-                    'Branch'=>$branch,
-                    'mobile'=>$mobile,
-                    'mail'=>$mail,
-                    'pic_route1'=> $IDCard_front_addr,
-                    'pic_route2'=> $IDCard_back_addr,
-                    'pic_route3'=> $EmployeeCard_addr,
-                    'pic_route4'=> $OtherCard_addr,
-                    'driver'=>$drive,
-                    'language'=>$language,
-                    'school'=>$school,
-                    'department'=>$department,
-                    'graduate'=>$graduate,
-                    'status'=>$status,
-                    'work_place'=>$work_place,
-                    'position'=>$position,
-                    'register'=>$regist_day,
-                    'leave'=>$leave_day,
-                    'check_send'=>$check_send,
-                    'check_back'=>$check_back,
-                    'agreement_send'=>$agreement_send,
-                    'agreement_back'=>$agreement_back,
-                    'labor_date'=>$labor_date,
-                    'labor_account'=>$labor_account,
-                    'retirement_account'=>$retirement_account,
-                    'health_date'=>$health_date,
-                    'health_account'=>$health_account,
-                    'life_date'=>$life_date,
-                    'group_date'=>$group_date,
-                    'care_date'=>$care_date,
-                    'memo'=>$memo,
-                    'salt'=>$salt,
-                    'addr'=>$addr,
-                    'current_addr'=>$current_addr,
-                    'checkup'=>$checkup,
-                ];
-            }
+            ];
+            
         }
         
         $employee=Employee::where('member_sn','=',$membersn)->update($data);
 
         //儲存鐘點費
-        if($clock_salary!=null){
-            $clock_salary_array=array_filter(explode(',',$clock_salary));
-            $num=count($clock_salary_array);
+        $clock = [];
+        $month = [];
+        $clock_salary_array=array_filter(explode(',',$clock_salary));
+        $num=count($clock_salary_array);
+        //dd($clock_salary_array);
+        $coffset = 0;
+        $moffset = 0;
 
-            for($i=0;$i<$num;$i+=2){
-                for($j=$i+2;$j<$num;$j+=2)
-                {
-                    if($clock_salary_array[$i]==$clock_salary_array[$j]){
-                        $clock_salary_array[$j]="";
-                        $clock_salary_array[$j+1]="";
-                    }
-                }
+        for($i=0;$i<$num;$i+=3){
+            if($clock_salary_array[$i+1] == '時薪'){
+                $clock[$coffset]['name']= $clock_salary_array[$i];
+                $clock[$coffset]['type']= $clock_salary_array[$i+1];
+                $clock[$coffset]['amount'] = $clock_salary_array[$i+2];
+                $coffset++;
             }
-            $clock_salary_array=array_filter($clock_salary_array);
-            $clock_salary_array=explode(',',implode(',',$clock_salary_array));
-            //dd($clock_salary_array[0]);
-            $num=count($clock_salary_array);
-            
-            for ($i=0;$i<=$num-2;$i+=2){
-
-                $data=[
-                'member_sn'=>$membersn,
-                'member_name'=>$name,
-                'customer'=>$clock_salary_array[$i],
-                'salary'=>$clock_salary_array[$i+1],
-                ];
-
-                $store = ClockSalary::create($data);
+            else{
+                $month[$moffset]['name']= $clock_salary_array[$i];
+                $month[$moffset]['type']= $clock_salary_array[$i+1];
+                $month[$moffset]['amount'] = $clock_salary_array[$i+2];
+                $moffset++;
             }
         }
-        //return response($employee,Response::HTTP_OK);
+        $mnum=count($month);
+        $cnum=count($clock);
+
+        for ($i=0;$i<$cnum;$i++){
+            $data=[
+            'member_sn'=>$membersn,
+            'member_name'=>$name,
+            'customer'=>$clock[$i]['name'],
+            'salaryType'=>$clock[$i]['type'],
+            'salary'=>$clock[$i]['amount'],
+            ];
+
+            $count = DB::table('clock_salary')
+            ->where([
+                ['member_sn',$membersn],
+                ['customer',$clock[$i]['name']],
+            ])->count();
+
+            if($count == 0)
+            {    
+                $store = ClockSalary::create($data);
+            }
+            else{
+                DB::table('clock_salary')
+                ->where([
+                    ['member_sn',$membersn],
+                    ['customer',$clock[$i]['name']]
+                ])
+                ->update(
+                    ['salary'=>$clock[$i]['amount'],'salaryType'=>$clock[$i]['type']],
+                );
+            }
+        }
+
+        for ($i=0;$i<$mnum;$i++){
+            $data=[
+            'member_sn'=>$membersn,
+            'member_name'=>$name,
+            'customer'=>$month[$i]['name'],
+            'salaryType'=>$month[$i]['type'],
+            'salary'=>$month[$i]['amount'],
+            ];
+
+            $count = DB::table('clock_salary')
+            ->where([
+                ['member_sn',$membersn],
+                ['customer',$month[$i]['name']],
+            ])->count();
+
+            if($count == 0)
+            {    
+                $store = ClockSalary::create($data);
+            }
+            else{
+                DB::table('clock_salary')
+                ->where([
+                    ['member_sn',$membersn],
+                    ['customer',$month[$i]['name']]
+                ])
+                ->update(
+                    ['salary'=>$month[$i]['amount'],'salaryType'=>$month[$i]['type']],
+                );
+            }
+        }
+
         return redirect()->route('employee_desc');
     }
 
@@ -793,7 +797,7 @@ class EmployeeController extends Controller
      */
     public function destroy(Request $request,$Delete_id)
     {   
- 
+        DB::table('clock_salary')->where('member_sn',$Delete_id)->delete();
         $deleted=DB::table('employees')->where('member_sn','=',$Delete_id)->delete();
         //return response(null,Response::HTTP_NO_CONTENT);
         return redirect()->route('employee_desc');
@@ -806,18 +810,18 @@ class EmployeeController extends Controller
 
 
         $status=DB::table('employees')->where('member_sn','=',$Request_id)->get()->first();
-        $clockSalary_status=DB::table('clock_salary')->where('member_sn','=',$Request_id)->get()->first();
+        $clockSalary_status=DB::table('clock_salary')->where('member_sn','=',$Request_id)->get();
 
 
-        if($status->salary==null)
-        {$status=0;}
-        else
-        {$status=1;}
+        // if($status->salary==null)
+        // {$status=0;}
+        // else
+        // {$status=1;}
 
-        if(!isset($clockSalary_status->salary))
-        {$clockSalary_status=0;}
-        else
-        {$clockSalary_status=1;}
+        // if(!isset($clockSalary_status->salary))
+        // {$clockSalary_status=0;}
+        // else
+        // {$clockSalary_status=1;}
 
         //dd($Request_id,$employee,$customer,$organize);
         return view("edit_employee",["employees"=>$employee,"organizes"=>$organize,"customers"=>$customer,'status'=>$status,'clock_status'=>$clockSalary_status]);

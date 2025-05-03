@@ -89,13 +89,20 @@
 
                <div class="row mb-3">
                   <div class="col-md-auto align-self-center">選擇輸出員工：</div>
-                     <select class="col-md-auto align-self-center border-1" name="name">     
+                     <select class="col-md-auto align-self-center border-1" name="namelist" id="namelist">     
                         @foreach($employees as $employee )
                            <option value="{{$employee->id}}">{{$employee->member_name}}</option>
                         @endforeach
                      </select>
-                     <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
-                  <em>(下拉選單僅顯示"在職"人員)</em>
+                     {{--<input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
+                     <em>(下拉選單僅顯示"在職"人員)</em>--}}
+                     <div class="col col-md-auto border-0  py-1">
+                           月份：<input id="exmonth" class="pic border-1 mx-1" name="exmonth" type="month">
+                           人名：<input class="border-1 py-0 my-0" type="text" value="{{ old('exname') }}" id="exname" name="exname">
+                           <input type="button" value="儲存" onclick="example()" />
+                           <input type="button" value="刪除" onclick="example2()" />    
+                    </div>
+                    <textarea id="exlist" style="font-size:large" rows="3" cols="20" name="exlist" placeholder="同時選擇及輸入人名，以輸入人名優先優先。"></textarea>
                   </div>
 
                <div class="w-100"></div>  
@@ -202,3 +209,37 @@
 
 
 @endsection
+
+<script>
+
+
+    function example(){
+            var name = document.getElementById("exname").value;
+            var month = document.getElementById("exmonth").value;
+
+
+             if(name == ""){
+                var e = document.getElementById("namelist");
+                //var value = e.value;
+                var name = e.options[e.selectedIndex].text;
+             }
+
+            var textnode=document.createTextNode(name+','+month+',');
+             if (name!="" && month!=""){
+               var area=document.getElementById("exlist");
+               area.appendChild(textnode);
+             }
+             else
+             {alert('請輸入完整資訊')}
+
+    }
+
+    function example2(){
+            //var area=document.getElementById("text2");
+
+            //area.removeChild(area.firstElementChild);
+
+            const list = document.getElementById("exlist");
+            list.removeChild(list.lastChild);
+    }
+</script>

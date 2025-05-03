@@ -59,6 +59,7 @@ Route::POST('/customer/update', [App\Http\Controllers\CustomersController::class
 Route::POST('/customer/store',[App\http\Controllers\CustomersController::class,'store'])->name('customer.store');
 Route::get('/customer_desc', [App\Http\Controllers\CustomersController::class, 'show_result_desc'])->name('customer_desc');
 Route::get('/customer_asc', [App\Http\Controllers\CustomersController::class, 'show_result_asc'])->name('customer_asc');
+Route::get('/customer/requestName/{Request_name}', [App\Http\Controllers\CustomersController::class, 'requestName'])->name('customer.requestName');
 
 Route::get('/custome_group', [App\Http\Controllers\CustomersController::class, 'group_show'])->name('customer_group');
 Route::get('/customer_group/delete/{Delete_id}', [App\Http\Controllers\CustomersController::class, 'group_destroy'])->name('customer_group.delete');
@@ -74,6 +75,7 @@ Route::get('/customer_active/request/{Request_id}', [App\Http\Controllers\Custom
 Route::POST('/customer_active/update', [App\Http\Controllers\CustomersController::class, 'active_update'])->name('customer_active.update');
 Route::POST('/customer_active/store',[App\http\Controllers\CustomersController::class,'active_store'])->name('customer_active.store');
 Route::get('/customer_active_asc', [App\Http\Controllers\CustomersController::class, 'active_show_result_asc'])->name('customer_active_asc');
+
 
 Route::get('/user/delete/{Delete_id}', [App\Http\Controllers\Auth\UserController::class, 'destroy'])->name('user.delete');
 Route::get('/user_desc', [App\Http\Controllers\Auth\UserController::class, 'show_result_desc'])->name('user_desc');

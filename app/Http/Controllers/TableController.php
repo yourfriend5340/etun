@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Phpoffice\Phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf;
 use App\Services\AccessSalaryService;
+use Illuminate\Support\Facades\Redirect;
 
 class TableController extends Controller
 {
@@ -193,101 +194,150 @@ class TableController extends Controller
 
     //salary
     public function salary(Request $request){
+
+        $inputData = array_filter(explode(',',$request->input('exlist')));
+        $sheetCount = count($inputData)/2;
+        $offset = 0;
+        $sheeti=0;
+
         // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
-        
-        //設定預設格式
-        $spreadsheet->getActiveSheet()->getPageSetup()
-        ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
-        
-        // Retrieve the current active worksheet
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->getDefaultColumnDimension()->setWidth(20);//預設寬度
-        $sheet->getDefaultRowDimension()->setRowHeight(25);//預設高度
 
-        //$sheet->getPageMargins()->setTop(0.25);
-        //$sheet->getPageMargins()->setRight(0.25);        
-        //$sheet->getPageMargins()->setLeft(0.25);
-        //$sheet->getPageMargins()->setBottom(0.25);
+        while($sheeti<$sheetCount)
+        {
+            $name = $inputData[$offset];
+            $month = $inputData[$offset+1];
 
-        $styleCenterArray = [
-            'borders' => [
-                'allBorders' => [
-                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                'color' => ['argb' => '00000000'],
+            //設定預設格式
+            if($sheeti!=0){
+                $spreadsheet->createSheet();
+            }
+
+            $spreadsheet->setActiveSheetIndex($sheeti);
+            $sheet = $spreadsheet->getActiveSheet($sheeti);
+            $sheet->getDefaultColumnDimension()->setWidth(20);//預設寬度
+            $sheet->getDefaultRowDimension()->setRowHeight(25);//預設高度
+            $sheet->SetTitle($month.$name);
+            $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+            $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(22);//设置字体加粗大小
+            $sheet->getStyle('A2:D16')->getFont()->setBold(true)->setSize(16);//设置字体加粗大小
+
+            $styleCenterArray = [
+                'borders' => [
+                    'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '00000000'],
+                    ],
+                    'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                    ],
                 ],
-            ],
 
-            'alignment' => [
-                'horizontal'=> \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-            ]      
-        ];
+                'alignment' => [
+                    'horizontal'=> \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ]      
+            ];
 
-      $styleArray = [
-         'borders' => [
-            'allBorders' => [
-              'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-              'color' => ['argb' => '00000000'],
-            ],
-            'outline' => [
-               'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
-            ],
-         ],
-         
-            'alignment' => [
-               //'horizontal'=> \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
-               //'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
-         ]
-      ];
+            $styleArray = [
+                'borders' => [
+                    'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['argb' => '00000000'],
+                    ],
+                    'outline' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                    ],
+                ],
+                
+                    'alignment' => [
+                    //'horizontal'=> \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    //'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                ]
+            ];
 
-        $sheet->getStyle("A1")->applyFromArray($styleCenterArray);
-        $sheet->getStyle("A1:D16")->applyFromArray($styleArray);
-        $sheet->getStyle('C3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('C2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $query = DB::table('employees')->where('member_name',$name)->first();
+            $queryId = $query->member_sn;
+            $organizeName = $query->organize;
+            $queryMonth = date('m',strtotime($month));
+            $queryYear = date('Y',strtotime($month));
+            $TotalData = $this->accessSalaryService->countTotalTime($queryYear,$queryMonth,$queryId);
 
+            $querySalaryItem = DB::table('salary_items')->where([
+                ['month',$month],
+                ['empid',$queryId],
+            ])->orderby('mark','asc')->get();
 
-        $sheet->mergeCells('A1:D1');
-        for ($i=2;$i<=16;$i++){
-            $str="A$i:B$i";
-            $str2="C$i:D$i";
-            //dd($str);
-            $sheet->mergeCells($str);
-            $sheet->mergeCells($str2);
+            $sheet->setCellValue('A1', $organizeName.'      薪資明細表');        
+            $sheet->setCellValue('A2', '薪資計算月份');
+            $sheet->setCellValue('A3', '姓名');
+            $sheet->setCellValue('A4', '應領薪資');
+            $sheet->setCellValue('C2', $month);
+            $sheet->setCellValue('C3', $name);
+            $sheet->setCellValue('C4',$TotalData[1]);
+            
+            $sheet->setCellValue('A5','加項');
+            $startIndex = 6;
+            $addCountIndex = $startIndex;
+            for($i=0;$i<count($querySalaryItem);$i++)
+            {
+                if($querySalaryItem[$i]->mark == "add")
+                {
+                    $sheet->setCellValue('A'.$startIndex, '     '.$querySalaryItem[$i]->item);
+                    $sheet->setCellValue('C'.$startIndex,$querySalaryItem[$i]->amount);
+                    $startIndex++;
+                }
+            }
 
+            if($startIndex == 6)
+            {$startIndex++;}
+            $addCountIndexEnd = $startIndex-1;
+
+            $sheet->setCellValue('A'.$startIndex, '減項');
+            $startIndex++;//8
+            $subCountIndex = $startIndex;//8
+
+            for($i=0;$i<count($querySalaryItem);$i++)
+            {
+                if($querySalaryItem[$i]->mark == "sub")
+                {
+                    $sheet->setCellValue('A'.$startIndex, '     '.$querySalaryItem[$i]->item);
+                    $sheet->setCellValue('C'.$startIndex,$querySalaryItem[$i]->amount);
+                    $startIndex++;
+                }
+            }
+
+            if($subCountIndex == $startIndex)
+            {
+                $startIndex++;
+            }
+            $subCountIndexEnd = $startIndex-1;
+
+            $sum = '=C4+SUM(C'.$addCountIndex.':C'.$addCountIndexEnd.')-SUM(C'.$subCountIndex.':C'.$subCountIndexEnd.')';
+
+            $sheet->setCellValue('A'.$startIndex, '實際領取');
+            $sheet->setCellValue('C'.$startIndex, $sum);
+            $sheet->getStyle("A1:D$startIndex")->applyFromArray($styleArray);
+            $sheet->getStyle("A1:D3")->applyFromArray($styleCenterArray);
+            $sheet->getStyle('C3')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('C2')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+            $sheet->mergeCells('A1:D1');
+            for ($j=2;$j<=$startIndex;$j++){
+                $str="A$j:B$j";
+                $str2="C$j:D$j";
+                //dd($str);
+                $sheet->mergeCells($str);
+                $sheet->mergeCells($str2);
+            }
+
+            $sheeti++;
+            $offset = $offset + 2;
         }
 
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(22);//设置字体加粗大小
-        $sheet->getStyle('A2:D16')->getFont()->setBold(true)->setSize(16);//设置字体加粗大小
-        $sheet->setCellValue('A1', '萬宇股份有限公司');        
-        $sheet->setCellValue('A2', '薪資計算月份');
-        $sheet->setCellValue('A3', '姓名');
-        $sheet->setCellValue('A4', '薪資');
-        $sheet->setCellValue('A5', '禮金');
-        $sheet->setCellValue('A6', '津貼');
-        $sheet->setCellValue('A8', '應領');
-        $sheet->setCellValue('A9', '勞、健、團險');
-        $sheet->setCellValue('A10', '補充保費');
-        $sheet->setCellValue('A11', '行政費用');
-        $sheet->setCellValue('A12', '預支');
-        $sheet->setCellValue('A13', '救助金');
-        $sheet->setCellValue('A14', '服裝');
-        $sheet->setCellValue('A15', '實領');
-
-        $lastmonth = date("Y年m月",mktime(0, 0, date("Y"), date("m")-1));
-        $salary=DB::table('employees')->select('salary','member_name')->where('id','=',$request->input('name'))->get()->first();
-        $DB_salary=$salary->salary;
-        $name=$salary->member_name;
-        //dd($salary->salary);
-        $sheet->setCellValue('C2', $lastmonth);
-        $sheet->setCellValue('C3', $name);
-        $sheet->setCellValue('C4', $DB_salary);
-        $sheet->setCellValue('C15',($DB_salary-1000) );
-
-        $file_name = 'Salary_'.$name.'_'.date('Y_m_d');
         // Write a new .xlsx file
+        $file_name = 'Salary_'.date('Y_m_d');
         $writer = new Xlsx($spreadsheet);
-
 
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
@@ -477,6 +527,14 @@ class TableController extends Controller
 
     //試算薪資表匯入
     public function import_access_salary(Request $request){
+        $result = $this->accessSalaryService->import($request);
 
+        if($result !=1)
+        {
+            return back()->with('danger',$result);
+        }
+        else{
+            return back()->with('success','己成功匯入資料！');
+        }
     }
 }
