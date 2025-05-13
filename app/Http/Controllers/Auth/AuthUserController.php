@@ -65,7 +65,7 @@ class AuthUserController extends Controller
 
         $year = date("Y");
         $month = date("m");
-       $month = 4;
+
         $schedule=DB::table('schedules')
                     ->join('customers',function($join){
                         $join->on('schedules.customer_id','=','customers.customer_id');    
