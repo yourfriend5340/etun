@@ -8,9 +8,17 @@ use App\Models\User;
 use App\Models\Punch;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Announcements;
+use App\Services\AccessSalaryService;
 
 class AuthUserController extends Controller
 {
+
+    public function __construct(AccessSalaryService $accessSalaryService)
+    {
+        $this->accessSalaryService = $accessSalaryService;
+    }
+
     public function login(Request $request)
     {
         /*
@@ -36,7 +44,7 @@ class AuthUserController extends Controller
         $token = auth()->guard('app')->user()->createToken('API Token')->accessToken;
 
         $user=auth()->guard('app')->user()->only('member_sn','member_name','member_account');
-        
+ 
         $data=[
             'EmployeeID'=>$user['member_sn'],
             'name'=>$user['member_name'],
@@ -57,7 +65,7 @@ class AuthUserController extends Controller
 
         $year = date("Y");
         $month = date("m");
-       
+       $month = 4;
         $schedule=DB::table('schedules')
                     ->join('customers',function($join){
                         $join->on('schedules.customer_id','=','customers.customer_id');    
@@ -73,6 +81,7 @@ class AuthUserController extends Controller
                         ['month',$month+1]
                     ])
                     ->select('customers.firstname','schedules.*')
+                    ->orderby('schedules.month')
                     ->get()
                      ->map(function($schedule){
                          return[
@@ -146,7 +155,7 @@ class AuthUserController extends Controller
         for($i=0;$i<count($schedule);$i++){
             //過濾空欄位
             foreach($schedule[$i] as $k=>$v){
-                if($schedule[$i][$k]=="" || $v ==","){
+                if($schedule[$i][$k] == "" || $v == ","){
                     unset($schedule[$i][$k]);
                 }
             }
@@ -180,7 +189,7 @@ class AuthUserController extends Controller
                 {            
                     $class = $schedule[$i][$k];
                     if(strlen($class) == 1)
-                    {
+                    { 
                         array_push($schedule[$i][$class],$k);
                     }
                     else{
@@ -220,8 +229,136 @@ class AuthUserController extends Controller
             }
         }
 
+            $topAnn = Announcements::where('top',1)->first();
+                $announce_arr['TOP']['time']=date('Y-m-d H:i:s',strtotime($topAnn->created_at));
+                $announce_arr['TOP']['title']=$topAnn->title;
+                $announce_arr['TOP']['announce']=$topAnn->announcement;
+            
+                $announce= Announcements::where('top',0)->orderBy('id','desc')->limit(4)->get();
+            for($i=0;$i<4;$i++){
+                $announce_arr[$i]['time']=date('Y-m-d H:i:s',strtotime($announce[$i]->created_at));
+                $announce_arr[$i]['title']=$announce[$i]->title;
+                $announce_arr[$i]['announce']=$announce[$i]->announcement;
+            }
+            //dd($announce_arr);
+
+
+            //計算體檢日
+            $request=DB::table('employees')->select('Birthday','checkup')->where('member_sn','=',$user['member_sn'])->first(); 
+            $body_check=$request->checkup;
+            $Birthday=$request->Birthday;
+            $now=date("Y-m-d H:i:s");
+            $diff=strtotime($now)-strtotime($body_check);//現在離最後體檢日有幾秒
+            $age=strtotime($now)-strtotime($Birthday);
+
+            //體檢日差距換算
+            $years = floor($diff / (365*60*60*24));
+            $months = floor(($diff - $years * 365*60*60*24) / (30*60*60*24));
+            $days = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
+
+            //年紀換算
+            $age_years = floor($age / (365*60*60*24));
+            $age_months = floor(($age - $age_years * 365*60*60*24) / (30*60*60*24));
+
+            //$data1['message']="punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)";
+            //$data['person_announce']=null;
+            //dd($employeeID,'體檢日：'.$body_check,'今天：'.$now,'體檢差：'.$years.'年'.$months.'月'.$days.'天','年紀：'.$age_years.'歲'.$age_months.'月',$data['message']);
+
+            if($age_years<40){
+                if($years==4){
+                    if($months>=10){
+                        $data1=([
+                                'person_announcement'=>"您已 $age_years 歲,上次體檢日是： $body_check ,您必須每五年檢查一次,請在以下時間前線交體檢表: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                            }
+                }
+                if($years>4){
+                        $data1=([
+                                'person_announcement'=>"您已 $age_years 歲,上次體檢日是： $body_check ,您必須每五年檢查一次,請在以下時間前線交體檢表: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                }
+            }
+            if($age_years>=40 && $age_years<65){
+                if($years==2){
+                    if($months>=10){
+                        $data1=([
+                                'person_announcement'=>"您已 $age_years 歲,上次體檢日是： $body_check ,您必須每三年檢查一次,請在以下時間前線交體檢表: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                            }
+                }
+                if($years>2){
+                        $data1=([
+                                'person_announcement'=>"您已 $age_years 歲,上次體檢日是： $body_check ,您必須每三年檢查一次,請在以下時間前線交體檢表: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                }
+            }
+            if($age_years>=65){
+                if($years<1){
+                    if($months>=10){
+                        $data1=([
+                                'person_announcement'=>"您已 $age_years 歲,上次體檢日是： $body_check ,您必須每年檢查一次,請在以下時間前線交體檢表: ".date("Y-m-d",strtotime("+1 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                            }
+                }
+                if($years>=1){
+                        $data=([
+                                'person_announcement'=>"您已 $age_years 歲,上次體檢日是： $body_check 您必須每年檢查一次,請在以下時間前線交體檢表: ".date("Y-m-d",strtotime("+1 year",strtotime("$body_check"))),
+                                'annoucement'=>$announce_arr
+                                ]);
+                }
+            }
+        
+        //薪資資訊
+            $now = date('Y-m-d');
+            $month = date('Y-m',strtotime("-1 month",strtotime($now)));
+            $queryYear = date('Y',strtotime($month));
+            $queryMonth = date('m',strtotime($month));
+            $TotalData = $this->accessSalaryService->countTotalTime($queryYear,$queryMonth,$user['member_sn']);
+
+            $today = intval(date('d',strtotime($now)));
+
+            if(($TotalData[1] != 0) && ($today >= 10))
+            {
+                $data2['salary'] = $TotalData[1];
+                
+                $addORsub = DB::table('salary_items')->where([
+                    ['empid',$user['member_sn']],
+                    ['month',$month]
+                ])->orderby('mark')->get();
+
+                $subIndex = 0;
+                $addIndex = 0;
+                $countTotal = $TotalData[1];
+                for($i=0;$i<count($addORsub);$i++)
+                {   
+
+                    if($addORsub[$i]->mark == 'add'){
+                        $data2['add'][$addIndex]['item']=$addORsub[$i]->item;
+                        $data2['add'][$addIndex]['amount']=$addORsub[$i]->amount;
+                        $countTotal = $countTotal + $addORsub[$i]->amount;
+                        $addIndex++;
+                    }
+                    elseif($addORsub[$i]->mark == 'sub'){
+                        $data2['sub'][$subIndex]['item']=$addORsub[$i]->item;
+                        $data2['sub'][$subIndex]['amount']=$addORsub[$i]->amount;
+                        $countTotal = $countTotal - $addORsub[$i]->amount;
+                        $subIndex++;
+                    }
+
+                }
+                $data2['Total'] = $countTotal;
+            }
+            else{
+                $data2 = '尚未結算薪水';
+            }
+
         //return response(['user' => auth()->user()->only('name','email'), 'token' => $token]);
-        return response(['user' => $data, 'contactData'=>$contactArr,'ClassSchedule'=>$schedule,'token' => $token]);
+        return response(['user' => $data, 'contactData'=>$contactArr,'ClassSchedule'=>$schedule,'annoucements'=>$data1,'salary'=>$data2,'token' => $token]);
     }
 
 
@@ -232,13 +369,13 @@ class AuthUserController extends Controller
         //dd($res);
         if($res==true){
         return response()->json([
-            'message' => 'Successfully logged out'
+            'message' => 'Successfully'
         ]);
         }
 
         else{
         return response()->json([
-            'message' => 'faild to logged out'
+            'message' => 'faild,check your token'
         ]);
         }
     }
@@ -339,83 +476,6 @@ class AuthUserController extends Controller
         if($calculatedDistance<=300)//打卡誤差300公尺內，打卡並執行作業
         {   
 
-            for($i=0;$i<=4;$i++){
-                $announce_arr[$i]['time']=$announce[$i]->created_at;
-                $announce_arr[$i]['title']=$announce[$i]->title;
-                $announce_arr[$i]['announce']=$announce[$i]->announcement;
-            }
-            //dd($announce_arr);
-
-            //計算體檢日
-            $request=DB::table('employees')->select('Birthday','checkup')->where('member_sn','=',$employeeID)->first(); 
-            $body_check=$request->checkup;
-            $Birthday=$request->Birthday;
-
-            $diff=strtotime($now)-strtotime($body_check);//現在離最後體檢日有幾秒
-            $age=strtotime($now)-strtotime($Birthday);
-
-            //體檢日差距換算
-            $years = floor($diff / (365*60*60*24));
-            $months = floor(($diff - $years * 365*60*60*24) / (30*60*60*24));
-            $days = floor(($diff - $years * 365*60*60*24 - $months*30*60*60*24)/ (60*60*24));
-
-            //年紀換算
-            $age_years = floor($age / (365*60*60*24));
-            $age_months = floor(($age - $age_years * 365*60*60*24) / (30*60*60*24));
-
-            $data['message']="punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)";
-            //$data['person_announce']=null;
-            //dd($employeeID,'體檢日：'.$body_check,'今天：'.$now,'體檢差：'.$years.'年'.$months.'月'.$days.'天','年紀：'.$age_years.'歲'.$age_months.'月',$data['message']);
-
-            if($age_years<40){
-                if($years==4){
-                    if($months>=10){
-                        $data=(['message' => "punch in success!!!",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 5 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
-                                'annoucement'=>$announce_arr
-                                ]);
-                            }
-                }
-                if($years>4){
-                        $data=(['message' => "punch in success!!!",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 5 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
-                                'annoucement'=>$announce_arr
-                                ]);
-                }
-            }
-            if($age_years>=40 && $age_years<65){
-                if($years==2){
-                    if($months>=10){
-                        $data=(['message' => "punch in success!!!",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 3 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
-                                'annoucement'=>$announce_arr
-                                ]);
-                            }
-                }
-                if($years>2){
-                        $data=(['message' => "punch in success!!!",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check per 3 years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
-                                'annoucement'=>$announce_arr
-                                ]);
-                }
-            }
-            if($age_years>=65){
-                if($years<1){
-                    if($months>=10){
-                        $data=(['message' => "punch in success!!!",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+3 year",strtotime("$body_check"))),
-                                'annoucement'=>$announce_arr
-                                ]);
-                            }
-                }
-                if($years>=1){
-                        $data=(['message' => "punch in success!!!",
-                                'person_announcement'=>"you are $age_years old,last check up date is $body_check ,you have to check every years,please check and hand back the health examination before: ".date("Y-m-d",strtotime("+5 year",strtotime("$body_check"))),
-                                'annoucement'=>$announce_arr
-                                ]);
-                }
-            }
-
             //寫入打卡記錄
             $check=Punch::where([
                  ['employee_id','=',$employeeID],
@@ -441,7 +501,7 @@ class AuthUserController extends Controller
                 ];
                 //dd($DBdata);
                 $punch= Punch::create($DBdata);
-                return response()->json([$data],200);
+                return response()->json(['success'],200);
             }
             else{
                 return "打卡失敗，您已經打過卡";
@@ -623,4 +683,6 @@ class AuthUserController extends Controller
             return '打卡失敗，請在你工作所在地打卡!';
         }
     }
+
+
 }

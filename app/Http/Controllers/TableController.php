@@ -5,13 +5,16 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Customer;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Redirect;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use Phpoffice\Phpspreadsheet\src\PhpSpreadsheet\Writer\Pdf\Mpdf;
 use App\Services\AccessSalaryService;
-use Illuminate\Support\Facades\Redirect;
+use App\Services\AccessTableService;
+use App\Services\ConvertPdfService;
 
 class TableController extends Controller
 {
@@ -20,8 +23,16 @@ class TableController extends Controller
 
         $employee = Employee::where('status','在職')->orderBy('id','desc')->get();
         $customer = Customer::orderBy('customer_id','asc')->get();
-        
-        return view('table',['employees'=>$employee,'customers'=>$customer]);
+        $leave = DB::table('twotime_table')
+            ->join('employees','employees.member_sn','twotime_table.empid')
+            ->where([
+                ['twotime_table.status','Y'],
+                ['twotime_table.type','請假']
+            ])
+            ->orderby('twotime_table.id')
+            ->get(array('twotime_table.*','employees.member_name'));
+
+        return view('table',['employees'=>$employee,'customers'=>$customer,'leaves'=>$leave]);
     }
 
     //離職
@@ -103,6 +114,18 @@ class TableController extends Controller
 
     //請假
     public function leave(Request $request){
+
+        $query = DB::table('twotime_table')->where('id',intval($request->id))->first();
+        
+        //$path = $query->filePath;
+        $path = '/請假/444/請假單_444_2025-04-30_18:00.pdf';
+        $fileName = '請假單.pdf';
+        $mimeType = Storage::mimeType($path);
+        $headers = [['Content-Type' => $mimeType]];
+        
+        return Storage::download($path, $fileName, $headers);
+    
+        /*
     // Create a new Spreadsheet object
         $spreadsheet = new Spreadsheet();
         
@@ -190,6 +213,7 @@ class TableController extends Controller
 
         // Save the new .xlsx file
         $writer->save('php://output');  
+    */
     }
 
     //salary
@@ -326,7 +350,7 @@ class TableController extends Controller
             for ($j=2;$j<=$startIndex;$j++){
                 $str="A$j:B$j";
                 $str2="C$j:D$j";
-                //dd($str);
+
                 $sheet->mergeCells($str);
                 $sheet->mergeCells($str2);
             }
@@ -479,7 +503,7 @@ class TableController extends Controller
 
         // Save the new .xlsx file
         $writer->save('php://output');  
-
+        exit;
         //檔案讀取器
         //$reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
         //$reader->setReadDataOnly(true);
@@ -507,14 +531,104 @@ class TableController extends Controller
         // $writer->save('php://output');
     }
 
-    //注入service
+    public function request($id){
+
+        $request = DB::table('twotime_table')
+                    ->join('employees','employees.member_sn','twotime_table.empid')
+                    ->where('twotime_table.id',$id)
+                    ->orderby('twotime_table.id')
+                    ->first((array(('twotime_table.*'),'employees.member_name')));
+
+        $todaySchedule =[];
+        $yesterdaySchedule =[];
+        $empid = $request->empid;
+        $startTime = $request->start;
+        $endTime = $request->end;
+
+        $year = date('Y',strtotime($startTime));
+        $month = date('m',strtotime($startTime));
+        $day = intval(date('d',strtotime($startTime)));
+        $queryDay = "day$day";
+        
+        $requestSchedule = DB::table('schedules')
+            ->join('employees','schedules.employee_id','employees.member_sn')
+            ->join('customers','schedules.customer_id','customers.customer_id')
+            ->where([
+                ['year',$year],
+                ['month',$month],
+                ['employee_id',$empid],
+                [$queryDay,'!=',""]
+            ])->get()->toarray();
+
+        for($i=0;$i<count($requestSchedule);$i++){
+            $class = $requestSchedule[$i]->$queryDay;
+            $cus = $requestSchedule[$i]->firstname;
+
+            
+            for($j=0;$j<strlen($class);$j++)
+            {
+                $subClass = substr($class,$j,1);
+
+                $classEnd = $subClass."_end";
+                $start = $requestSchedule[$i]->$subClass;
+                $end = $requestSchedule[$i]->$classEnd;
+
+                $todaySchedule[$i][$j]['customer'] = $cus;
+                $todaySchedule[$i][$j]['class'] = $subClass;
+                $todaySchedule[$i][$j]['start'] = $year.'-'.$month.'-'.$day.' '.$start;
+                $todaySchedule[$i][$j]['end'] = $year.'-'.$month.'-'.$day.' '.$end;
+            }
+        }
+        $yesterdayYear = date('Y',strtotime("-1 day",strtotime($startTime)));
+        $yesterdayDate = intval(date('d',strtotime("-1 day",strtotime($startTime))));
+        $yesterdayMonth = date('m',strtotime("-1 day",strtotime($startTime)));
+        $queryYesterdayDay = "day$yesterdayDate";
+
+        $requestSchedule = DB::table('schedules')
+            ->join('employees','schedules.employee_id','employees.member_sn')
+            ->join('customers','schedules.customer_id','customers.customer_id')
+            ->where([
+                ['year',$yesterdayYear],
+                ['month',$yesterdayMonth],
+                ['employee_id',$empid],
+                [$queryYesterdayDay,'!=',""]
+            ])->get()->toarray();
+
+        //巢狀array，第一層是幾個客戶
+        for($i=0;$i<count($requestSchedule);$i++){
+            $class = $requestSchedule[$i]->$queryDay;
+            $cus = $requestSchedule[$i]->firstname;
+
+            //該客戶幾個班
+            for($j=0;$j<strlen($class);$j++)
+            {
+                $subClass = substr($class,$j,1);
+
+                $classEnd = $subClass."_end";
+                $start = $requestSchedule[$i]->$subClass;
+                $end = $requestSchedule[$i]->$classEnd;
+
+                $yesterdaySchedule[$i][$j]['customer'] = $cus;
+                $yesterdaySchedule[$i][$j]['class'] = $subClass;
+                $yesterdaySchedule[$i][$j]['start'] = $yesterdayYear.'-'.$yesterdayMonth.'-'.$yesterdayDate.' '.$start;
+                $yesterdaySchedule[$i][$j]['end'] = $yesterdayYear.'-'.$yesterdayMonth.'-'.$yesterdayDate.' '.$end;
+            }
+        }
+
+        //dd($request,$todaySchedule,$yesterdaySchedule);
+        return view("edit_table",["results"=>$request,"today"=>$todaySchedule,"yesterday"=>$yesterdaySchedule]);
+    }
+
+
+
+
+
+    //構造注入service
     /** @var AccessSalaryService */
     protected $accessSalaryService;
-
     /**
-     * UserController constructor.
-     * @param AccessSalaryService $emailService
-     */
+     * @param AccessSalaryService 
+    */
     public function __construct(AccessSalaryService $accessSalaryService)
     {
         $this->accessSalaryService = $accessSalaryService;
@@ -537,4 +651,44 @@ class TableController extends Controller
             return back()->with('success','己成功匯入資料！');
         }
     }
+
+    //方法注入service
+    /** @var AccessTableService */
+    protected $accessTableService;
+    /**
+     * @param AccessTableService $emailService
+     */
+    //API處理請假單
+    public function leaveAPI(AccessTableService $accessTableService,Request $request) {
+        $result = $accessTableService->leaveStore($request);
+        return response()->json(['message' => $result]);
+    }
+
+    //API處理離職單
+    public function resignAPI(AccessTableService $accessTableService,Request $request){
+        $result  = $accessTableService->resignStore($request);
+        return response()->json(['message' => $result]);
+    }
+
+    public function updateStatus($id,$status,ConvertPdfService $convertPdfService){
+
+        $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
+        $signPath = storage_path('app').'/'.$signPath[0];
+
+        if($status == 'Y')
+        {
+            $result = $convertPdfService->convertTable($id);
+            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+        }
+        elseif($status == 'N'){
+            $result = "";
+            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+        }
+        if(is_file($signPath)){
+            unlink($signPath);
+        }
+
+       return redirect()->route("home");
+    }
+
 }

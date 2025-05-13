@@ -5,73 +5,103 @@
 
 <div class="row mx-1">
     <div class="row pt-3 justify-content-between">
-        <div class="col-7 col-lg-7">
+        <div class="col-6">
             <h2 class="h_one my-0 p-1">重要公告</h2>
 
-               
-                    <table class="table table-bordered table-striped table-hover text-center align-middle">
+            <table class="table table-bordered table-striped table-hover text-center align-middle">
 
-                        <thead>
-                            <tr>
-                            <td>ID</td>
-                            <td>標題</td>
-                            <td>內文</td>
-                            <td>時間</td>
-                            </tr>
-                        </thead>
-                    
-                        <tbody>  
-                            <tr>
-                                    <td scope="top">{{$topAnn->id}}</td>
-                                    <td scope="top" width=200px>{{$topAnn->title}}</td>
-                                    <td scope="top" class="text-start textcontrol">{{$topAnn->announcement}}</td>
-                                    <td scope="top">{{$topAnn->created_at}}</td>
-                            </tr>
-                            @foreach($announcements as $announcement )
-                                <tr>
-                                    <td>{{$announcement->id}}</td>
-                                    <td>{{$announcement->title}}</td>
-                                    <td class="text-start textcontrol">{{$announcement->announcement}}</td>
-                                    <td>{{$announcement->created_at}}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-  
+                <thead>
+                    <tr>
+                    <td>ID</td>
+                    <td>標題</td>
+                    <td>內文</td>
+                    <td>時間</td>
+                    </tr>
+                </thead>
+            
+                <tbody>  
+                    <tr>
+                            <td scope="top">{{$topAnn->id}}</td>
+                            <td scope="top" width=200px>{{$topAnn->title}}</td>
+                            <td scope="top" class="text-start textcontrol">{{$topAnn->announcement}}</td>
+                            <td scope="top">{{$topAnn->created_at}}</td>
+                    </tr>
+                    @foreach($announcements as $announcement )
+                        <tr>
+                            <td>{{$announcement->id}}</td>
+                            <td>{{$announcement->title}}</td>
+                            <td class="text-start textcontrol">{{$announcement->announcement}}</td>
+                            <td>{{$announcement->created_at}}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
         </div>
 
-        <div class="col-5 col-lg-5">
-                <h2 class="h_two my-0 p-1">表單管理</h2>
+        <div class="col-6">
+            <h2 class="h_two my-0 p-1">請假審核</h2>
 
-                    <table class="table table-bordered table-striped table-hover text-center align-middle">
+            <table class="table table-bordered table-striped table-hover text-center align-middle">
 
-                        <thead>
-                            <tr>
-                            <td>ID</td>
-                            <td>標題</td>
-                            <td>內文</td>
-                            <td>時間</td>
-                            </tr>
-                        </thead>
+                <thead>
+                    <tr>
+                    <td>ID</td>
+                    <td>類別</td>
+                    <td>申請人</td>
+                    <td>起始時間</td>
+                    <td>結束時間</td>
+                    <td>原由</td>
+                    <td>審核</td>
+                    </tr>
+                </thead>
 
-                        <tbody>  
-                            {{--@foreach($announcements as $announcement )
+                <tbody>  
+                    @can('group_admin')
+                        @if (isset($leaves))
+                            @foreach($leaves as $l )
                                 <tr>
-                                    <td>{{$announcement->id}}</td>
-                                    <td>{{$announcement->title}}</td>
-                                    <td class="text-start">{{$announcement->announcement}}</td>
-                                    <td>{{$announcement->created_at}}</td>
+                                    <td>{{$l->id}}</td>
+                                    <td>{{$l->type}}</td>
+                                    <td>{{$l->member_name}}</td>
+
+                                    <td>{{$l->start}}</td>
+                                    @if (!is_null($l->end))
+                                        <td>{{$l->end}}</td>
+                                    @else
+                                        <td> - </td>
+                                    @endif
+                                    <td>{{$l->reason}}</td>
+                                    <td>
+                                        <input class="btn btn-light btn-md active" id="yes" type="button" value="審核" onclick="submit_request({{$l->id}})">
+                                    </td>
                                 </tr>
-                            @endforeach--}}
-                        </tbody>
-                    </table>
- 
-            
+                            @endforeach
+                        @else
+                            <tr>
+                                <td colspan="7">目前沒有需要審核的申請</td>
+                            </tr>
+                        @endif
+
+                    @else
+                        <tr>
+                            <td colspan="7">您沒有權限審核</td>
+                        </tr>
+                    @endcan    
+                </tbody>
+            </table>
+            @can('group_admin')
+                <div class="d-inline-flex p-2 bd-highlight">
+                    {{ $leaves->links() }}  
+                </div>
+            @endcan
         </div>
     </div>    
 
+</div>
+
+
     <div class="row pt-3 d-flex">
-        <div class="col-12 col-lg-12">
+        <div class="col-12">
             <h2 class="h_three my-0 p-1">巡邏紀錄</h2>
         </div>
 
@@ -146,4 +176,15 @@
         //window.open(path, '_blank', 'width=600,height=400');
         //window.event.returnValue=false;
     }
+
+    function submit_request(id) {
+        if (id !='')
+        {
+            window.location.href="/table/request/"+id;
+            //window.event.returnValue=false;
+        }    
+    }
+
+
+    
 </script>

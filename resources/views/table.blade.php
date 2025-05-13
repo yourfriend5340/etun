@@ -40,12 +40,12 @@
                <div class="row mb-3">
                   <div class="col-md-auto align-self-center">選擇輸出員工：</div>
                      <select class="col-md-auto align-self-center border-1" name="id">     
-                        @foreach($employees as $employee )
-                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
+                        @foreach($leaves as $leave )
+                           <option value="{{$leave->id}}">{{$leave->member_name.$leave->start.'至'.$leave->end}}</option>
                         @endforeach 
                      </select>
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
-                     <em>(下拉選單僅顯示"在職"人員)</em>
+                     <em>(下拉選單僅顯示"已通過審核"之人員)</em>
                   </div>
 
                <div class="w-100"></div>  

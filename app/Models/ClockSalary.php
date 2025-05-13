@@ -16,6 +16,7 @@ class ClockSalary extends Model
         'member_name',
         'customer',
         'salary',
-        'salaryType'
+        'salaryType',
+        'hour'
     ];
 }

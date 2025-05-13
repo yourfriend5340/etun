@@ -2,7 +2,6 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
 use App\Http\Controllers\EmployeeController;
 /*
 |--------------------------------------------------------------------------
@@ -33,4 +32,6 @@ Route::POST('/patrol', [App\Http\Controllers\PatrolRecordController::class, 'api
 Route::POST('/patrolPIC', [App\Http\Controllers\PatrolRecordController::class, 'api_store_PIC']);
 Route::POST('/punchin', [App\Http\Controllers\Auth\AuthUserController::class, 'api_PunchIn']);
 Route::POST('/punchout', [App\Http\Controllers\Auth\AuthUserController::class, 'api_PunchOut']);
+Route::POST('/leave', [App\Http\Controllers\TableController::class, 'leaveAPI']);
+Route::POST('/resign', [App\Http\Controllers\TableController::class, 'resignAPI']);
 });

@@ -40,11 +40,19 @@ class HomeController extends Controller
         ->where('id','>',$request_id)
         ->orderBy('id','desc')
         ->get();
+
+        $leave = DB::table('twotime_table')
+                ->join('employees','twotime_table.empid','employees.member_sn')
+                ->where('twotime_table.status', null)
+                ->orderby('twotime_table.id')
+                ->paginate(5,(array(('twotime_table.*'),'employees.member_name')));
         
-        //dd($patrol);
-        return view("home",["employees"=>$employee,"topAnn"=>$topAnn,"announcements"=>$announcement,'patrol_records'=>$patrol]);
-
-
+        return view("home",["employees"=>$employee,
+                            "topAnn"=>$topAnn,
+                            "announcements"=>$announcement,
+                            'patrol_records'=>$patrol,
+                            'leaves'=>$leave,
+                        ]);
     }
     public function show()
     {

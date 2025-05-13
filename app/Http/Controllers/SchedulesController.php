@@ -909,88 +909,84 @@ class SchedulesController extends Controller
                      ['month', '=', $array[0][1][13]],
                      ])->count();
  
-                  if ($count==0){
+                  if ($count==0)
+                  {
 
                   for ($x=4;$x<=13;$x++)
                   {
-                     if ($array[0][$x][1]!=null){
-                     $empId=DB::table('employees')->select('member_sn')->where('member_name','=',$array[0][$x][1])->first();
-                     $company_id=$array[0][0][1];
-                     $customer_id=$cusId->customer_id;
-                     $employee_id=$empId->member_sn;
-                     $year=$array[0][1][10];
-                     $month=$array[0][1][13];
-                     
-                     for ($y=2;$y<=32;$y++)
+                     if ($array[0][$x][1]!=null)
                      {
-                        if($array[0][$x][$y]!=null)
-                           {${'day'.$y-1} = $array[0][$x][$y];}
-                        else
-                           {${'day'.$y-1}="";}
-                           
-                           //print(('day'.$y-1)."_is_".${'day'.$y-1}."<br>");
+                        $empId=DB::table('employees')->select('member_sn')->where('member_name','=',$array[0][$x][1])->first();
+                        $company_id=$array[0][0][1];
+                        $customer_id=$cusId->customer_id;
+                        $employee_id=$empId->member_sn;
+                        $year=$array[0][1][10];
+                        $month=$array[0][1][13];
+                        
+                        for ($y=2;$y<=32;$y++)
+                        {
+                           if($array[0][$x][$y]!=null)
+                              {${'day'.$y-1} = $array[0][$x][$y];}
+                           else
+                              {${'day'.$y-1}="";}
+                              
+                        }
+//dd($array);
+                        $data = [
+                           'customer_id'=>$customer_id,
+                           'employee_id'=>$employee_id,
+                           'year' =>$year,
+                           'month' =>$month,
+                           'day1'=> ${'day1'},
+                           'day2'=> ${'day2'},
+                           'day3'=> ${'day3'},
+                           'day4'=> ${'day4'},
+                           'day5'=> ${'day5'},
+                           'day6'=> ${'day6'},
+                           'day7'=> ${'day7'},
+                           'day8'=> ${'day8'},
+                           'day9'=> ${'day9'},
+                           'day10'=> ${'day10'},
+                           'day11'=> ${'day11'},
+                           'day12'=> ${'day12'},
+                           'day13'=> ${'day13'},
+                           'day14'=> ${'day14'},
+                           'day15'=> ${'day15'},
+                           'day16'=> ${'day16'},
+                           'day17'=> ${'day17'},
+                           'day18'=> ${'day18'},
+                           'day19'=> ${'day19'},
+                           'day20'=> ${'day20'},
+                           'day21'=> ${'day21'},
+                           'day22'=> ${'day22'},
+                           'day23'=> ${'day23'},
+                           'day24'=> ${'day24'},
+                           'day25'=> ${'day25'},
+                           'day26'=> ${'day26'},
+                           'day27'=> ${'day27'},
+                           'day28'=> ${'day28'},
+                           'day29'=> ${'day29'},
+                           'day30'=> ${'day30'},
+                           'day31'=> ${'day31'},
+
+                        ];
+
+                        for ($i=16;$i<=20;$i++)
+                        {
+                           if($array[0][$i][23] !="" && $array[0][$i][24] != "" && $array[0][$i][27] != "")
+                           {
+                              $data[$array[0][$i][23]]       = $array[0][$i][24];
+                              $data[$array[0][$i][23].'_end'] = $array[0][$i][27];
+                           }
+                           if($array[0][$i][29] !="" && $array[0][$i][30] != "" && $array[0][$i][33] != "")
+                           {
+                              $data[$array[0][16][29]] = $array[0][16][30];
+                              $data[$array[0][16][29].'_end'] = $array[0][16][33];
+                           }
+                        }
+           
+                        $schedule::create($data);
                      }
-//dd($array,$stack,$unlock);
-                      $schedule::create([
-                         'customer_id'=>$customer_id,
-                         'employee_id'=>$employee_id,
-                         'year' =>$year,
-                         'month' =>$month,
-                         'day1'=> ${'day1'},
-                         'day2'=> ${'day2'},
-                         'day3'=> ${'day3'},
-                         'day4'=> ${'day4'},
-                         'day5'=> ${'day5'},
-                         'day6'=> ${'day6'},
-                         'day7'=> ${'day7'},
-                         'day8'=> ${'day8'},
-                         'day9'=> ${'day9'},
-                         'day10'=> ${'day10'},
-                         'day11'=> ${'day11'},
-                         'day12'=> ${'day12'},
-                         'day13'=> ${'day13'},
-                         'day14'=> ${'day14'},
-                         'day15'=> ${'day15'},
-                         'day16'=> ${'day16'},
-                         'day17'=> ${'day17'},
-                         'day18'=> ${'day18'},
-                         'day19'=> ${'day19'},
-                         'day20'=> ${'day20'},
-                         'day21'=> ${'day21'},
-                         'day22'=> ${'day22'},
-                         'day23'=> ${'day23'},
-                         'day24'=> ${'day24'},
-                         'day25'=> ${'day25'},
-                         'day26'=> ${'day26'},
-                         'day27'=> ${'day27'},
-                         'day28'=> ${'day28'},
-                         'day29'=> ${'day29'},
-                         'day30'=> ${'day30'},
-                         'day31'=> ${'day31'},
-                         $array[0][16][23]       => $array[0][16][24],
-                         $array[0][16][23].'_end'=> $array[0][16][27],
-                         $array[0][17][23]       => $array[0][17][24],
-                         $array[0][17][23].'_end'=> $array[0][17][27],
-                         $array[0][18][23]       => $array[0][18][24],
-                         $array[0][18][23].'_end'=> $array[0][18][27],
-                         $array[0][19][23]       => $array[0][19][24],
-                         $array[0][19][23].'_end'=> $array[0][19][27],
-                         $array[0][20][23]       => $array[0][20][24],
-                         $array[0][20][23].'_end'=> $array[0][20][27],
-                         
-                         $array[0][16][28]=> $array[0][16][30],
-                         $array[0][16][28].'_end'=> $array[0][16][33],
-                         $array[0][17][28]=> $array[0][17][30],
-                         $array[0][17][28].'_end'=> $array[0][17][33],
-                         $array[0][18][28]=> $array[0][18][30],
-                         $array[0][18][28].'_end'=> $array[0][18][33],
-                         $array[0][19][28]=> $array[0][19][30],
-                         $array[0][19][28].'_end'=> $array[0][19][33],
-                         $array[0][20][28]=> $array[0][20][30],
-                         $array[0][20][28].'_end'=> $array[0][20][33],
-                         ]
-                    );
-                  }
                   }
                    return back()->with('success', '匯入資料成功，Import successfully!');
                }
