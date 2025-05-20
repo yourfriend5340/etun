@@ -47,7 +47,7 @@ class Handler extends ExceptionHandler
             }  
         
             if ($exception instanceof AuthenticationException) {
-                return response()->json(['message' => 'faild to logged out,please check your token']);
+                return response()->json(['message' => 'please check your token']);
             }
             
             return parent::render($request, $exception);
@@ -57,7 +57,7 @@ class Handler extends ExceptionHandler
 
             if ($request->is('api/*')) {
                 //return response()->json(['error' => 'Not Found'], 404);
-                return response()->json(['message' => 'faild to logged out,please check your token,and use Bearer Token'],401);
+                return response()->json(['message' => 'please check your token,and use Bearer Token'],401);
             }
         }
         

@@ -44,8 +44,8 @@
                            <option value="{{$leave->id}}">{{$leave->member_name.$leave->start.'至'.$leave->end}}</option>
                         @endforeach 
                      </select>
-                     <input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
-                     <em>(下拉選單僅顯示"已通過審核"之人員)</em>
+                     <!--<input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">-->
+                     <em>(下拉選單僅顯示一年內，"已通過審核"之人員)</em>
                   </div>
 
                <div class="w-100"></div>  

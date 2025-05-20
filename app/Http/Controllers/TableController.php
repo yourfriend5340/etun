@@ -19,8 +19,12 @@ use App\Services\ConvertPdfService;
 class TableController extends Controller
 {
     public function index(Request $request){
-        $limit = $request->limit ?? 20;
 
+        $now = date('Y-m-d');
+        $lastYear = date('Y-m-d',strtotime('-1 year',strtotime($now)));
+        //$limit = $request->limit ?? 20;
+        //dd($now,$lastYear,$limit);
+        
         $employee = Employee::where('status','在職')->orderBy('id','desc')->get();
         $customer = Customer::orderBy('customer_id','asc')->get();
         $leave = DB::table('twotime_table')
@@ -29,6 +33,7 @@ class TableController extends Controller
                 ['twotime_table.status','Y'],
                 ['twotime_table.type','請假']
             ])
+            ->whereBetween('twotime_table.start',array($lastYear,$now))
             ->orderby('twotime_table.id')
             ->get(array('twotime_table.*','employees.member_name'));
 
@@ -615,8 +620,10 @@ class TableController extends Controller
             }
         }
 
+        $empList = DB::table('employees')->where('status','在職')->get();
+
         //dd($request,$todaySchedule,$yesterdaySchedule);
-        return view("edit_table",["results"=>$request,"today"=>$todaySchedule,"yesterday"=>$yesterdaySchedule]);
+        return view("edit_table",["results"=>$request,"today"=>$todaySchedule,"yesterday"=>$yesterdaySchedule,"empList"=>$empList]);
     }
 
 

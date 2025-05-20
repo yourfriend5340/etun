@@ -8,7 +8,7 @@
 
         <p class="p-test mt-1 mb-5 fs-3">員工申請資料審核</p>
         <h5>員工申請內容：</h5>
-        <table class="table table-bordered table-striped table-hover text-center align-middle">
+        <table class="table table-bordered table-striped table-hover text-center align-middle" id="leaveTable">
 
             <thead>
                 <tr>
@@ -24,21 +24,19 @@
             </thead>
         
             <tbody>  
-                
-                    <tr>
-                        <td>{{$results->id}}</td>
-                        <td>{{$results->type}}</td>
-                        <td>{{$results->empid}}</td>
-                        <td>{{$results->member_name}}</td>
-                        <td>{{$results->start}}</td>
-                        <td>{{$results->end}}</td>
-
-                        <td>{{$results->reason}}</td>
-                        <td>
-                            <input class="btn btn-light btn-md active" id="yes" type="button" value="同意" onclick="submitY({{$results->id}})">
-                            <input class="btn btn-light btn-md active" id="no" type="button" value="否決" onclick="submitN({{$results->id}})">
-                        </td>
-                    </tr>
+                <tr>
+                    <td>{{$results->id}}</td>
+                    <td>{{$results->type}}</td>
+                    <td>{{$results->empid}}</td>
+                    <td>{{$results->member_name}}</td>
+                    <td>{{$results->start}}</td>
+                    <td>{{$results->end}}</td>
+                    <td>{{$results->reason}}</td>
+                    <td>
+                        <input class="btn btn-light btn-md active" id="yes" type="button" value="同意" onclick="submitY({{$results->id}})">
+                        <input class="btn btn-light btn-md active" id="no" type="button" value="否決" onclick="submitN({{$results->id}})">
+                    </td>
+                </tr>
            
             </tbody>
         </table>
@@ -62,14 +60,10 @@
  
                     for($i=0;$i<count($yesterday);$i++)
                     {
-
                         for($j=0;$j<count($yesterday[$i]);$j++)
                         {
                             echo '<tr>';
-                            
-                       
                             echo '<td>'.$yesterday[$i][$j]['customer'].'</td>';
-                            
                             echo '<td>'.$yesterday[$i][$j]['class'].'</td>';
                             echo '<td>'.$yesterday[$i][$j]['start'].'</td>';
                             echo '<td>'.$yesterday[$i][$j]['end'].'</td>';   
@@ -88,10 +82,7 @@
                         for($j=0;$j<count($today[$i]);$j++)
                         {
                             echo '<tr>';
-                            
-
                             echo '<td>'.$today[$i][$j]['customer'].'</td>';
-                            
                             echo '<td>'.$today[$i][$j]['class'].'</td>';
                             echo '<td>'.$today[$i][$j]['start'].'</td>';
                             echo '<td>'.$today[$i][$j]['end'].'</td>';   
@@ -107,12 +98,26 @@
 
     <div class="row mx-1 mt-5">
         <h5>代理人選取：</h5>
-        ... 
+            <div class="col-md-2 align-self-center">
+                <label for="selectId">選擇代班員工：</label>
+                <select class="selectName align-self-center border-1" id="selectId" name="selectId" onchange="select_change()">   
+                <option value="">--請選擇--</option>
+                @foreach($empList as $e )
+                    <option value="{{$e->member_sn}}">{{$e->member_name}}</option>
+                @endforeach 
+                </select>
+                <!--<input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">-->
+                <em>(下拉選單僅顯示"在職"人員)</em>
+            </div>
     </div>
+
+                
+    <div class="row mx-1 mt-5" id="result"></div>
 @endsection
 
 
 <script>
+
     function submitY(id)
     {
         if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？')){
@@ -127,5 +132,62 @@
             window.location.href="/table/update/id=" + id + "&status=N";
         }
     }
+
+
+    function select_change(id){
+        var userSelect = document.getElementById('selectId');
+        var index = userSelect.selectedIndex;
+        var mem_name = userSelect.options[index].text;
+        var mem_id = userSelect.options[index].value;
+
+        var tbobj = document.getElementById('leaveTable');
+        var time = tbobj.rows[1].cells[4].innerHTML;
+        
+        if(mem_id != "")
+        {
+            if(confirm('將開始檢查  ' + mem_name + '  該日是否能排班？'))
+            {
+                ajaxRequestSchedule(mem_id,time);
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            return false;
+        }
+
+    }    
+
+    function ajaxRequestSchedule(id,time){
+
+        $.ajaxSetup({
+        headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
+        });
+
+        $.ajax({
+            type:'POST',
+                dataType: 'json',
+            url:'/ajaxRequestSchedule',
+            data:{  cid:id,
+                    ctime:time
+                },
+
+            success:function(data) {
+               //$("#data").html(data.msg);
+               //alert("ID是:" + id + "\n狀態:" + status);
+               //console.log(data);
+                //var el = document.getElementById("result");
+                //el.innerHTML = "<h1>" + data.result->employee_id + "</h1>";
+alert(JSON.stringify(data));
+               
+            },
+            error: function (msg) {
+               console.log(msg);
+               var errors = msg.responseJSON;
+            }
+         });
+    }
+
 </script>
 

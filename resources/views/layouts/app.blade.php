@@ -200,16 +200,6 @@
                         </ul>
                     </div>
                     @endcan    
-
-                    <div class="dropdown my-1 px-0">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" style="background-color: #e3f2fd;">
-                            排班與巡邏查詢
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
-                            <li><a class="dropdown-item" href="{{route('patrol_record')}}">巡邏紀錄查詢</a></li>
-                            <li><a class="dropdown-item" href="{{route('schedule')}}">排班與巡邏匯入匯出</a></li>
-                        </ul>
-                    </div>
            
                     <div class="dropdown my-1 px-0">
                         <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" style="background-color: #e3f2fd;">
@@ -220,6 +210,31 @@
                             <li><a class="dropdown-item" href={{route('qrcode.setprint')}}>輸出QR-code</a></li>
                             <li><a class="dropdown-item" href="{{route('qrcode_show')}}">更新、刪除QR-code</a></li>
 
+                        </ul>
+                    </div>
+
+                    <div class="dropdown my-1 px-0">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" style="background-color: #e3f2fd;">
+                            排班與巡邏查詢
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
+                            <li><a class="dropdown-item" href="{{route('patrol_record')}}">巡邏紀錄查詢</a></li>
+                            <li><a class="dropdown-item" href="{{route('schedule')}}">排班與巡邏匯入匯出</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="dropdown my-1 px-0">
+                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" style="background-color: #e3f2fd;">
+                            離職、請假、薪資單相關
+                        </button>
+                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
+                            <li><a class="dropdown-item" href={{route('table')}}>各式表單匯入匯出</a></li>
+
+                            {{--
+                            <li><a class="dropdown-item" href="#">員工打卡功能(API)</a></li>
+                            <li><a class="dropdown-item" href="#">員工巡邏功能(API)</a></li>
+                            <li><a class="dropdown-item" href="#">APP管理？？</a></li>
+                            --}}
                         </ul>
                     </div>
 
@@ -234,21 +249,6 @@
                         </ul>
                     </div>
                     @endif
-
-                    <div class="dropdown my-1 px-0">
-                        <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" style="background-color: #e3f2fd;">
-                            表單功能
-                        </button>
-                        <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
-                            <li><a class="dropdown-item" href={{route('table')}}>各式表單匯入匯出</a></li>
-
-                            {{--
-                            <li><a class="dropdown-item" href="#">員工打卡功能(API)</a></li>
-                            <li><a class="dropdown-item" href="#">員工巡邏功能(API)</a></li>
-                            <li><a class="dropdown-item" href="#">APP管理？？</a></li>
-                            --}}
-                        </ul>
-                    </div>
 
                 </div>
             </div>

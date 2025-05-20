@@ -159,6 +159,7 @@ Route::get('/table/update/id={update_id}&status={update_status}',[App\Http\Contr
 
 Route::POST('ajaxRequest',[AjaxController::class,'ajaxRequestPost'])->name('ajaxRequest');
 Route::POST('ajaxRequestCustomer',[AjaxController::class,'ajaxRequestCustomer'])->name('ajaxRequestCustomer');
+Route::get('ajaxRequestSchedule',[AjaxController::class,'ajaxRequestSchedule'])->name('ajaxRequestSchedule');
 
 Route::get('/403', function () {abort(403, '抱歉，你没有使用此功能權限！');});
 //Route::get('/403', function () {return view('/errors/403');});
