@@ -209,7 +209,7 @@ class AuthUserController extends Controller
             }
         }
 
-        // 利用json_encode將資料轉成JSON格式
+        // 利用json_encode將資料轉成JSON格式...
         //$data_json_url = json_encode($schedule);
 
         // 利用urldecode將資料轉回中文
@@ -236,8 +236,16 @@ class AuthUserController extends Controller
                 $announce_arr['TOP']['time']=date('Y-m-d H:i:s',strtotime($topAnn->created_at));
                 $announce_arr['TOP']['title']=$topAnn->title;
                 $announce_arr['TOP']['announce']=$topAnn->announcement;
-            
-                $announce= Announcements::where('top',0)->orderBy('id','desc')->limit(4)->get();
+
+                $checkCount = Announcements::where('top',0)->count();
+                if($checkCount >= 4)
+                {
+                    $announce= Announcements::where('top',0)->orderBy('id','desc')->limit(4)->get();
+                }
+                else{
+                    $announce= Announcements::where('top',0)->orderBy('id','desc')->limit($checkCount)->get();
+                }
+                
             for($i=0;$i<4;$i++){
                 $announce_arr[$i]['time']=date('Y-m-d H:i:s',strtotime($announce[$i]->created_at));
                 $announce_arr[$i]['title']=$announce[$i]->title;
