@@ -154,11 +154,13 @@ Route::POST('/table_resign', [TableController::class, 'resign'])->name('table.re
 Route::POST('/table_leave', [TableController::class, 'leave'])->name('table.leave');
 Route::POST('/table_export_access_salary', [TableController::class, 'export_access_salary'])->name('table.export_access_salary');
 Route::POST('/table_import_access_salary', [TableController::class, 'import_access_salary'])->name('table.import_access_salary');
+Route::POST('/table_export_extra_schedule', [TableController::class, 'export_extra_schedule'])->name('table.export_extra_schedule');
 Route::get('/table/request/{Request_id}', [App\Http\Controllers\TableController::class, 'request'])->name('table.request');
-Route::get('/table/update/id={update_id}&status={update_status}',[App\Http\Controllers\TableController::class,'updateStatus'])->name('table.updateStatus');
+Route::get('/table/update/id={update_id}&status={update_status}&emp={update_emp}',[App\Http\Controllers\TableController::class,'updateStatus'])->name('table.updateStatus');
 
 Route::POST('ajaxRequest',[AjaxController::class,'ajaxRequestPost'])->name('ajaxRequest');
 Route::POST('ajaxRequestCustomer',[AjaxController::class,'ajaxRequestCustomer'])->name('ajaxRequestCustomer');
+Route::POST('ajaxRequestSchedule',[AjaxController::class,'ajaxRequestSchedule'])->name('ajaxRequestSchedule');
 Route::get('ajaxRequestSchedule',[AjaxController::class,'ajaxRequestSchedule'])->name('ajaxRequestSchedule');
 
 Route::get('/403', function () {abort(403, '抱歉，你没有使用此功能權限！');});

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Employee;
 use App\Models\Customer;
+use App\Models\extra_schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
@@ -601,7 +602,7 @@ class TableController extends Controller
 
         //巢狀array，第一層是幾個客戶
         for($i=0;$i<count($requestSchedule);$i++){
-            $class = $requestSchedule[$i]->$queryDay;
+            $class = $requestSchedule[$i]->$queryYesterdayDay;
             $cus = $requestSchedule[$i]->firstname;
 
             //該客戶幾個班
@@ -610,6 +611,7 @@ class TableController extends Controller
                 $subClass = substr($class,$j,1);
 
                 $classEnd = $subClass."_end";
+
                 $start = $requestSchedule[$i]->$subClass;
                 $end = $requestSchedule[$i]->$classEnd;
 
@@ -620,14 +622,61 @@ class TableController extends Controller
             }
         }
 
-        $empList = DB::table('employees')->where('status','在職')->get();
+        $empList = DB::table('employees')
+        ->where([
+            ['status','在職'],
+            ['member_sn','!=',$empid]
+        ])->get();
 
-        //dd($request,$todaySchedule,$yesterdaySchedule);
+        //dd($request,$todaySchedule,$yesterdaySchedule,$empList);
         return view("edit_table",["results"=>$request,"today"=>$todaySchedule,"yesterday"=>$yesterdaySchedule,"empList"=>$empList]);
     }
 
 
+    public function updateStatus($id,$status,$emp,ConvertPdfService $convertPdfService){
 
+        $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
+        $signPath = storage_path('app').'/'.$signPath[0];
+
+        if($status == 'Y')
+        {
+            $result = $convertPdfService->convertTable($id);
+            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+        }
+        elseif($status == 'N'){
+            $result = "";
+            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+        }
+        if(is_file($signPath)){
+            unlink($signPath);
+        }
+
+        //請假單處理完畢，以下處理代理人額班表班新增
+        $request = DB::table('twotime_table')->where('id',$id)->first();
+        $leaveMan = $request->empid;
+        $start = $request->start;
+        $end = $request->end;
+
+
+        $request2 = extra_schedule::where([
+            ['emp_id',$emp],
+            ['start',$start],
+            ['end',$end],
+            ['leave_member',$leaveMan],
+        ])->first();
+
+        //dd($id,$status,$emp,$request,$request2,$leaveMan,$start,$end);
+        if($request2 === null )
+        {
+            extra_schedule::create([
+                'emp_id'=>$emp,
+                'start'=>$start,
+                'end'=>$end,
+                'leave_member'=>$leaveMan,
+            ]);
+        }
+       return redirect()->route("home");
+    }
 
 
     //構造注入service
@@ -666,36 +715,23 @@ class TableController extends Controller
      * @param AccessTableService $emailService
      */
     //API處理請假單
-    public function leaveAPI(AccessTableService $accessTableService,Request $request) {
+    public function leaveAPI(AccessTableService $accessTableService,Request $request)
+     {
         $result = $accessTableService->leaveStore($request);
         return response()->json(['message' => $result]);
     }
 
     //API處理離職單
-    public function resignAPI(AccessTableService $accessTableService,Request $request){
-        $result  = $accessTableService->resignStore($request);
+    public function resignAPI(AccessTableService $accessTableService,Request $request)
+    {
+        $result = $accessTableService->resignStore($request);
         return response()->json(['message' => $result]);
     }
 
-    public function updateStatus($id,$status,ConvertPdfService $convertPdfService){
-
-        $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
-        $signPath = storage_path('app').'/'.$signPath[0];
-
-        if($status == 'Y')
-        {
-            $result = $convertPdfService->convertTable($id);
-            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
-        }
-        elseif($status == 'N'){
-            $result = "";
-            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
-        }
-        if(is_file($signPath)){
-            unlink($signPath);
-        }
-
-       return redirect()->route("home");
+    public function export_extra_schedule(AccessTableService $accessTableService,Request $request)
+    {
+        $result = $accessTableService->export_extra_schedule($request->exportbymonth);
     }
+
 
 }

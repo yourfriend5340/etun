@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\twotime_table;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
 
 class AccessTableService
 {
@@ -181,5 +182,108 @@ class AccessTableService
       return $message;
    }
 
+
+   public function export_extra_schedule($time)
+   {
+        // Create a new Spreadsheet object
+        $spreadsheet = new Spreadsheet();
+        
+        //設定預設格式
+        $spreadsheet->getActiveSheet()->getPageSetup()
+        ->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $spreadsheet->getActiveSheet()->getPageSetup()
+        ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+        
+        $spreadsheet->getActiveSheet()->getPageSetup()->setScale(40);
+        
+        // Retrieve the current active worksheet
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->getDefaultColumnDimension()->setWidth(9);//預設寬度
+        $sheet->getDefaultRowDimension()->setRowHeight(30);//預設高度
+
+        $sheet->getColumnDimension('AF')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(16);
+        $sheet->getColumnDimension('A')->setWidth(6);
+        $sheet->getRowDimension('2')->setRowHeight(20);  
+        $sheet->getRowDimension('3')->setRowHeight(48);     
+   
+        $sheet->getPageMargins()->setTop(0.5);
+        $sheet->getPageMargins()->setLeft(0.5);
+        $sheet->getPageMargins()->setRight(0.5);
+        $sheet->getPageMargins()->setBottom(0.5);
+
+        $styleCenterArray = [
+            'borders' => [
+                'allBorders' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                'color' => ['argb' => '00000000'],
+                ],
+                'outline' => [
+                'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+                ],
+            ],
+
+            'alignment' => [
+                'horizontal'=> \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+            ]      
+        ];
+
+      $styleArray = [
+         'borders' => [
+            'allBorders' => [
+              'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+              'color' => ['argb' => '00000000'],
+            ],
+            'outline' => [
+               'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_MEDIUM,
+            ],
+         ],
+         
+            'alignment' => [
+               //'horizontal'=> \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+               //'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+         ]
+      ];
+
+      //$sheet->getStyle("A1:AD23")->applyFromArray($styleCenterArray);
+      //$sheet->getStyle("A2:AB44")->applyFromArray($styleCenterArray);
+      // $sheet->getStyle("A35:A40")->applyFromArray($styleCenterArray);
+      // $sheet->getStyle("B35:F40")->applyFromArray($styleArray);
+      // $sheet->getStyle('B35:B40')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+      // $sheet->getStyle('A2:F34')->getFont()->setBold(true)->setSize(12);//设置字体加粗大小
+      // $sheet->getStyle('B35:B40')->getFont()->setBold(true)->setSize(10);//设置字体加粗大小
+
+
+      $month = date("m",strtotime($time));
+      $year = date("Y",strtotime($time));
+
+      //首行格式
+      $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+      $sheet->getStyle('B1:S1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+      $sheet->getStyle('S1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+      $sheet->getStyle('A1:AF1')->getFont()->setBold(true)->setSize(22);//设置字体加粗大小
+      $sheet->getStyle('A2:AF2')->getFont()->setBold(true)->setSize(16);//设置字体加粗大小
+      $sheet->mergeCells('A1:N1');
+      $sheet->setCellValue('A1', '萬宇股份有限公司');  
+      $sheet->mergeCells('O1:P1');
+      $sheet->setCellValue('O1', $year);
+      $sheet->setCellValue('Q1', '年');
+      $sheet->setCellValue('R1', $month);
+      $sheet->setCellValue('S1', '月');
+      $sheet->setCellValue('T1','代班人員紀錄表');
+
+      
+      $file_name = $time.'代班人員_'.date('Y_m_d H:i:s');
+
+      header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
+      header('Cache-Control: max-age=0');
+
+      $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+      $writer->save('php://output');
+      exit;
+
+   }
 
 }

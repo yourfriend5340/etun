@@ -110,9 +110,8 @@
                 <em>(下拉選單僅顯示"在職"人員)</em>
             </div>
     </div>
+    <div id='check'></div>
 
-                
-    <div class="row mx-1 mt-5" id="result"></div>
 @endsection
 
 
@@ -120,9 +119,31 @@
 
     function submitY(id)
     {
-        if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？')){
-            window.location.href="/table/update/id=" + id + "&status=Y";
-            //window.event.returnValue=false;
+        var userSelect = document.getElementById('selectId');
+        var index = userSelect.selectedIndex;
+        var mem_name = userSelect.options[index].text;
+        var mem_id = userSelect.options[index].value;
+
+        
+        if(mem_id != "" && mem_name!="")
+        {
+            var check = document.getElementById('result').value;
+            if(check == 'Y')
+            {
+                if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？(代理人：' + mem_name + ')'))
+                {
+                    window.location.href="/table/update/id=" + id + "&status=Y&emp=" + mem_id;
+                    //window.event.returnValue=false;
+                }
+            }
+            else
+            {
+                alert('您選擇代理人無法排班，請選擇後再行點選！！');
+            }
+        }
+        else
+        {
+            alert('您無選擇代理人，請選擇後再行點選！！');
         }
     }
 
@@ -142,12 +163,13 @@
 
         var tbobj = document.getElementById('leaveTable');
         var time = tbobj.rows[1].cells[4].innerHTML;
-        
+        var etime = tbobj.rows[1].cells[5].innerHTML;
+
         if(mem_id != "")
         {
             if(confirm('將開始檢查  ' + mem_name + '  該日是否能排班？'))
             {
-                ajaxRequestSchedule(mem_id,time);
+                ajaxRequestSchedule(mem_id,time,etime);
             }
             else{
                 return false;
@@ -159,7 +181,7 @@
 
     }    
 
-    function ajaxRequestSchedule(id,time){
+    function ajaxRequestSchedule(id,time,etime){
 
         $.ajaxSetup({
         headers: {'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')}
@@ -170,7 +192,8 @@
                 dataType: 'json',
             url:'/ajaxRequestSchedule',
             data:{  cid:id,
-                    ctime:time
+                    ctime:time,
+                    etime:etime
                 },
 
             success:function(data) {
@@ -178,8 +201,19 @@
                //alert("ID是:" + id + "\n狀態:" + status);
                //console.log(data);
                 //var el = document.getElementById("result");
-                //el.innerHTML = "<h1>" + data.result->employee_id + "</h1>";
-alert(JSON.stringify(data));
+                //el.innerHTML = "<h1>" + data + "</h1>";
+                if(data.result == true){
+                    alert('可以排班');
+
+                    var el = document.getElementById("check");
+                    el.innerHTML = `<input type="hidden" value="Y" id="result">`;
+                }
+                else{
+                    alert('不可排班，己於 ' + decodeURI(data.customer) + ' 有排班，\n時間是：' + data.start + ' 至 ' + data.end);
+
+                    var el = document.getElementById("check");
+                    el.innerHTML = `<input type="hidden" value="N" id="result">`;
+                }
                
             },
             error: function (msg) {

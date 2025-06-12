@@ -53,65 +53,108 @@ class AjaxController extends Controller
 
     public function ajaxRequestSchedule(Request $request)
     {
-        //$id = $request->cid;
-        $id = '444';
-        
-        //$time = $request->ctime;
-        $time = '2025-05-30 18:00:00';
-        
+        $id = $request->cid;
+        //$id = '445';
+
+        $time = $request->ctime;
+        $endtime = $request->etime;
+        //$time = '2025-05-30 18:00:00';
+        //$endtime = '2025-05-30 19:00:00';
+        $yesterdate = date('Y-m-d',strtotime('-1 day',strtotime($time)));
+        $todate = date('Y-m-d',strtotime($time));
+
         $year = date('Y',strtotime($time));
         $month = intval(date('m',strtotime($time)));
         $day = 'day'.date('d',strtotime($time));
+        $yesterday = 'day'.date('d',strtotime('-1 day',strtotime($time)));
         $returnData = [];
         
+
+        $query = DB::table('extra_schedules')
+        ->join('employees','extra_schedules.leave_member','employees.member_sn')
+        ->where([
+            ["emp_id",$id],
+        ])->get((array(('extra_schedules.*'),'employees.member_name')));
+
+        foreach($query as $r){
+
+            if((strtotime($time) >= strtotime($r->start) && strtotime($time) <= strtotime($r->end))
+                && (strtotime($endtime) >= strtotime($r->start) && strtotime($endtime) <= strtotime($r->end)))
+            {
+                return ['result'=>false,'customer'=>urlencode($r->member_name),'start'=>($r->start),'end'=>($r->end)];
+            }
+        }
+
+
+
         $query = DB::table('schedules')
         ->join('customers','schedules.customer_id','customers.customer_id')
         ->where([
             ['schedules.employee_id',$id],
             ['schedules.year',$year],
             ['schedules.month',$month],
-            ['schedules.'.$day,'!=',""]
-        ])->get((array(('schedules.*'),'customers.firstname')));
+        ])
+        ->get((array(('schedules.*'),'customers.firstname')));
+
+        if(count($query) == 0)
+        {
+            return ['result'=>true];
+        }
+        else{
 
 
-        
-        for($i=0;$i<count($query);$i++)
-        {        
- 
+            for($i=0;$i<count($query);$i++){
+                $class = $query[$i]->$yesterday;
+                $len = strlen($class);
 
-            
-            if($query[$i]->$day != "")
-            {
-   
-
-                //now munch schecule in oneday
-                $len = strlen($query[$i]->$day);
                 for($j=0;$j<$len;$j++){
-                    $returnData[$j]['customer']=$query[$i]->firstname;
-                    $subString = substr($query[$i]->$day,$j,1);
-                    $endString = $subString.'_end';
+                    $subclass = substr($class,$j,1);
+                    $classEnd = $subclass."_end";
+                    $hour =  ((strtotime($query[$i]->$classEnd)-strtotime($query[$i]->$subclass))/60/60);
 
-                    $returnData[$j]['class'] = $subString;
-                    $returnData[$j]['start'] = $query[$i]->$subString;
-                    $returnData[$j]['end'] = $query[$i]->$endString; 
+                    $stime = $yesterdate." ".$query[$i]->$subclass;
+
+                    if($hour <= 0)//有隔天狀況
+                    { $etime = $todate." ".$query[$i]->$classEnd;}
+                    else
+                    { $etime = $yesterdate." ".$query[$i]->$classEnd;}
+
+                    //dd($year,$month,$day,$query,$returnData,$i,$hour,$stime,$etime);
+                    if((strtotime($time) >= strtotime($stime) && strtotime($time) <= strtotime($etime))
+                        && (strtotime($endtime) >= strtotime($stime) && strtotime($endtime) <= strtotime($etime)))
+                    {
+                        return ['result'=>false,'customer'=>urlencode($query[$i]->firstname),'start'=>$stime,'end'=>$etime];
+                    }
+
+                }
+
+
+                $class = $query[$i]->$day;
+                $len = strlen($class);
+
+                for($j=0;$j<$len;$j++){
+                    $subclass = substr($class,$j,1);
+                    $classEnd = $subclass."_end";
+                    $hour =  ((strtotime($query[$i]->$classEnd)-strtotime($query[$i]->$subclass))/60/60);
+
+                    $stime = $todate." ".$query[$i]->$subclass;
+
+                    if($hour <= 0)//有隔天狀況
+                    { $etime = date('Y-m-d',strtotime("1 day",strtotime($todate)))." ".$query[$i]->$classEnd;}
+                    else
+                    { $etime = $todate." ".$query[$i]->$classEnd;}
+
+                    //dd($year,$month,$day,$query,$returnData,$i,$hour,$stime,$etime);
+                    if((strtotime($time) >= strtotime($stime) && strtotime($time) <= strtotime($etime))
+                        && (strtotime($endtime) >= strtotime($stime) && strtotime($endtime) <= strtotime($etime)))
+                    {
+                        return ['result'=>false,'customer'=>urlencode($query[$i]->firstname),'start'=>$stime,'end'=>$etime];
+                    }
 
                 }
             }
         }
-           dd($year,$month,$day,$query,$returnData);
-        return ['result'=>$query];
-        // $DBresult_name = DB::table('customers')->where('customer_sn','=', $id)->value('firstname');
-
-        // if (isset($DBresult_name)){
-        //     $result = '輸入的ID是：'.$id.'，已有客戶：'.$DBresult_name."使用，請重新指定一個ID。";
-        //     return $result;
-
-        // }
-        // else{
-        //     $result='輸入的ID是：'.$id.'，可以使用此ID！';
-        //     return $result;
-        // }
- 
+        return ['result'=>true];
     }
 
 

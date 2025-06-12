@@ -2,7 +2,7 @@
 
 @section('content')
 
-   <div class="row mx-1">   
+
       <div class="row justify-content-center">
 
          <!--export use phpspreadsheet-->
@@ -81,29 +81,18 @@
 
          </div>
 
-                  <!--export use phpspreadsheet-->
          <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
-               <h2 class='mt-2'>輸出薪資單</h2> 
-               <form method="POST" action="{{ route('table.salary') }}" enctype="multipart/form-data">
+               <h2 class='mt-2'>輸出代班人員表格</h2> 
+               <form method="POST" action="{{ route('table.export_extra_schedule') }}" enctype="multipart/form-data">
                {{ csrf_field() }}
 
-               <div class="row mb-3">
-                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
-                     <select class="col-md-auto align-self-center border-1" name="namelist" id="namelist">     
-                        @foreach($employees as $employee )
-                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
-                        @endforeach
-                     </select>
-                     {{--<input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
-                     <em>(下拉選單僅顯示"在職"人員)</em>--}}
-                     <div class="col col-md-auto border-0  py-1">
-                           月份：<input id="exmonth" class="pic border-1 mx-1" name="exmonth" type="month">
-                           人名：<input class="border-1 py-0 my-0" type="text" value="{{ old('exname') }}" id="exname" name="exname">
-                           <input type="button" value="儲存" onclick="example()" />
-                           <input type="button" value="刪除" onclick="example2()" />    
-                    </div>
-                    <textarea id="exlist" style="font-size:large" rows="3" cols="20" name="exlist" placeholder="同時選擇及輸入人名，以輸入人名優先優先。"></textarea>
+               <div class="row mb-3 align-items-center" style="min-height:50px">
+                  <div class="col-md-auto align-items-center">選擇月份：</div>
+                  <div class="col-md-auto align-items-center border">
+                     <input id="month" class="pic border-0" name="exportbymonth" type="month">
                   </div>
+                  <em>(所匯出的表單，僅顯示"在職"之員工)</em>
+               </div>
 
                <div class="w-100"></div>  
                <div class="row mt-3 mb-3">
@@ -111,7 +100,6 @@
                </div>
 
                </form>
-
          </div>
 
          <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
@@ -154,10 +142,48 @@
                </form>
          </div>
 
+
+         <!--export use phpspreadsheet-->
+         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
+               <h2 class='mt-2'>輸出薪資單</h2> 
+               <form method="POST" action="{{ route('table.salary') }}" enctype="multipart/form-data">
+               {{ csrf_field() }}
+
+               <div class="row mb-3">
+                  <div class="col-md-auto align-self-center">選擇輸出員工：</div>
+                     <select class="col-md-auto align-self-center border-1" name="namelist" id="namelist">     
+                        @foreach($employees as $employee )
+                           <option value="{{$employee->id}}">{{$employee->member_name}}</option>
+                        @endforeach
+                     </select>
+                     {{--<input class="place w-25 d-inline-flex mx-2" name="inputName" placeholder="或輸入名字">
+                     <em>(下拉選單僅顯示"在職"人員)</em>--}}
+                     <div class="col col-md-auto border-0  py-1">
+                           月份：<input id="exmonth" class="pic border-1 mx-1" name="exmonth" type="month">
+                           人名：<input class="border-1 py-0 my-0" type="text" value="{{ old('exname') }}" id="exname" name="exname">
+                           <input type="button" value="儲存" onclick="example()" />
+                           <input type="button" value="刪除" onclick="example2()" />    
+                    </div>
+                    <textarea id="exlist" style="font-size:large" rows="3" cols="20" name="exlist" placeholder="同時選擇及輸入人名，以輸入人名優先優先。"></textarea>
+                  </div>
+
+               <div class="w-100"></div>  
+               <div class="row mt-3 mb-3">
+                  <button type="submit" class="btn btn-success">輸出</button>   
+               </div>
+
+               </form>
+         </div>
+
+         <!--export use phpspreadsheet-->
+         <div class="ex col-md-4 align-items-center justify-content-center border border-5 m-2 p-3">
+               <h2 class='mt-2'>擴充用</h2> 
+         </div>
+
       </div>
 
       
-   </div>
+
    <div class="container container-fluid"> 
       <div class="col justify-content-center">
              <!-- Success message -->

@@ -152,58 +152,61 @@ class AuthUserController extends Controller
         $allClassList=['A','B','C','D','E','F','G','H','I','J'];
         $defind = array();
         
-        for($i=0;$i<count($schedule);$i++){
-            //過濾空欄位
-            foreach($schedule[$i] as $k=>$v){
-                if($schedule[$i][$k] == "" || $v == ","){
-                    unset($schedule[$i][$k]);
-                }
-            }
-
-            //將班表定義時間整理
-            for($j=0;$j<count($allClassList);$j++){
-                if($schedule[$i][$allClassList[$j]][0] == "" || $schedule[$i][$allClassList[$j]][1] == ""){
-                    unset($schedule[$i][$allClassList[$j]]);
-                }
-                else{
-                    if(!isset($schedule[$i]["Defind"][$allClassList[$j]])){
-                        $schedule[$i]["Defind"][$allClassList[$j]]=[];
+        if($schedule != [])
+        {
+            for($i=0;$i<count($schedule);$i++){
+                //過濾空欄位
+                foreach($schedule[$i] as $k=>$v){
+                    if($schedule[$i][$k] == "" || $v == ","){
+                        unset($schedule[$i][$k]);
                     }
+                }
 
-                    if(!isset($schedule[$i][$allClassList[$j]])){
+                //將班表定義時間整理
+                for($j=0;$j<count($allClassList);$j++){
+                    if($schedule[$i][$allClassList[$j]][0] == "" || $schedule[$i][$allClassList[$j]][1] == ""){
+                        unset($schedule[$i][$allClassList[$j]]);
+                    }
+                    else{
+                        if(!isset($schedule[$i]["Defind"][$allClassList[$j]])){
+                            $schedule[$i]["Defind"][$allClassList[$j]]=[];
+                        }
+
+                        if(!isset($schedule[$i][$allClassList[$j]])){
+                            $schedule[$i][$allClassList[$j]]=[];
+                        }
+
+                        array_push($schedule[$i]["Defind"][$allClassList[$j]],
+                            $schedule[$i][$allClassList[$j]][0] , $schedule[$i][$allClassList[$j]][1]
+                        );
+
                         $schedule[$i][$allClassList[$j]]=[];
                     }
 
-                    array_push($schedule[$i]["Defind"][$allClassList[$j]],
-                        $schedule[$i][$allClassList[$j]][0] , $schedule[$i][$allClassList[$j]][1]
-                    );
-
-                    $schedule[$i][$allClassList[$j]]=[];
                 }
-
-            }
-            //$offset = 0;
-            for($k=1;$k<=31;$k++){
-                
-                if(isset($schedule[$i][$k]) && $schedule[$i][$k] != null)
-                {            
-                    $class = $schedule[$i][$k];
-                    if(strlen($class) == 1)
-                    { 
-                        array_push($schedule[$i][$class],$k);
-                    }
-                    else{
-                        for($n=1;$n<=strlen($class);$n++)
-                        {
-                            $oneClass = substr($class,$n-1,1);
-                            array_push($schedule[$i][$oneClass],$k);
+                //$offset = 0;
+                for($k=1;$k<=31;$k++){
+                    
+                    if(isset($schedule[$i][$k]) && $schedule[$i][$k] != null)
+                    {            
+                        $class = $schedule[$i][$k];
+                        if(strlen($class) == 1)
+                        { 
+                            array_push($schedule[$i][$class],$k);
                         }
+                        else{
+                            for($n=1;$n<=strlen($class);$n++)
+                            {
+                                $oneClass = substr($class,$n-1,1);
+                                array_push($schedule[$i][$oneClass],$k);
+                            }
 
+                        }
+                        unset($schedule[$i][$k]);
                     }
-                    unset($schedule[$i][$k]);
                 }
+                //$schedule[$i]['customerName'] = urlencode($schedule[$i]['customerName']);
             }
-            //$schedule[$i]['customerName'] = urlencode($schedule[$i]['customerName']);
         }
 
         // 利用json_encode將資料轉成JSON格式
