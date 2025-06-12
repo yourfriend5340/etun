@@ -634,7 +634,7 @@ class TableController extends Controller
 
 
     public function updateStatus($id,$status,$emp,ConvertPdfService $convertPdfService){
-
+       
         $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
         $signPath = storage_path('app').'/'.$signPath[0];
 
@@ -642,39 +642,40 @@ class TableController extends Controller
         {
             $result = $convertPdfService->convertTable($id);
             DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+
+            //請假單處理完畢，以下處理代理人額班表班新增
+            $request = DB::table('twotime_table')->where('id',$id)->first();
+            $leaveMan = $request->empid;
+            $start = $request->start;
+            $end = $request->end;
+
+            $request2 = extra_schedule::where([
+                ['emp_id',$emp],
+                ['start',$start],
+                ['end',$end],
+                ['leave_member',$leaveMan],
+            ])->first();
+
+            //dd($id,$status,$emp,$request,$request2,$leaveMan,$start,$end);
+            if($request2 === null )
+            {
+                extra_schedule::create([
+                    'emp_id'=>$emp,
+                    'start'=>$start,
+                    'end'=>$end,
+                    'leave_member'=>$leaveMan,
+                ]);
+            }
         }
         elseif($status == 'N'){
             $result = "";
-            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>'']);  
         }
         if(is_file($signPath)){
             unlink($signPath);
         }
 
-        //請假單處理完畢，以下處理代理人額班表班新增
-        $request = DB::table('twotime_table')->where('id',$id)->first();
-        $leaveMan = $request->empid;
-        $start = $request->start;
-        $end = $request->end;
 
-
-        $request2 = extra_schedule::where([
-            ['emp_id',$emp],
-            ['start',$start],
-            ['end',$end],
-            ['leave_member',$leaveMan],
-        ])->first();
-
-        //dd($id,$status,$emp,$request,$request2,$leaveMan,$start,$end);
-        if($request2 === null )
-        {
-            extra_schedule::create([
-                'emp_id'=>$emp,
-                'start'=>$start,
-                'end'=>$end,
-                'leave_member'=>$leaveMan,
-            ]);
-        }
        return redirect()->route("home");
     }
 

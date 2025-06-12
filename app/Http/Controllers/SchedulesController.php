@@ -168,6 +168,11 @@ class SchedulesController extends Controller
                   //檢查上傳時間，限制在隔月10前才可上傳班表
                   $today=date("Y-m-d");//TODAY
                   if(isset($worksheet[1][10]) && isset($worksheet[1][13]))
+
+                  if(intval($worksheet[1][10]) - 1911 < 0 )
+                  {
+                     $worksheet[1][10] = intval($worksheet[1][10]) + 1911;
+                  }
                   $excel_time=$worksheet[1][10].'-'.$worksheet[1][13];
 
                   $format_excel_time=date('Y-m-d',strtotime($worksheet[1][10].'-'.($worksheet[1][13])));

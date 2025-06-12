@@ -270,7 +270,7 @@ class EmployeeController extends Controller
             'current_addr'=>$current_addr,
             'checkup'=>$checkup
         ];
-        //dd($data);
+        
         $employee= Employee::create($data);
     
         //儲存鐘點費
@@ -361,9 +361,7 @@ class EmployeeController extends Controller
             }
         }
 
-        
-        
-
+        return redirect()->route('employee_desc');
     }
 
     /**
