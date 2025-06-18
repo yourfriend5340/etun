@@ -845,7 +845,7 @@ class SchedulesController extends Controller
 
                   //開始進行資料處理及寫入
                   $array=Excel::toArray(new SchedulesImport, $request->file('select_file')->store('temp'));
-
+                  $array[0][1][10] = $worksheet[1][10];
 
                   $timezone=\PhpOffice\PhpSpreadsheet\Shared\Date::getDefaultOrLocalTimezone();
                   //$array_type=gettype($array[0][17][24]);
@@ -989,7 +989,7 @@ class SchedulesController extends Controller
                               $data[$array[0][16][29].'_end'] = $array[0][16][33];
                            }
                         }
-           
+
                         $schedule::create($data);
                      }
                   }

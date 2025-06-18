@@ -669,7 +669,7 @@ class TableController extends Controller
         }
         elseif($status == 'N'){
             $result = "";
-            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>'']);  
+            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
         }
         if(is_file($signPath)){
             unlink($signPath);

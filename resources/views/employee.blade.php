@@ -8,8 +8,6 @@
 
             <div class="row w-100"></div>
 
-
-
             <form onsubmit="return false">
                 <div class="col-md-auto border-0 d-inline-flex align-self-center pe-0 me-0 mt-3"><font color=red>*</font>職工編號 :</div>   
                 <input type="text" name="uid" id="uid" form="form1" value="{{ old('uid') }}"
@@ -379,7 +377,31 @@
                             <input type="button" value="刪除" onclick="example2()" />    
                     </div>
                     <textarea id="text2" style="font-size:large" rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly>{{old("clock_salary")}}</textarea>
+
+
+
+                    <div class="col col-md-auto border-0 align-self-center py-1" >時數定義:</div>
+                    <div class="col col-md-auto align-self-center">
+                        <select class="form-select form-select-sm" aria-label="Default select example" name="work_place2" id="work_place2">
+                            <option value="">請選擇</option>
+                            @if ($errors->any())
+                            <option value="{{ old('work_place2') }}" selected>{{ old('work_place2') }}</option>
+                            @endif
+                            @foreach($customers as $customer )
+                            <option value="{{$customer->firstname}}">{{$customer->firstname}}</option>
+                            @endforeach
+
+                        </select>
+                    </div>
+                    <div class="col col-md-auto border-0  py-1">時數:
+                            <input class="border-1 py-0 my-0" type="number" value="{{ old('work_hour') }}" id="work_hour">
+                            <input type="button" value="儲存" onclick="addhour()" />
+                            <input type="button" value="刪除" onclick="addhour2()" />    
+                    </div>
+                    <textarea id="text3" style="font-size:large" rows="8" cols="20" name="hour" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly></textarea>
                     
+
+
                 @elsecan('super_manager')
                     {{--<div class="col-md-auto border-0 align-self-center py-1"><font color=white>*</font>薪資:
                         <input class="border-1 py-0 my-0" name="salary" type="number" value="{{ old('salary') }}">
@@ -387,7 +409,7 @@
                     <div class="col col-md-auto border-0 align-self-center py-1" >薪資定義:</div>
                     <div class="col col-md-auto align-self-center">
                         <select class="form-select form-select-sm" aria-label="Default select example" name="work_place" id="work_place">
-                            
+                            <option value="">請選擇</option>
                             @if ($errors->any())
                             <option value="{{ old('work_place') }}" selected>{{ old('work_place') }}</option>
                             @endif
@@ -409,6 +431,27 @@
                             <input type="button" value="刪除" onclick="example2()" />    
                     </div>
                     <textarea id="text2" style="font-size:large" rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly></textarea>
+
+
+                    <div class="col col-md-auto border-0 align-self-center py-1" >時數定義:</div>
+                    <div class="col col-md-auto align-self-center">
+                        <select class="form-select form-select-sm" aria-label="Default select example" name="work_place2" id="work_place2">
+                            
+                            @if ($errors->any())
+                            <option value="{{ old('work_place2') }}" selected>{{ old('work_place2') }}</option>
+                            @endif
+                            @foreach($customers as $customer )
+                            <option value="{{$customer->firstname}}">{{$customer->firstname}}</option>
+                            @endforeach
+
+                        </select>
+                    </div>
+                    <div class="col col-md-auto border-0  py-1">時數:
+                            <input class="border-1 py-0 my-0" type="number" value="{{ old('work_hour') }}" id="work_hour">
+                            <input type="button" value="儲存" onclick="addhour()" />
+                            <input type="button" value="刪除" onclick="addhour2()" />    
+                    </div>
+                    <textarea id="text3" style="font-size:large" rows="8" cols="20" name="hour" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly></textarea>
                 @endcan
 
 
@@ -603,6 +646,27 @@
             const list = document.getElementById("text2");
             list.removeChild(list.lastChild);
     }
+
+
+    function addhour(){
+        var hour = document.getElementById("work_hour").value;
+        var place = document.getElementById("work_place2").value;
+        var textnode=document.createTextNode(place + ',' + hour +',');
+
+        if (hour != "" && place != ""){
+        var area=document.getElementById("text3");
+        area.appendChild(textnode);
+        }
+        else
+        {alert('請輸入完整資訊')}
+
+    }
+
+    function addhour2(){
+        const list = document.getElementById("text3");
+        list.removeChild(list.lastChild);
+    }
+
 
     function submit_onclick(){
         var mem_id = document.getElementById("uid").value;
