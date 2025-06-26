@@ -579,10 +579,27 @@ class TableController extends Controller
                 $start = $requestSchedule[$i]->$subClass;
                 $end = $requestSchedule[$i]->$classEnd;
 
+                if(strtotime($end) < strtotime($start))
+                {
+                    $endDay = $day + 1;
+                }
+                else{
+                    $endDay = $day;
+                }
+
+                if($day < 10)
+                {
+                    $day = '0'.$day;
+                }
+                if($endDay < 10)
+                {
+                    $endDay = '0'.$endDay;
+                }
+
                 $todaySchedule[$i][$j]['customer'] = $cus;
                 $todaySchedule[$i][$j]['class'] = $subClass;
                 $todaySchedule[$i][$j]['start'] = $year.'-'.$month.'-'.$day.' '.$start;
-                $todaySchedule[$i][$j]['end'] = $year.'-'.$month.'-'.$day.' '.$end;
+                $todaySchedule[$i][$j]['end'] = $year.'-'.$month.'-'.$endDay.' '.$end;
             }
         }
         $yesterdayYear = date('Y',strtotime("-1 day",strtotime($startTime)));
@@ -615,10 +632,27 @@ class TableController extends Controller
                 $start = $requestSchedule[$i]->$subClass;
                 $end = $requestSchedule[$i]->$classEnd;
 
+                if(strtotime($end) < strtotime($start))
+                {
+                    $endDay = $yesterdayDate + 1;
+                }
+                else{
+                    $endDay = $yesterdayDate;
+                }
+
+                if($yesterdayDate < 10)
+                {
+                    $yesterdayDate = '0'.$yesterdayDate;
+                }
+                if($endDay < 10)
+                {
+                    $endDay = '0'.$endDay;
+                }
+
                 $yesterdaySchedule[$i][$j]['customer'] = $cus;
                 $yesterdaySchedule[$i][$j]['class'] = $subClass;
                 $yesterdaySchedule[$i][$j]['start'] = $yesterdayYear.'-'.$yesterdayMonth.'-'.$yesterdayDate.' '.$start;
-                $yesterdaySchedule[$i][$j]['end'] = $yesterdayYear.'-'.$yesterdayMonth.'-'.$yesterdayDate.' '.$end;
+                $yesterdaySchedule[$i][$j]['end'] = $yesterdayYear.'-'.$yesterdayMonth.'-'.$endDay.' '.$end;
             }
         }
 

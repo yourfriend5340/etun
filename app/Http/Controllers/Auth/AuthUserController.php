@@ -66,6 +66,7 @@ class AuthUserController extends Controller
         $year = date("Y");
         $month = date("m");
 
+        /*
         $schedule=DB::table('schedules')
                     ->join('customers',function($join){
                         $join->on('schedules.customer_id','=','customers.customer_id');    
@@ -133,22 +134,6 @@ class AuthUserController extends Controller
                      })
                     ->toarray();
 
-        //整理array資訊
-        /*
-        {
-            "cusName": "AAA",
-            "month": "2025/4",
-            "defind": [
-            {
-                "A":["07:00","08:00"],
-                "B":["08:00","09:00"]
-            }],
-
-            "A": [1,2,3,4,5],
-            "B": [6,7,8,9,10]
-            }
-        */ 
-
         $allClassList=['A','B','C','D','E','F','G','H','I','J'];
         $defind = array();
         
@@ -208,12 +193,8 @@ class AuthUserController extends Controller
                 //$schedule[$i]['customerName'] = urlencode($schedule[$i]['customerName']);
             }
         }
+        */
 
-        // 利用json_encode將資料轉成JSON格式...
-        //$data_json_url = json_encode($schedule);
-
-        // 利用urldecode將資料轉回中文
-        //$data_json = urldecode($data_json_url);
 
         //建立各群組的array
         for($i=0;$i<$count_group;$i++){
@@ -368,8 +349,8 @@ class AuthUserController extends Controller
                 $data2 = '尚未結算薪水';
             }
 
-        //return response(['user' => auth()->user()->only('name','email'), 'token' => $token]);
-        return response(['user' => $data, 'contactData'=>$contactArr,'ClassSchedule'=>$schedule,'annoucements'=>$data1,'salary'=>$data2,'token' => $token]);
+        //return response(['user' => $data, 'contactData'=>$contactArr,'ClassSchedule'=>$schedule,'annoucements'=>$data1,'salary'=>$data2,'token' => $token]);
+        return response(['user' => $data, 'contactData'=>$contactArr,'annoucements'=>$data1,'salary'=>$data2,'token' => $token]);
     }
 
 
@@ -396,6 +377,7 @@ class AuthUserController extends Controller
         $request=$request->all();
 
         $now = date("Y-m-d H:i:s");
+        $now = '2025-06-08 11:50:00';
         $year = date('Y', strtotime($now));
         $month = intval(date('m', strtotime($now)));
         $day = intval(date('d', strtotime($now)));
@@ -526,23 +508,28 @@ class AuthUserController extends Controller
         }
 
         //以上是針對班表查詢，以下為額外代班查詢
-        $request_extra = DB::table('extra_schedules')->where('emp_id',$employeeID)->get();
-
-        for($i=0;$i<count($request_extra);$i++)
+        if($lat2 == "" && $lng2 =="")
         {
-            $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($request_extra[$i]->start)));
-            if( strtotime($now) > strtotime($allowPunchStartTime) && strtotime($now) < strtotime($request_extra[$i]->end))
+            $now = '2025-06-08 11:50:00';
+            $day = intval(date('d', strtotime($now)));
+            $request_extra = DB::table('extra_schedules')->where('emp_id',$employeeID)->get();
+
+            for($i=0;$i<count($request_extra);$i++)
             {
-                $lat2 = $lat1;
-                $lng2 = $lng1;
-                $cusId = '';
-                $class = '代';
-                $classStartTime = $request_extra[$i]->start;
-                $classEndTime = $request_extra[$i]->end;
-                break;
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($request_extra[$i]->start)));
+                if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($request_extra[$i]->end))
+                {
+                    $lat2 = $lat1;
+                    $lng2 = $lng1;
+                    $cusId = '';
+                    $class = '代';
+                    $classStartTime = $request_extra[$i]->start;
+                    $classEndTime = $request_extra[$i]->end;
+
+                    break;
+                }
             }
         }
-
         //計算距離演算法
         //先判斷參數是否有設定，若無被設定表示沒有班，跳錯誤訊息
         if($lat2 != "" && $lng2 != "")
@@ -551,7 +538,7 @@ class AuthUserController extends Controller
             $lng2 = ($lng2 * pi() ) / 180;
         }
         else{
-            return "打卡失敗，請於您的工作場地及上班前十分鐘或上班開始後二十分鐘內進行打卡。";
+            return "打卡失敗，請於您的工作場地及上班前十分鐘進行打卡。";
         }
         $earthRadius = 6368000; //地球平均半徑(公尺)
 
@@ -610,7 +597,6 @@ class AuthUserController extends Controller
     public function api_PunchOut(Request $request)
     {
         $request=$request->all();
-
         $now=date("Y-m-d H:i:s");
         $year=date('Y', strtotime($now));
         $month=intval(date('m', strtotime($now)));
@@ -618,20 +604,34 @@ class AuthUserController extends Controller
         $time=date('H:i', strtotime($now));        
         $employeeID=$request['EmployeeID'];
 
+        $lastYear = date("Y",strtotime("-1 day",strtotime($now)));
+        $lastMonth = intval(date("m",strtotime("-1 day",strtotime($now))));
+        $lastDay = intval(date("d",strtotime("-1 day",strtotime($now))));
+
         //查詢公告、員工名字
         $announce=DB::table('announcements')->latest()->take(5)->get();
         $employeeName=DB::table('employees')->where('member_sn','=',$employeeID)->first()->member_name;
 
-        //查詢當月排班表
-        $schedule=DB::table('schedules')->where([
-        ['employee_id','=',$employeeID],
-        ['year','=',$year],
-        ['month','=',$month]
-        ])->get()->toarray();
+        //判斷是不是昨天的夜班，但如果是每月1號，要查上個月的表
+        if($day == 1)
+        {
+            $schedule=DB::table('schedules')->where([
+            ['employee_id','=',$employeeID],
+            ['year','=',$lastYear],
+            ['month','=',$lastMonth]
+            ])->get()->toarray();
+        }
+        else
+        {
+            $schedule=DB::table('schedules')->where([
+            ['employee_id','=',$employeeID],
+            ['year','=',$year],
+            ['month','=',$month]
+            ])->get()->toarray();
+        }
 
-        //判斷是不是昨天的夜班
         for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
-            $queryDate='day'.$day-1;
+            $queryDate='day'.$lastDay;
             $classList=$schedule[$i]->$queryDate;
             if($classList == ""){
                 continue;
@@ -645,12 +645,21 @@ class AuthUserController extends Controller
                 $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
                 $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
                 //dd(strtotime($classEndTime)-strtotime($classStartTime));)
-                $classStartTime= $year.'-'.$month.'-'.($day-1).' '.$classStartTime;
-                $classEndTime= $year.'-'.$month.'-'.($day-1).' '.$classEndTime;
+                if($day == 1)
+                {
+                    $classStartTime= $lastYear.'-'.$lastMonth.'-'.($lastDay).' '.$classStartTime;
+                    $classEndTime= $lastYear.'-'.$lastMonth.'-'.($lastDay).' '.$classEndTime;
+                }
+                else{
+                    $classStartTime= $year.'-'.$month.'-'.($lastDay).' '.$classStartTime;
+                    $classEndTime= $year.'-'.$month.'-'.($lastDay).' '.$classEndTime;
+                }
+
                 if(strtotime($classEndTime) < strtotime($classStartTime) )
                 {
-                    $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));//第j個班下班前十分鐘開放打卡
+                    $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
                 }
+
                 $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classEndTime)));//第j個班下班前十分鐘開放打卡
                 $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classEndTime)));//第j個班下班時間後二十分鐘開放打卡
                 //dd($queryClassName,$schedule,$classStartTime,$classEndTime,$allowPunchStartTime,$allowPunchEndTime);
@@ -659,13 +668,26 @@ class AuthUserController extends Controller
                 if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
                     
                     //若在時限內，確認有無昨天夜班，且無打下班卡紀錄
-                    $count = DB::table('punch_record')->where([
-                                ['year',$year],
-                                ['month',$month],
-                                ['day',($day-1)],
-                                ['class',$queryClassName],
-                                ['PunchOutTime', null]
-                            ])->count();
+                    if($day == 1)
+                    {
+                        $count = DB::table('punch_record')->where([
+                                    ['year',$lastYear],
+                                    ['month',$lastMonth],
+                                    ['day',($lastDay)],
+                                    ['class',$queryClassName],
+                                    ['PunchOutTime', null]
+                                ])->count();
+                    }
+                    else
+                    {
+                        $count = DB::table('punch_record')->where([
+                                    ['year',$year],
+                                    ['month',$month],
+                                    ['day',($lastDay)],
+                                    ['class',$queryClassName],
+                                    ['PunchOutTime', null]
+                                ])->count();
+                    }
 
                     if($count == 1)
                     {
@@ -685,6 +707,12 @@ class AuthUserController extends Controller
         //上面檢查夜班程式，因無查詢到，故無設定gps座標，再查詢今日班表
         if(!isset($lat2) && !isset($lng2))
         {
+            $schedule=DB::table('schedules')->where([
+            ['employee_id','=',$employeeID],
+            ['year','=',$year],
+            ['month','=',$month]
+            ])->get()->toarray();
+
             for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
                 $queryDate='day'.$day;
                 $classList=$schedule[$i]->$queryDate;
@@ -700,12 +728,18 @@ class AuthUserController extends Controller
                     $time=$year.'-'.$month.'-'.$day.' '.$time;
                     $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
                     $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+
+                    if(strtotime($classEndTime) < strtotime($classStartTime) )
+                    {
+                        $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
+                    }
+
                     $allowPunchStartTime=date("Y-m-d H:i",strtotime("-10 minute",strtotime($classEndTime)));//第j個班下班前十分鐘開放打卡
                     $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classEndTime)));//第j個班下班時間後二十分鐘開放打卡
                     //dd($queryClassName,$schedule,$classStartTime,$classEndTime,$allowPunchStartTime,$allowPunchEndTime);
                     
                     //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
-                    if(strtotime($now) <= strtotime($classEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                    if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
                         $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
                         $cusId=$schedule[$i]->customer_id;
                         $class=$queryClassName;
@@ -720,33 +754,37 @@ class AuthUserController extends Controller
         }       
         //以上是針對班表查詢，以下為額外代班查詢
         $request_extra = DB::table('extra_schedules')->where('emp_id',$employeeID)->get();
-
-        for($i=0;$i<count($request_extra);$i++)
+        
+        if(count($request_extra) != 0)
         {
-            $allowPunchStartTime=date("Y-m-d H:i",strtotime($request_extra[$i]->start));
-            if( strtotime($now) > strtotime($allowPunchStartTime))
+            for($i=0;$i<count($request_extra);$i++)
             {
-                //寫入打卡記錄
-                $check=Punch::where([
-                    ['employee_id','=',$employeeID],
-                    ['customer_id','=',''],
-                    ['year','=',$year],
-                    ['month','=',$month],
-                    ['day','=',$day],
-                    ['class','=','代'],
-                    ['PunchOutTime',null]   
-                ])->get()->toarray();
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime($request_extra[$i]->start));
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($request_extra[$i]->end)));
+                if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($allowPunchEndTime))
+                {
+                    //寫入打卡記錄
+                    $check=Punch::where([
+                        ['employee_id','=',$employeeID],
+                        ['customer_id','=',''],
+                        ['year','=',$year],
+                        ['month','=',$month],
+                        ['day','=',$day],
+                        ['class','=','代'],
+                        ['PunchOutTime',null]   
+                    ])->get()->toarray();
 
-                if (count($check)==1){
-                    $DBdata=[
-                        'PunchOutTime'=>$now,
-                    ];
+                    if (count($check)==1){
+                        $DBdata=[
+                            'PunchOutTime'=>$now,
+                        ];
 
-                    $punch= Punch::where('id','=',$check[0]['id'])->update($DBdata);
-                    return "打下班卡成功";
-                }
-                else{
-                    return "打卡失敗，查無上班打卡記錄，請補打上班卡及下班卡";
+                        $punch= Punch::where('id','=',$check[0]['id'])->update($DBdata);
+                        return "打下班卡成功";
+                    }
+                    else{
+                        return "打卡失敗，查無上班打卡記錄，請補打上班卡及下班卡";
+                    }
                 }
             }
         }
@@ -806,6 +844,139 @@ class AuthUserController extends Controller
         else{
             return '打卡失敗，請在你工作所在地打卡!';
         }
+    }
+
+    public function api_Schedule(Request $request)
+    {
+        $employeeID=$request['EmployeeID'];
+        $year = date("Y");
+        $month = date("m");
+
+        $schedule=DB::table('schedules')
+                    ->join('customers',function($join){
+                        $join->on('schedules.customer_id','=','customers.customer_id');    
+                    })
+                    ->where([
+                        ['employee_id',$employeeID],
+                        ['year',$year],
+                        ['month',$month]
+                    ])
+                    ->orwhere([
+                        ['employee_id',$employeeID],
+                        ['year',$year],
+                        ['month',$month+1]
+                    ])
+                    ->select('customers.firstname','schedules.*')
+                    ->orderby('schedules.month')
+                    ->get()
+                    ->map(function($schedule){
+                        return[
+                            'customerName'=>$schedule->firstname,
+                                'month'=>$schedule->year.'-'.$schedule->month,
+                                '1'=>$schedule->day1,
+                                '2'=>$schedule->day2,
+                                '3'=>$schedule->day3,
+                                '4'=>$schedule->day4,
+                                '5'=>$schedule->day5,
+                                '6'=>$schedule->day6,
+                                '7'=>$schedule->day7,
+                                '8'=>$schedule->day8,
+                                '9'=>$schedule->day9,
+                                '10'=>$schedule->day10,
+                                '11'=>$schedule->day11,
+                                '12'=>$schedule->day12,
+                                '13'=>$schedule->day13,
+                                '14'=>$schedule->day14,
+                                '15'=>$schedule->day15,
+                                '16'=>$schedule->day16,
+                                '17'=>$schedule->day17,
+                                '18'=>$schedule->day18,
+                                '19'=>$schedule->day19,
+                                '20'=>$schedule->day20,
+                                '21'=>$schedule->day21,
+                                '22'=>$schedule->day22,
+                                '23'=>$schedule->day23,
+                                '24'=>$schedule->day24,
+                                '25'=>$schedule->day25,
+                                '26'=>$schedule->day26,
+                                '27'=>$schedule->day27,
+                                '28'=>$schedule->day28,
+                                '29'=>$schedule->day29,
+                                '30'=>$schedule->day30,
+                                '31'=>$schedule->day31,
+                                'A'=>[$schedule->A,$schedule->A_end],
+                                'B'=>[$schedule->B,$schedule->B_end],
+                                'C'=>[$schedule->C,$schedule->C_end],
+                                'D'=>[$schedule->D,$schedule->D_end],
+                                'E'=>[$schedule->E,$schedule->E_end],
+                                'F'=>[$schedule->F,$schedule->F_end],
+                                'G'=>[$schedule->G,$schedule->G_end],
+                                'H'=>[$schedule->H,$schedule->H_end],
+                                'I'=>[$schedule->I,$schedule->I_end],
+                                'J'=>[$schedule->J,$schedule->J_end],      
+                        ];
+                    })->toarray();
+
+        $allClassList=['A','B','C','D','E','F','G','H','I','J'];
+        $defind = array();
+        
+        if($schedule != [])
+        {
+            for($i=0;$i<count($schedule);$i++){
+                //過濾空欄位
+                foreach($schedule[$i] as $k=>$v){
+                    if($schedule[$i][$k] == "" || $v == ","){
+                        unset($schedule[$i][$k]);
+                    }
+                }
+
+                //將班表定義時間整理
+                for($j=0;$j<count($allClassList);$j++){
+                    if($schedule[$i][$allClassList[$j]][0] == "" || $schedule[$i][$allClassList[$j]][1] == ""){
+                        unset($schedule[$i][$allClassList[$j]]);
+                    }
+                    else{
+                        if(!isset($schedule[$i]["Defind"][$allClassList[$j]])){
+                            $schedule[$i]["Defind"][$allClassList[$j]]=[];
+                        }
+
+                        if(!isset($schedule[$i][$allClassList[$j]])){
+                            $schedule[$i][$allClassList[$j]]=[];
+                        }
+
+                        array_push($schedule[$i]["Defind"][$allClassList[$j]],
+                            $schedule[$i][$allClassList[$j]][0] , $schedule[$i][$allClassList[$j]][1]
+                        );
+
+                        $schedule[$i][$allClassList[$j]]=[];
+                    }
+
+                }
+                //$offset = 0;
+                for($k=1;$k<=31;$k++){
+                    
+                    if(isset($schedule[$i][$k]) && $schedule[$i][$k] != null)
+                    {            
+                        $class = $schedule[$i][$k];
+                        if(strlen($class) == 1)
+                        { 
+                            array_push($schedule[$i][$class],$k);
+                        }
+                        else{
+                            for($n=1;$n<=strlen($class);$n++)
+                            {
+                                $oneClass = substr($class,$n-1,1);
+                                array_push($schedule[$i][$oneClass],$k);
+                            }
+
+                        }
+                        unset($schedule[$i][$k]);
+                    }
+                }
+            }
+        }
+
+        return response(['ClassSchedule'=>$schedule]);
     }
 
 

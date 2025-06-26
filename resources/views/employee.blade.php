@@ -373,14 +373,17 @@
                     </div>
                     <div class="col col-md-auto border-0  py-1">薪水:
                             <input class="border-1 py-0 my-0" type="number" value="{{ old('salary') }}" id="salary">
-                            <input type="button" value="儲存" onclick="example()" />
-                            <input type="button" value="刪除" onclick="example2()" />    
                     </div>
-                    <textarea id="text2" style="font-size:large" rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly>{{old("clock_salary")}}</textarea>
+                    <div class="col col-md-auto border-0  py-1">時數:
+                        <input class="border-1 py-0 my-0" type="number" value="{{ old('work_hour') }}" id="work_hour">
+                        <input type="button" value="儲存" onclick="example()" />
+                        <input type="button" value="刪除" onclick="example2()" />   
+                    </div>
+                    <textarea id="text2" style="font-size:large" rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，以欄位中較新的資料為主。" readonly>{{old("clock_salary")}}</textarea>
 
 
 
-                    <div class="col col-md-auto border-0 align-self-center py-1" >時數定義:</div>
+                    {{-- <div class="col col-md-auto border-0 align-self-center py-1" >時數定義:</div>
                     <div class="col col-md-auto align-self-center">
                         <select class="form-select form-select-sm" aria-label="Default select example" name="work_place2" id="work_place2">
                             <option value="">請選擇</option>
@@ -398,7 +401,7 @@
                             <input type="button" value="儲存" onclick="addhour()" />
                             <input type="button" value="刪除" onclick="addhour2()" />    
                     </div>
-                    <textarea id="text3" style="font-size:large" rows="8" cols="20" name="hour" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly></textarea>
+                    <textarea id="text3" style="font-size:large" rows="8" cols="20" name="hour" placeholder="請設定時數。" readonly></textarea> --}}
                     
 
 
@@ -425,15 +428,20 @@
                             <option value="月薪">月薪</option>
                         </select>
                     </div>
+
                     <div class="col col-md-auto border-0  py-1">薪水:
-                            <input class="border-1 py-0 my-0" type="number" value="{{ old('salary') }}" id="salary">
-                            <input type="button" value="儲存" onclick="example()" />
-                            <input type="button" value="刪除" onclick="example2()" />    
+                            <input class="border-1 py-0 my-0" type="number" value="{{ old('salary') }}" id="salary">  
                     </div>
-                    <textarea id="text2" style="font-size:large" rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly></textarea>
+
+                    <div class="col col-md-auto border-0  py-1">時數:
+                        <input class="border-1 py-0 my-0" type="number" value="{{ old('work_hour') }}" id="work_hour">
+                        <input type="button" value="儲存" onclick="example()" />
+                        <input type="button" value="刪除" onclick="example2()" />  
+                    </div>
+                    <textarea id="text2" style="font-size:large" rows="8" cols="20" name="clock_salary" placeholder="同一客戶若同時輸入月薪跟時薪，以欄位中較新的資料為主。" readonly></textarea>
 
 
-                    <div class="col col-md-auto border-0 align-self-center py-1" >時數定義:</div>
+                    {{-- <div class="col col-md-auto border-0 align-self-center py-1" >時數定義:</div>
                     <div class="col col-md-auto align-self-center">
                         <select class="form-select form-select-sm" aria-label="Default select example" name="work_place2" id="work_place2">
                             
@@ -451,7 +459,7 @@
                             <input type="button" value="儲存" onclick="addhour()" />
                             <input type="button" value="刪除" onclick="addhour2()" />    
                     </div>
-                    <textarea id="text3" style="font-size:large" rows="8" cols="20" name="hour" placeholder="同一客戶若同時輸入月薪跟時薪，將以月薪為主。" readonly></textarea>
+                    <textarea id="text3" style="font-size:large" rows="8" cols="20" name="hour" placeholder="請設定時數。" readonly></textarea> --}}
                 @endcan
 
 
@@ -625,11 +633,12 @@
 
     function example(){
             var salary = document.getElementById("salary").value;
+            var hour = document.getElementById("work_hour").value;
             var salary_type = document.getElementById("salary_type").value;
             var place = document.getElementById("work_place").value;
-            var textnode=document.createTextNode(place+','+salary_type+','+salary+',');
+            var textnode=document.createTextNode(place+','+salary_type+','+salary+','+hour+',');
             
-            if (salary!="" && place!=""){
+            if (salary!="" && place!="" && hour !=""){
             var area=document.getElementById("text2");
             area.appendChild(textnode);
             }

@@ -54,38 +54,38 @@ class AjaxController extends Controller
     public function ajaxRequestSchedule(Request $request)
     {
         $id = $request->cid;
-        //$id = '445';
+        //$id = '123456';
 
         $time = $request->ctime;
         $endtime = $request->etime;
-        //$time = '2025-05-30 18:00:00';
-        //$endtime = '2025-05-30 19:00:00';
+        //$time = '2025-06-08 12:00:00';
+        //$endtime = '2025-06-08 13:00:00';
         $yesterdate = date('Y-m-d',strtotime('-1 day',strtotime($time)));
         $todate = date('Y-m-d',strtotime($time));
 
         $year = date('Y',strtotime($time));
         $month = intval(date('m',strtotime($time)));
-        $day = 'day'.date('d',strtotime($time));
-        $yesterday = 'day'.date('d',strtotime('-1 day',strtotime($time)));
+        $day = 'day'.intval(date('d',strtotime($time)));
+        $yesterday = 'day'.intval(date('d',strtotime('-1 day',strtotime($time))));
         $returnData = [];
         
-
         $query = DB::table('extra_schedules')
         ->join('employees','extra_schedules.leave_member','employees.member_sn')
         ->where([
             ["emp_id",$id],
         ])->get((array(('extra_schedules.*'),'employees.member_name')));
 
-        foreach($query as $r){
+        if(count($query) != 0)
+        {
+            foreach($query as $r){
 
-            if((strtotime($time) >= strtotime($r->start) && strtotime($time) <= strtotime($r->end))
-                && (strtotime($endtime) >= strtotime($r->start) && strtotime($endtime) <= strtotime($r->end)))
-            {
-                return ['result'=>false,'customer'=>urlencode($r->member_name),'start'=>($r->start),'end'=>($r->end)];
+                if((strtotime($time) >= strtotime($r->start) && strtotime($time) <= strtotime($r->end))
+                    && (strtotime($endtime) >= strtotime($r->start) && strtotime($endtime) <= strtotime($r->end)))
+                {
+                    return ['result'=>false,'customer'=>urlencode($r->member_name),'start'=>($r->start),'end'=>($r->end)];
+                }
             }
         }
-
-
 
         $query = DB::table('schedules')
         ->join('customers','schedules.customer_id','customers.customer_id')
@@ -101,8 +101,6 @@ class AjaxController extends Controller
             return ['result'=>true];
         }
         else{
-
-
             for($i=0;$i<count($query);$i++){
                 $class = $query[$i]->$yesterday;
                 $len = strlen($class);

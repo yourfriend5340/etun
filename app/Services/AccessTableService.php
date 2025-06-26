@@ -4,6 +4,7 @@ namespace App\Services;
 use App\Models\Employee;
 use App\Models\Customer;
 use App\Models\twotime_table;
+use App\Models\extra_schedule;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
@@ -257,6 +258,8 @@ class AccessTableService
 
       $month = date("m",strtotime($time));
       $year = date("Y",strtotime($time));
+      $EndDay = date('Y-m-t', strtotime($time));
+      $startDay = date('Y-m-01', strtotime($time));  
 
       //首行格式
       $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
@@ -274,6 +277,27 @@ class AccessTableService
       $sheet->setCellValue('T1','代班人員紀錄表');
 
       
+
+      $query = DB::table('extra_schedules')
+               ->leftjoin('employees as t1','extra_schedules.emp_id','=','t1.member_sn')
+               ->leftjoin('employees as t2','extra_schedules.leave_member','=','t2.member_sn')
+               ->leftjoin('employees','employees.member_sn','=','extra_schedules.leave_member')
+               ->select('extra_schedules.*','t1.member_name as emp_name','t2.member_name as leave_name')
+               ->whereBetween(
+                  "start",[$startDay,$EndDay],
+               )->get();
+      $serial = 0;            
+      for($i=0;$i<count($query);$i++){
+         $offset = $i +3 ;
+         $serial ++;
+         $sheet->setCellValue("A$offset",$serial);
+         $sheet->setCellValue("B$offset",$query[$i]->emp_id);
+         $sheet->setCellValue("C$offset",$query[$i]->emp_name);
+         $sheet->setCellValue("D$offset",$query[$i]->start);
+         $sheet->setCellValue("E$offset",$query[$i]->end);
+         $sheet->setCellValue("F$offset",$query[$i]->leave_name);
+      }
+
       $file_name = $time.'代班人員_'.date('Y_m_d H:i:s');
 
       header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

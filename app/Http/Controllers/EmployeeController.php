@@ -275,7 +275,7 @@ class EmployeeController extends Controller
     
         //儲存鐘點費
         $clock = [];
-        $month = [];
+        //$month = [];
         $clock_salary=$request->input('clock_salary');
         $clock_salary_array=array_filter(explode(',',$clock_salary));
         $num=count($clock_salary_array);
@@ -283,23 +283,24 @@ class EmployeeController extends Controller
         $coffset = 0;
         $moffset = 0;
 
-        for($i=0;$i<$num;$i+=3){
-            if($clock_salary_array[$i+1] == '時薪'){
+        for($i=0;$i<$num;$i+=4){
+            //if($clock_salary_array[$i+1] == '時薪'){
                 $clock[$coffset]['name']= $clock_salary_array[$i];
                 $clock[$coffset]['type']= $clock_salary_array[$i+1];
                 $clock[$coffset]['amount'] = $clock_salary_array[$i+2];
+                $clock[$coffset]['hour'] = $clock_salary_array[$i+3];
                 $coffset++;
-            }
-            else{
-                $month[$moffset]['name']= $clock_salary_array[$i];
-                $month[$moffset]['type']= $clock_salary_array[$i+1];
-                $month[$moffset]['amount'] = $clock_salary_array[$i+2];
-                $moffset++;
-            }
+            //}
+            //else{
+            //    $month[$moffset]['name']= $clock_salary_array[$i];
+            //    $month[$moffset]['type']= $clock_salary_array[$i+1];
+            //    $month[$moffset]['amount'] = $clock_salary_array[$i+2];
+            //    $moffset++;
+            //}
         }
 
         $cnum=count($clock);
-        $mnum=count($month);
+        //$mnum=count($month);
         for ($i=0;$i<$cnum;$i++){
             $data=[
             'member_sn'=>$membersn,
@@ -307,6 +308,7 @@ class EmployeeController extends Controller
             'customer'=>$clock[$i]['name'],
             'salaryType'=>$clock[$i]['type'],
             'salary'=>$clock[$i]['amount'],
+            'hour'=>$clock[$i]['hour'],
             ];
 
             $count = DB::table('clock_salary')->where([
@@ -323,7 +325,7 @@ class EmployeeController extends Controller
                 DB::table('clock_salary')->where([
                     ['member_sn',$membersn],
                     ['customer',$clock[$i]['name']]
-                ])->update(['salary'=>$clock[$i]['amount'],'salaryType'=>$clock[$i]['type']]);
+                ])->update(['salary'=>$clock[$i]['amount'],'salaryType'=>$clock[$i]['type'],'hour'=>$clock[$i]['hour']]);
                 
                 //$errorMessage = '查到'.$name.'已在'.$clock[$i]['name'].'設定'.$clock[$i]['type'].'，請利用修改功能調整';
                 // return Redirect::back()->withErrors($errorMessage)->withInput();
@@ -331,35 +333,35 @@ class EmployeeController extends Controller
             }
         }
 
-        for ($i=0;$i<$mnum;$i++){
-            $data=[
-            'member_sn'=>$membersn,
-            'member_name'=>$name,
-            'customer'=>$month[$i]['name'],
-            'salaryType'=>$month[$i]['type'],
-            'salary'=>$month[$i]['amount'],
-            ];
+        // for ($i=0;$i<$mnum;$i++){
+        //     $data=[
+        //     'member_sn'=>$membersn,
+        //     'member_name'=>$name,
+        //     'customer'=>$month[$i]['name'],
+        //     'salaryType'=>$month[$i]['type'],
+        //     'salary'=>$month[$i]['amount'],
+        //     ];
 
-            $count = DB::table('clock_salary')->where([
-                ['member_sn',$membersn],
-                ['customer',$month[$i]['name']],
-            ])->count();
+        //     $count = DB::table('clock_salary')->where([
+        //         ['member_sn',$membersn],
+        //         ['customer',$month[$i]['name']],
+        //     ])->count();
 
-            if($count == 0)
-            {    
-                $store = ClockSalary::create($data);
-            }
-            else{
-                DB::table('clock_salary')->where([
-                    ['member_sn',$membersn],
-                    ['customer',$month[$i]['name']]
-                ])->update(['salary'=>$month[$i]['amount'],'salaryType'=>$month[$i]['type']]);
+        //     if($count == 0)
+        //     {    
+        //         $store = ClockSalary::create($data);
+        //     }
+        //     else{
+        //         DB::table('clock_salary')->where([
+        //             ['member_sn',$membersn],
+        //             ['customer',$month[$i]['name']]
+        //         ])->update(['salary'=>$month[$i]['amount'],'salaryType'=>$month[$i]['type']]);
 
-                //$errorMessage = '查到'.$name.'已在'.$month[$i]['name'].'設定'.$month[$i]['type'].'，請利用修改功能調整';
-                // return Redirect::back()->withErrors($errorMessage)->withInput();
-                // break;
-            }
-        }
+        //         //$errorMessage = '查到'.$name.'已在'.$month[$i]['name'].'設定'.$month[$i]['type'].'，請利用修改功能調整';
+        //         // return Redirect::back()->withErrors($errorMessage)->withInput();
+        //         // break;
+        //     }
+        // }
 
         return redirect()->route('employee_desc');
     }
@@ -698,28 +700,29 @@ class EmployeeController extends Controller
 
         //儲存鐘點費
         $clock = [];
-        $month = [];
+        //$month = [];
         $clock_salary_array=array_filter(explode(',',$clock_salary));
         $num=count($clock_salary_array);
         //dd($clock_salary_array);
         $coffset = 0;
         $moffset = 0;
 
-        for($i=0;$i<$num;$i+=3){
-            if($clock_salary_array[$i+1] == '時薪'){
+        for($i=0;$i<$num;$i+=4){
+            //if($clock_salary_array[$i+1] == '時薪'){
                 $clock[$coffset]['name']= $clock_salary_array[$i];
                 $clock[$coffset]['type']= $clock_salary_array[$i+1];
                 $clock[$coffset]['amount'] = $clock_salary_array[$i+2];
+                $clock[$coffset]['hour'] = $clock_salary_array[$i+3];
                 $coffset++;
-            }
-            else{
-                $month[$moffset]['name']= $clock_salary_array[$i];
-                $month[$moffset]['type']= $clock_salary_array[$i+1];
-                $month[$moffset]['amount'] = $clock_salary_array[$i+2];
-                $moffset++;
-            }
+            //}
+            //else{
+            //    $month[$moffset]['name']= $clock_salary_array[$i];
+            //    $month[$moffset]['type']= $clock_salary_array[$i+1];
+            //    $month[$moffset]['amount'] = $clock_salary_array[$i+2];
+            //    $moffset++;
+            //}
         }
-        $mnum=count($month);
+        //$mnum=count($month);
         $cnum=count($clock);
 
         for ($i=0;$i<$cnum;$i++){
@@ -729,6 +732,7 @@ class EmployeeController extends Controller
             'customer'=>$clock[$i]['name'],
             'salaryType'=>$clock[$i]['type'],
             'salary'=>$clock[$i]['amount'],
+            'hour'=>$clock[$i]['hour'],
             ];
 
             $count = DB::table('clock_salary')
@@ -748,41 +752,41 @@ class EmployeeController extends Controller
                     ['customer',$clock[$i]['name']]
                 ])
                 ->update(
-                    ['salary'=>$clock[$i]['amount'],'salaryType'=>$clock[$i]['type']],
+                    ['salary'=>$clock[$i]['amount'],'salaryType'=>$clock[$i]['type'],'hour'=>$clock[$i]['hour']],
                 );
             }
         }
 
-        for ($i=0;$i<$mnum;$i++){
-            $data=[
-            'member_sn'=>$membersn,
-            'member_name'=>$name,
-            'customer'=>$month[$i]['name'],
-            'salaryType'=>$month[$i]['type'],
-            'salary'=>$month[$i]['amount'],
-            ];
+        // for ($i=0;$i<$mnum;$i++){
+        //     $data=[
+        //     'member_sn'=>$membersn,
+        //     'member_name'=>$name,
+        //     'customer'=>$month[$i]['name'],
+        //     'salaryType'=>$month[$i]['type'],
+        //     'salary'=>$month[$i]['amount'],
+        //     ];
 
-            $count = DB::table('clock_salary')
-            ->where([
-                ['member_sn',$membersn],
-                ['customer',$month[$i]['name']],
-            ])->count();
+        //     $count = DB::table('clock_salary')
+        //     ->where([
+        //         ['member_sn',$membersn],
+        //         ['customer',$month[$i]['name']],
+        //     ])->count();
 
-            if($count == 0)
-            {    
-                $store = ClockSalary::create($data);
-            }
-            else{
-                DB::table('clock_salary')
-                ->where([
-                    ['member_sn',$membersn],
-                    ['customer',$month[$i]['name']]
-                ])
-                ->update(
-                    ['salary'=>$month[$i]['amount'],'salaryType'=>$month[$i]['type']],
-                );
-            }
-        }
+        //     if($count == 0)
+        //     {    
+        //         $store = ClockSalary::create($data);
+        //     }
+        //     else{
+        //         DB::table('clock_salary')
+        //         ->where([
+        //             ['member_sn',$membersn],
+        //             ['customer',$month[$i]['name']]
+        //         ])
+        //         ->update(
+        //             ['salary'=>$month[$i]['amount'],'salaryType'=>$month[$i]['type']],
+        //         );
+        //     }
+        // }
 
         return redirect()->route('employee_desc');
     }
