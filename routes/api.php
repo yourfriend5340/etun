@@ -35,5 +35,6 @@ Route::POST('/punchout', [App\Http\Controllers\Auth\AuthUserController::class, '
 Route::POST('/schedule', [App\Http\Controllers\Auth\AuthUserController::class, 'api_Schedule']);
 Route::POST('/leave', [App\Http\Controllers\TableController::class, 'leaveAPI']);
 Route::POST('/resign', [App\Http\Controllers\TableController::class, 'resignAPI']);
+Route::POST('/tableresult', [App\Http\Controllers\TableController::class, 'tableresultAPI']);
 
 });

@@ -714,6 +714,49 @@ class TableController extends Controller
     }
 
 
+    public function tableresultAPI(Request $request){
+        $employeeID = $request->EmployeeID;
+        $month = date('Y-m');
+        $nextmonth = date('Y-m',strtotime("+1 month"));
+        $query = DB::table('twotime_table')
+            ->select('type','start','end','reason','status')
+            ->where([
+                    ['empid',$employeeID],
+                    ['start','like',$month.'%']
+                ])
+            ->orwhere([
+                    ['empid',$employeeID],
+                    ['start','like',$nextmonth.'%']
+                ])
+            ->get()
+            ->map(function($item){
+                if($item->type == '離職'){
+                    $item->start = date('Y-m-d',strtotime($item->start));
+                }
+                
+                if($item->status == 'Y'){
+                    $item->status =  '通過';
+                }
+                elseif($item->status == 'N'){
+                    $item->status = '駁回';
+                }
+                else{
+                    $item->status = '尚未審核';
+                }
+
+                if($item->end == null){
+                    $item->end = '-';
+                }
+
+                return $item;
+            });
+
+            if(count($query) == 0){
+                $query = '無任何紀錄';
+            }
+            return response(['result'=>$query]);
+    }
+    
     //構造注入service
     /** @var AccessSalaryService */
     protected $accessSalaryService;
