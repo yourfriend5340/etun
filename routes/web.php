@@ -148,6 +148,7 @@ Route::POST('schedules/export',[SchedulesController::class,'export'])->name('sch
 Route::POST('schedules/download_example',[SchedulesController::class,'download_example'])->name('schedules.download_example');
 
 Route::get('/table', [TableController::class, 'index'])->name('table');
+Route::get('/table_overview', [TableController::class, 'overview'])->name('table.overview');
 Route::POST('/table_attendance', [TableController::class, 'attendance'])->name('table.attendance');
 Route::POST('/table_salary', [TableController::class, 'salary'])->name('table.salary');
 Route::POST('/table_resign', [TableController::class, 'resign'])->name('table.resign');
@@ -157,6 +158,7 @@ Route::POST('/table_import_access_salary', [TableController::class, 'import_acce
 Route::POST('/table_export_extra_schedule', [TableController::class, 'export_extra_schedule'])->name('table.export_extra_schedule');
 Route::get('/table/request/{Request_id}', [App\Http\Controllers\TableController::class, 'request'])->name('table.request');
 Route::get('/table/update/id={update_id}&status={update_status}&emp={update_emp}',[App\Http\Controllers\TableController::class,'updateStatus'])->name('table.updateStatus');
+Route::get('/table/requestoverview/name={name}&start_time={start_time}&end_time={end_time}',[App\Http\Controllers\TableController::class,'requestoverview'])->name('table.requestoverview');
 
 Route::POST('ajaxRequest',[AjaxController::class,'ajaxRequestPost'])->name('ajaxRequest');
 Route::POST('ajaxRequestCustomer',[AjaxController::class,'ajaxRequestCustomer'])->name('ajaxRequestCustomer');

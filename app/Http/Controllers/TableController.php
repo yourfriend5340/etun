@@ -713,6 +713,39 @@ class TableController extends Controller
        return redirect()->route("home");
     }
 
+    public function overview(Request $request){
+        return view("show_table");
+    }
+
+    public function requestoverview(Request $request){
+        $name = $request->name;
+        $start = $request->start_time;
+        $end = $request->end_time;
+
+        if($name == '請假')
+        {
+            $query = DB::table('twotime_table')
+            ->join('employees','twotime_table.empid','employees.member_sn')
+            ->select('twotime_table.*','employees.member_name')
+            ->where([
+                ['type',$name],
+                ['start','>=',$start],
+                ['end','<=',$end],
+            ])
+            ->orderby('start','asc')
+            ->paginate(20);
+        }
+        elseif($name == '離職'){
+            $query = DB::table('twotime_table')
+            ->join('employees','twotime_table.empid','employees.member_sn')
+            ->select('twotime_table.*','employees.member_name')
+            ->where('type',$name)
+            ->whereBetween('start',[$start,$end])
+            ->orderby('start','asc')
+            ->paginate(20);
+        }
+         return view("show_table",["results"=>$query]);
+    }
 
     public function tableresultAPI(Request $request){
         $employeeID = $request->EmployeeID;
