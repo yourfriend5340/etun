@@ -113,8 +113,8 @@ class ConvertPdfService
 
       //輸出pdfÍÍ
          //$pdfWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Mpdf');
-         //$pdfWriter = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
-         $pdfWriter = new Mpdf($spreadsheet);
+         $pdfWriter = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
+
          $pdfWriter->setConfig([
                'format' => 'A4',
                'autoScriptToLang' => true,
