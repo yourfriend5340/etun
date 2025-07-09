@@ -111,10 +111,10 @@ class ConvertPdfService
       $drawing->setOffsetX(100);
       $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
-      //輸出pdf
-         $pdfWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Mpdf');
+      //輸出pdfÍÍ
+         //$pdfWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Mpdf');
          //$pdfWriter = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
-
+         $pdfWriter = new Mpdf($spreadsheet);
          $pdfWriter->setConfig([
                'format' => 'A4',
                'autoScriptToLang' => true,
