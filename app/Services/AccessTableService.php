@@ -102,7 +102,8 @@ class AccessTableService
       $file = $request->file('file');
       $startTime = date('Y-m-d H:i',strtotime($json->start));
       $endTime = date('Y-m-d H:i',strtotime($json->end));
-
+      $fileTime = date('Y-m-d_H-i',strtotime($json->start));
+      
       if(strtotime($endTime) < strtotime($startTime)){
          $message =  '結束時間不可能比開始時間還早發生';
          return $message;
@@ -118,7 +119,7 @@ class AccessTableService
          }
 
          if ($request->file('file')!=null){
-            $imageName = $json->EmployeeID.'_'.$startTime.'.'.$request->file('file')->extension();
+            $imageName = $json->EmployeeID.'_'.$fileTime.'.'.$request->file('file')->extension();
             $path = $request->file('file')->storeas('leave/'.$json->EmployeeID,$imageName);
 
             $test = DB::table('twotime_table')->where([
