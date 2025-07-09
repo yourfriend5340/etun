@@ -46,7 +46,7 @@ class HomeController extends Controller
                 ->where('twotime_table.status', null)
                 ->orderby('twotime_table.id')
                 ->paginate(5,(array(('twotime_table.*'),'employees.member_name')));
-        
+
         return view("home",["employees"=>$employee,
                             "topAnn"=>$topAnn,
                             "announcements"=>$announcement,

@@ -41,10 +41,12 @@
         </table>
     </div>
     
+
+
+    @if (count($leaves) != 0)
     <div class="col-12">
         <h2 class="h_two my-0 p-1">請假審核</h2>
     </div>
-
     <div class="col-12 table-responsive">
         <table class="table table-bordered table-striped table-hover text-center align-middle">
 
@@ -101,6 +103,7 @@
             </div>
         @endcan
     </div>
+    @endif
     
     <div class="col-12">
         <h2 class="h_three my-0 p-1">巡邏紀錄</h2>
