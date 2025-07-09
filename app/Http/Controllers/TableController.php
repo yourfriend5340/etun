@@ -122,10 +122,10 @@ class TableController extends Controller
     public function leave(Request $request){
 
         $query = DB::table('twotime_table')->where('id',intval($request->id))->first();
-        
-        //$path = $query->filePath;
-        $path = '/請假/444/請假單_444_2025-04-30_18:00.pdf';
-        $fileName = '請假單.pdf';
+        $date = date('Y-m-d',strtotime($query->start));
+        $path = 'public'.$query->filePath;
+
+        $fileName = $query->empid.'_'.$date.'_請假單.pdf';
         $mimeType = Storage::mimeType($path);
         $headers = [['Content-Type' => $mimeType]];
         

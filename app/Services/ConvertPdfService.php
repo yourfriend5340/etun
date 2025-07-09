@@ -129,7 +129,8 @@ class ConvertPdfService
       //$pdfWriter->save('php://output');
 
       //檢查資料是否存在
-      $storagePath = public_path();
+      $storagePath = storage_path().'/app/public';
+      
       if($request->type =='請假')
       {
          if(!is_dir($storagePath."/請假"))
