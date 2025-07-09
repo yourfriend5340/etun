@@ -777,7 +777,7 @@ class TableController extends Controller
 
                 return $item;
             });
-            dd($employeeID,$month,$nextmonth,$query);
+
             if(count($query) == 0){
                 $query = '無任何紀錄';
             }
