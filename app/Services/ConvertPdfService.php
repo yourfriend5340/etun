@@ -92,7 +92,7 @@ class ConvertPdfService
       {
          $sheet->setCellValue('A1', $request->organize.'  請假單');  
          $sheet->setCellValue('A7','請假日期：  '.date('Y-m-d H:i',strtotime($request->start)).' 至 '.date('Y-m-d H:i',strtotime($request->end)));    
-         $file_name = '請假單_'.$request->empid.'_'.date('Y-m-d_H:i',strtotime($request->start)).'.pdf';
+         $file_name = '請假單_'.$request->empid.'_'.date('Y-m-d_H-i',strtotime($request->start)).'.pdf';
       }
       elseif($request->type == '離職')
       {
@@ -112,8 +112,8 @@ class ConvertPdfService
       $drawing->setWorksheet($spreadsheet->getActiveSheet());
 
       //輸出pdf
-         //$pdfWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Mpdf');
-         $pdfWriter = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
+         $pdfWriter = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Mpdf');
+         //$pdfWriter = new \PhpOffice\PhpSpreadsheet\Writer\Pdf\Mpdf($spreadsheet);
 
          $pdfWriter->setConfig([
                'format' => 'A4',
