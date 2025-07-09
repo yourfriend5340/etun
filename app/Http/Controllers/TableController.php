@@ -749,18 +749,12 @@ class TableController extends Controller
 
     public function tableresultAPI(Request $request){
         $employeeID = $request->EmployeeID;
-        $month = date('Y-m');
-        $nextmonth = date('Y-m',strtotime("+1 month"));
+        $month = date('Y-m').'-01';
+        $nextmonth = date('Y-m-t',strtotime("+1 month"));
         $query = DB::table('twotime_table')
             ->select('type','start','end','reason','status')
-            ->where([
-                    ['empid',$employeeID],
-                    ['start','like',$month.'%']
-                ])
-            ->orwhere([
-                    ['empid',$employeeID],
-                    ['start','like',$nextmonth.'%']
-                ])
+            ->where('empid',$employeeID)
+            ->whereBetween('start',array($month,$nextmonth))
             ->get()
             ->map(function($item){
                 if($item->type == '離職'){
@@ -783,7 +777,7 @@ class TableController extends Controller
 
                 return $item;
             });
-
+            dd($employeeID,$month,$nextmonth,$query);
             if(count($query) == 0){
                 $query = '無任何紀錄';
             }
