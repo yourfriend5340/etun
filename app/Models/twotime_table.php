@@ -18,5 +18,6 @@ class twotime_table extends Model
         'end',
         'reason',
         'filePath',
+        'extra_id'
     ];
 }

@@ -676,60 +676,78 @@ class TableController extends Controller
 
 
     public function updateStatus($id,$status,$emp,ConvertPdfService $convertPdfService){
-       
         $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
         $signPath = storage_path('app').'/'.$signPath[0];
-
-        if($status == 'Y')
+        $applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
+        if($emp != "NULL")//指請假單
         {
-            $result = $convertPdfService->convertTable($id);
-            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
-
-            //請假單處理完畢，以下處理代理人額班表班新增
-            $request = DB::table('twotime_table')->where('id',$id)->first();
-            $leaveMan = $request->empid;
-            $start = $request->start;
-            $end = $request->end;
-
-            $request2 = extra_schedule::where([
-                ['emp_id',$emp],
-                ['start',$start],
-                ['end',$end],
-                ['leave_member',$leaveMan],
-            ])->first();
-
-            //dd($id,$status,$emp,$request,$request2,$leaveMan,$start,$end);
-            if($request2 === null )
+            if($status == 'Y')
             {
-                extra_schedule::create([
-                    'emp_id'=>$emp,
-                    'start'=>$start,
-                    'end'=>$end,
-                    'leave_member'=>$leaveMan,
-                ]);
+                $result = $convertPdfService->convertTable($id);
+
+                //請假單處理完畢，以下處理代理人額班表班新增
+                $request = DB::table('twotime_table')->where('id',$id)->first();
+                $leaveMan = $request->empid;
+                $start = $request->start;
+                $end = $request->end;
+
+                $request2 = extra_schedule::where([
+                    ['emp_id',$emp],
+                    ['start',$start],
+                    ['end',$end],
+                    ['leave_member',$leaveMan],
+                ])->first();
+
+                //dd($id,$status,$emp,$request,$request2,$leaveMan,$start,$end);
+                if($request2 === null )
+                {
+                    extra_schedule::create([
+                        'emp_id'=>$emp,
+                        'start'=>$start,
+                        'end'=>$end,
+                        'leave_member'=>$leaveMan,
+                    ]);
+                }
+                $queryID = extra_schedule::where('emp_id',$emp)->max('id');
+                DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'extra_id'=>$queryID,'filePath'=>$result]);  
+            }
+            elseif($status == 'N'){
+                $result = "";
+                DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+            }
+
+
+        }
+        else//指離職單
+        {
+            if($status == 'Y')
+            {
+                $result = $convertPdfService->convertTable($id);
+                DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
+            }
+            elseif($status == 'N'){
+                $result = "";
+                DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
             }
         }
-        elseif($status == 'N'){
-            $result = "";
-            DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
-        }
+
         if(is_file($signPath)){
             unlink($signPath);
         }
 
-        $applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
-
         $query = DB::table('twotime_table')
-        ->join('employees','twotime_table.empid','employees.member_sn')
-        ->select('twotime_table.*','employees.member_name')
-        ->where([
-            ['empid',$applicantId],
-        ])
-        ->orderby('id','desc')
-        ->paginate(20);
+            ->leftjoin('employees as e1','twotime_table.empid','e1.member_sn')
+            ->leftjoin('extra_schedules','twotime_table.extra_id','extra_schedules.id')
+            ->leftjoin('employees as e2','extra_schedules.emp_id','e2.member_sn')
+            ->select('twotime_table.*','e1.member_name','e2.member_name AS coverMan')
+            ->where([
+                ['empid',$applicantId],
+            ])
+            ->orderby('id','desc')
+            ->paginate(20);
 
          return view("show_table",["results"=>$query]);
-        //return redirect()->route("home");
+
     }
 
     public function overview(Request $request){
@@ -744,12 +762,14 @@ class TableController extends Controller
         if($name == '請假')
         {
             $query = DB::table('twotime_table')
-            ->join('employees','twotime_table.empid','employees.member_sn')
-            ->select('twotime_table.*','employees.member_name')
+            ->leftjoin('employees as e1','twotime_table.empid','e1.member_sn')
+            ->leftjoin('extra_schedules','twotime_table.extra_id','extra_schedules.id')
+            ->leftjoin('employees as e2','extra_schedules.emp_id','e2.member_sn')
+            ->select('twotime_table.*','e1.member_name','e2.member_name AS coverMan')
             ->where([
                 ['type',$name],
-                ['start','>=',$start],
-                ['end','<=',$end],
+                ['twotime_table.start','>=',$start],
+                ['twotime_table.end','<=',$end],
             ])
             ->orderby('start','asc')
             ->paginate(20);

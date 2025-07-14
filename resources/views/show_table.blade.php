@@ -58,6 +58,7 @@
                     <td>員工ID</td>
                     <td>員工名字</td>
                     <td>表單種類</td>
+                    <td>代理人</td>
                     <td>開始時間</td>
                     <td>結束時間</td>
                     <td>原因</td>
@@ -71,6 +72,11 @@
                         <td>{{$r->empid}}</td>
                         <td>{{$r->member_name}}</td>
                         <td>{{$r->type}}</td>
+                        @if(isset($r->coverMan))
+                        <td>{{$r->coverMan}}</td>
+                        @else
+                        <td>-</td>
+                        @endif
                         <td>{{$r->start}}</td>
                         @if($r->end == "")
                             <td> - </td>

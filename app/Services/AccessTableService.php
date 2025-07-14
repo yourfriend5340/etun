@@ -36,7 +36,8 @@ class AccessTableService
             $test = DB::table('twotime_table')->where([
                ['empid',$json->EmployeeID],
                ['type','離職'],
-               ['start',$time],
+               ['status','Y'],
+               //['start',$time],
             ])->count();
 
             if($test == 0)
@@ -56,30 +57,32 @@ class AccessTableService
                catch(Exception $e){
                   $message =  $e->getMessage();
                }
+               $message = '已上傳成功，請待審核，審核後，結果會在下次登入時告知';
             }
             else
             {
-               $data=[
-                  'empid'=>$json->EmployeeID,
-                  'type'=>'離職',
-                  'start'=>$time,
-                  'end'=>null,
-                  'reason'=>$json->reason,
-                  'filePath'=>'resign/'.$json->EmployeeID.'/'.$imageName,
-               ];
+               $message = '已有審核通過離職的記錄，未上傳申請';
+               // $data=[
+               //    'empid'=>$json->EmployeeID,
+               //    'type'=>'離職',
+               //    'start'=>$time,
+               //    'end'=>null,
+               //    'reason'=>$json->reason,
+               //    'filePath'=>'resign/'.$json->EmployeeID.'/'.$imageName,
+               // ];
 
-               try{
-                  twotime_table::where([
-                     ['empid',$json->EmployeeID],
-                     ['type','離職'],
-                     ['start',$time],
-                  ])->update($data);
-               }
-               catch(Exception $e){
-                  $message =  $e->getMessage();
-               }
+               // try{
+               //    twotime_table::where([
+               //       ['empid',$json->EmployeeID],
+               //       ['type','離職'],
+               //       ['start',$time],
+               //    ])->update($data);
+               // }
+               // catch(Exception $e){
+               //    $message =  $e->getMessage();
+               // }
             }
-            $message = '已上傳成功，請待審核，審核後，結果會在下次登入時告知';
+
          }
          else{
             $message = '請附上簽名檔';

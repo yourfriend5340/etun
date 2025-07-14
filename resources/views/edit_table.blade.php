@@ -22,7 +22,7 @@
                 <td>審核</td>
                 </tr>
             </thead>
-        
+
             <tbody>  
                 <tr>
                     <td>{{$results->id}}</td>
@@ -32,16 +32,25 @@
                     <td>{{$results->start}}</td>
                     <td>{{$results->end}}</td>
                     <td>{{$results->reason}}</td>
-                    <td>
-                        <input class="btn btn-light btn-md active" id="yes" type="button" value="同意" onclick="submitY({{$results->id}})">
-                        <input class="btn btn-light btn-md active" id="no" type="button" value="否決" onclick="submitN({{$results->id}})">
-                    </td>
+                    
+                    @if ($results->type != '離職')   
+                        <td>
+                            <input class="btn btn-light btn-md active" id="yes" type="button" value="同意" onclick="submitY({{$results->id}})">
+                            <input class="btn btn-light btn-md active" id="no" type="button" value="否決" onclick="submitN({{$results->id}})">
+                        </td>
+                    @else
+                        <td>
+                            <input class="btn btn-light btn-md active" id="yes" type="button" value="同意" onclick="submit2Y({{$results->id}})">
+                            <input class="btn btn-light btn-md active" id="no" type="button" value="否決" onclick="submit2N({{$results->id}})">
+                        </td>
+                    @endif
                 </tr>
            
             </tbody>
         </table>
     </div>
 
+    @if ($results->type != '離職')   
     <div class="row mx-1 mt-5">
         <h5>員工當日及前日班表：</h5>
         <table class="table table-bordered table-striped table-hover text-center align-middle">
@@ -99,7 +108,7 @@
     <div class="row mx-1 mt-5">
         <h5>代理人選取：</h5>
             <div class="col-md-2 align-self-center">
-                <label for="selectId">選擇代班員工：</label>
+                <label for="selectId">選擇代班員工：</label>Í
                 <select class="selectName align-self-center border-1" id="selectId" name="selectId" onchange="select_change()">   
                 <option value="">--請選擇--</option>
                 @foreach($empList as $e )
@@ -111,6 +120,8 @@
             </div>
     </div>
     <div id='check'></div>
+    @endif
+
 
 @endsection
 
@@ -154,6 +165,23 @@
         }
     }
 
+
+    function submit2Y(id)
+    {
+
+        if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？'))
+        {
+            window.location.href="/table/update/id=" + id + "&status=Y&emp=NULL";
+            //window.event.returnValue=false;
+        }
+    }
+
+    function submit2N(id)
+    {
+        if(window.confirm('確定將單號 '+ id + ' 號否決嗎？')){
+            window.location.href="/table/update/id=" + id + "&status=N&emp=NULL";
+        }
+    }
 
     function select_change(id){
         var userSelect = document.getElementById('selectId');
