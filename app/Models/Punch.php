@@ -21,6 +21,8 @@ class Punch extends Model
         'start',
         'end',
         'PunchInTime',
-        'PunchOutTime'
+        'PunchOutTime',
+        'type',
+        'punchTime',
     ];
 }

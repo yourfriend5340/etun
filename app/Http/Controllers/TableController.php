@@ -378,32 +378,11 @@ class TableController extends Controller
     }
     //簽到單
     public function attendance(Request $request){
-        // Create a new Spreadsheet object
-        $spreadsheet = new Spreadsheet();
 
-        //設定預設格式
-        $spreadsheet->getActiveSheet()->getPageSetup()
-        ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
-        
-        // Retrieve the current active worksheet
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->getDefaultColumnDimension()->setWidth(13.5);//預設寬度
-        $sheet->getDefaultRowDimension()->setRowHeight(30);//預設高度
-        $sheet->getRowDimension('1')->setRowHeight(32);
-        for ($i=2;$i<=40;$i++){
-            $sheet->getRowDimension("$i")->setRowHeight(20);
-        }
-        //自定欄寬
-        $sheet->getColumnDimension('A')->setWidth(5);
-        $sheet->getColumnDimension('B')->setWidth(15.5);
-        $sheet->getColumnDimension('C')->setWidth(15.5);
-        $sheet->getColumnDimension('D')->setWidth(20.5);
-        $sheet->getColumnDimension('F')->setWidth(17.5);
-
-        $sheet->getPageMargins()->setTop(0.5);
-        //$sheet->getPageMargins()->setRight(0.25);        
-        //$sheet->getPageMargins()->setLeft(0.25);
-        $sheet->getPageMargins()->setBottom(0.25);
+        $inputArr =explode(',',$request->signlist);
+        array_pop($inputArr);//因最後有一個逗號，會多一個元素
+        $worksheetCount = intval(count($inputArr) / 2)-1;//因為分頁是從零起算，再減1
+        $arrIndex = 0;
 
         $styleCenterArray = [
             'borders' => [
@@ -440,66 +419,95 @@ class TableController extends Controller
                //'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
          ]
       ];
+        // Create a new Spreadsheet object
+        $spreadsheet = new Spreadsheet();
 
-        //$sheet->getStyle("A1")->applyFromArray($styleCenterArray);
-        $sheet->getStyle("A1:F40")->applyFromArray($styleCenterArray);
-        $sheet->getStyle("A35:A40")->applyFromArray($styleCenterArray);
-        $sheet->getStyle("B35:F40")->applyFromArray($styleArray);
-        $sheet->getStyle('B35:B40')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('A2:F34')->getFont()->setBold(true)->setSize(12);//设置字体加粗大小
-        $sheet->getStyle('B35:B40')->getFont()->setBold(true)->setSize(10);//设置字体加粗大小
-        $sheet->getStyle('A1:F1')->getFont()->setBold(true)->setSize(20);//设置字体加粗大小
-        $sheet->mergeCells('A1:D1');
-        $sheet->mergeCells('E1:F1');
-        $sheet->mergeCells('A35:A40');
-        $sheet->mergeCells('B35:F35');
-        $sheet->mergeCells('B36:F36');
-        $sheet->mergeCells('B37:F37');
-        $sheet->mergeCells('B38:F38');
-        $sheet->mergeCells('B39:F39');
-        $sheet->mergeCells('B40:F40');
-
-        //$attendance=DB::table('customers')->select('firstname')->where('customer_id','=',$request->input('customer_id'))->get()->first();
-        if($request->input('inputName') == null)
-        {
-            $name=DB::table('employees')->where('id',$request->input('emp_id'))->pluck('member_name')->first();
-        }
-        else
-        {
-            $name=$request->input('inputName');
-            $count = DB::table('employees')->where('member_name',$name)->count();
-            
-            if($count == 0){
-                return back()->with('danger','查無此人!!');
+        for($i=0;$i<=$worksheetCount;$i++){
+            if($i >0)
+            {
+                $spreadsheet->createSheet();
             }
+            $spreadsheet->setActiveSheetIndex($i);
+            
+            //設定預設格式
+            $spreadsheet->getActiveSheet($i)->getPageSetup()
+            ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+            
+            // Retrieve the current active worksheet
+            $sheet = $spreadsheet->getActiveSheet($i);
+            $sheet->getDefaultColumnDimension()->setWidth(13.5);//預設寬度
+            $sheet->getDefaultRowDimension()->setRowHeight(30);//預設高度
+            $sheet->getRowDimension('1')->setRowHeight(32);
+            for ($j=2;$j<=40;$j++){
+                $sheet->getRowDimension("$j")->setRowHeight(20);
+            }
+            //自定欄寬
+            $sheet->getColumnDimension('A')->setWidth(5);
+            $sheet->getColumnDimension('B')->setWidth(15.5);
+            $sheet->getColumnDimension('C')->setWidth(15.5);
+            $sheet->getColumnDimension('D')->setWidth(20.5);
+            $sheet->getColumnDimension('F')->setWidth(17.5);
+
+            $sheet->getPageMargins()->setTop(0.5);
+            //$sheet->getPageMargins()->setRight(0.25);        
+            //$sheet->getPageMargins()->setLeft(0.25);
+            $sheet->getPageMargins()->setBottom(0.25);
+
+            //$sheet->getStyle("A1")->applyFromArray($styleCenterArray);
+            $sheet->getStyle("A1:F40")->applyFromArray($styleCenterArray);
+            $sheet->getStyle("A35:A40")->applyFromArray($styleCenterArray);
+            $sheet->getStyle("B35:F40")->applyFromArray($styleArray);
+            $sheet->getStyle('B35:B40')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A2:F34')->getFont()->setBold(true)->setSize(12);//设置字体加粗大小
+            $sheet->getStyle('B35:B40')->getFont()->setBold(true)->setSize(10);//设置字体加粗大小
+            $sheet->getStyle('A1:F1')->getFont()->setBold(true)->setSize(20);//设置字体加粗大小
+            $sheet->mergeCells('A1:D1');
+            $sheet->mergeCells('E1:F1');
+            $sheet->mergeCells('A35:A40');
+            $sheet->mergeCells('B35:F35');
+            $sheet->mergeCells('B36:F36');
+            $sheet->mergeCells('B37:F37');
+            $sheet->mergeCells('B38:F38');
+            $sheet->mergeCells('B39:F39');
+            $sheet->mergeCells('B40:F40');
+
+            
+            $name=$inputArr[$arrIndex];
+            if ($name != "")
+            {
+                $query = DB::table('employees')->where('member_name',$name)->first();
+            }
+            if($query == null){
+                return back()->with('danger','你輸入的人名：'.$name.' 查無此人!!');
+            }
+            
+            $year = date('Y',strtotime($inputArr[$arrIndex+1]));
+            $month = date('m',strtotime($inputArr[$arrIndex+1]));
+
+            $sheet->setCellValue('A1', $query->organize);  
+            $sheet->setCellValue('E1', '執   勤   簽   到   簿');  
+            $sheet->setCellValue('A2', '年份');
+            $sheet->setCellValue('B2', $year);
+            $sheet->setCellValue('C2', '月份');
+            $sheet->setCellValue('D2', $month);
+            $sheet->setCellValue('E2', '姓名');  
+            $sheet->setCellValue("F2", $name);  
+            $sheet->setCellValue('A3', '日期');
+            $sheet->setCellValue('B3', '簽到時間');
+            $sheet->setCellValue('C3', '簽退時間');
+            $sheet->setCellValue('D3', '應勤');
+            $sheet->setCellValue('E3', '值勤哨點');
+            $sheet->setCellValue('F3', '簽名欄');   
+            $sheet->setCellValue('A35', '備註');
+            $sheet->setCellValue('B35', '※休息(用餐時間統一於以下：一、12:00-13:00  二、17:00-18:00  三、23:00-00:00  四、05:00-06:00)');       
+            $sheet->setCellValue('B36', '※請確實記載出勤情形至分鐘為止。');
+            $sheet->setCellValue('B37', '※請確實穿著公司規定服裝，嚴禁喝酒、嚼檳榔、滑手機、打瞌睡、私自調班，違者依公司規定懲處');
+            $sheet->setCellValue('B38', '※值班表請核對，如有錯誤，請立即告知，謝謝。此班表於次月初交回或傳回給公司，以利核薪作業');
+
+
+            $arrIndex = $arrIndex + 2;
         }
-        
-        $sheet->setCellValue('A1', '萬宇股份有限公司');  
-        $sheet->setCellValue('E1', '執   勤   簽   到   簿');  
-        $sheet->setCellValue('A2', '年份');
-        $sheet->setCellValue('C2', '月份');
-        $sheet->setCellValue('E2', '姓名');  
-        $sheet->setCellValue('A3', '日期');
-        $sheet->setCellValue('B3', '簽到時間');
-        $sheet->setCellValue('C3', '簽退時間');
-        $sheet->setCellValue('D3', '應勤');
-        $sheet->setCellValue('E3', '值勤哨點');
-        $sheet->setCellValue('F3', '簽名欄');   
-        $sheet->setCellValue('A35', '備註');
-        $sheet->setCellValue('B35', '※休息(用餐時間統一於以下：一、12:00-13:00  二、17:00-18:00  三、23:00-00:00  四、05:00-06:00)');       
-        $sheet->setCellValue('B36', '※請確實記載出勤情形至分鐘為止。');
-        $sheet->setCellValue('B37', '※請確實穿著公司規定服裝，嚴禁喝酒、嚼檳榔、滑手機、打瞌睡、私自調班，違者依公司規定懲處');
-        $sheet->setCellValue('B38', '※值班表請核對，如有錯誤，請立即告知，謝謝。此班表於次月初交回或傳回給公司，以利核薪作業');
-        
-        $sheet->setCellValue("F2", $name);  
-        
-        // for ($i=4;$i<=34;$i++){
-        //     $sheet->setCellValue("A$i", ($i-3));  
-        //     $sheet->setCellValue("E$i", $name);  
-        // }
-        $file_name = '簽到本_'.$name.'_'.date('Y_m_d');
-       
-       
+        $file_name = '簽到本_'.date('Y_m_d');
         // Write a new .xlsx file
         $writer = new Xlsx($spreadsheet);
 
@@ -709,8 +717,19 @@ class TableController extends Controller
             unlink($signPath);
         }
 
+        $applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
 
-       return redirect()->route("home");
+        $query = DB::table('twotime_table')
+        ->join('employees','twotime_table.empid','employees.member_sn')
+        ->select('twotime_table.*','employees.member_name')
+        ->where([
+            ['empid',$applicantId],
+        ])
+        ->orderby('id','desc')
+        ->paginate(20);
+
+         return view("show_table",["results"=>$query]);
+        //return redirect()->route("home");
     }
 
     public function overview(Request $request){

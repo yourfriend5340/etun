@@ -377,7 +377,7 @@ class AuthUserController extends Controller
         $request=$request->all();
 
         $now = date("Y-m-d H:i:s");
-        $now = '2025-06-08 11:50:00';
+        //$now = '2025-06-08 11:50:00';
         $year = date('Y', strtotime($now));
         $month = intval(date('m', strtotime($now)));
         $day = intval(date('d', strtotime($now)));
@@ -463,8 +463,14 @@ class AuthUserController extends Controller
 
             for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
                 $queryDate='day'.$day;
-                $classList=$schedule[$i]->$queryDate;
-
+                if(isset($schedule[$i]->$queryDate))
+                {
+                    $classList=$schedule[$i]->$queryDate;
+                }
+                else{
+                    $classList=="";
+                }
+                
                 if($classList == ""){
                     continue;
                 }
@@ -510,7 +516,6 @@ class AuthUserController extends Controller
         //以上是針對班表查詢，以下為額外代班查詢
         if($lat2 == "" && $lng2 =="")
         {
-            $now = '2025-06-08 11:50:00';
             $day = intval(date('d', strtotime($now)));
             $request_extra = DB::table('extra_schedules')->where('emp_id',$employeeID)->get();
 
@@ -529,7 +534,7 @@ class AuthUserController extends Controller
                     break;
                 }
             }
-        }
+        }                     
         //計算距離演算法
         //先判斷參數是否有設定，若無被設定表示沒有班，跳錯誤訊息
         if($lat2 != "" && $lng2 != "")
@@ -554,42 +559,21 @@ class AuthUserController extends Controller
 
         if($calculatedDistance<=300)//打卡誤差300公尺內，打卡並執行作業
         {   
+            $DBdata=[
+                'employee_id'=>$employeeID,
+                'year'=>$year,
+                'month'=>$month,
+                'day'=>$day,
+                'type'=>'IN',
+                'punchTime'=>$now,
 
-            //寫入打卡記錄
-            $check=Punch::where([
-                 ['employee_id','=',$employeeID],
-                 ['year','=',$year],
-                 ['month','=',$month],
-                 ['day','=',$day],
-                 ['class','=',$class]   
-            ])->get();
+            ];
 
-            //本日第一筆的第n班紀錄
-            if (count($check)==0){
-                $DBdata=[
-                    'employee_id'=>$employeeID,
-                    'customer_id'=>$cusId,
-                    'year'=>$year,
-                    'month'=>$month,
-                    'day'=>$day,
-                    'class'=>$class,
-                    'PunchInTime'=>$now,
-                    'start'=>$classStartTime,
-                    'end'=>$classEndTime,
-                ];
-                //dd($DBdata);
-                $punch= Punch::create($DBdata);
-                return response()->json(['success'],200);
-            }
-            else{
-                return "打卡失敗，您已經打過卡";
-            }
-            //dd($now,$year,$month,$day,$time);
-            
-            //return "punch in success!!!(distance-measuring error about $calculatedDistance meters from your workplace)";
+            $punch= Punch::create($DBdata);
+            return response()->json(['success'],200);
         }
         else{
-            return '打卡失敗，請於您的工作場地及上班前十分鐘或該班開始後二十分鐘內進行打卡。';
+            return '打卡失敗，請於您的工作場地及上班前十分鐘進行打卡。';
         }
 
     }
