@@ -7,7 +7,9 @@
 <div class="row pt-3 mx-1">
 
     <div class="col-12">
+        <em>本頁面每十分鐘會更新一次，以確保最新資料</em>
         <h2 class="h_one my-0 p-1">重要公告</h2>
+
     </div>
     
     <div class="col-12 table-responsive">
@@ -186,6 +188,11 @@
         }    
     }
 
+    function refreshPage() {
+    location.reload();
+    }
 
+    // 设置 5分鐘 刷新页面
+    setTimeout(refreshPage, 600000);
     
 </script>

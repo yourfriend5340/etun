@@ -63,6 +63,7 @@
                     <td>結束時間</td>
                     <td>原因</td>
                     <td>審核結果</td>
+                    <td>檔案</td>
                 </tr>
             </thead>
 
@@ -89,7 +90,11 @@
                         @else
                             <td>{{$r->status}}</td>
                         @endif
-                        
+                        @if($r->status == "Y")
+                        <td><input class="btn btn-light btn-md active" id="btn" type="button" value="下載" onclick="submit_download({{$r->id}})"></td>
+                        @else
+                        <td> - </td>
+                        @endif
                     </tr>
                 @endforeach
                 
@@ -127,5 +132,11 @@
                 {window.location.href=query;}
             }
         }      
+    }
+
+    function submit_download(id){
+        var path = '/table/download/'+id;
+        window.location.href=path;
+
     }
 </script>

@@ -21,7 +21,7 @@ class TableController extends Controller
 {
     public function index(Request $request){
 
-        $now = date('Y-m-d');
+        $now = date('Y-m-t');
         $lastYear = date('Y-m-d',strtotime('-1 year',strtotime($now)));
         //$limit = $request->limit ?? 20;
         //dd($now,$lastYear,$limit);
@@ -34,8 +34,8 @@ class TableController extends Controller
                 ['twotime_table.status','Y'],
                 ['twotime_table.type','請假']
             ])
-            ->whereBetween('twotime_table.start',array($lastYear,$now))
-            ->orderby('twotime_table.id')
+            ->whereBetween('twotime_table.created_at',array($lastYear,$now))
+            ->orderby('twotime_table.start')
             ->get(array('twotime_table.*','employees.member_name'));
 
         return view('table',['employees'=>$employee,'customers'=>$customer,'leaves'=>$leave]);
@@ -43,79 +43,127 @@ class TableController extends Controller
 
     //離職
     public function resign(Request $request){
-        // Create a new Spreadsheet object
-        $spreadsheet = new Spreadsheet();
-        
-        //設定預設格式
-        $spreadsheet->getActiveSheet()->getPageSetup()
-        ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
-        
-        // Retrieve the current active worksheet
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->getDefaultColumnDimension()->setWidth(17);//預設寬度
-        $sheet->getDefaultRowDimension()->setRowHeight(40);//預設高度
-        $sheet->getColumnDimension('A')->setWidth(18);
+        $inputName = $request->inputName;
 
-        $sheet->getPageMargins()->setTop(0.5);
-        $sheet->getPageMargins()->setRight(1);        
-        $sheet->getPageMargins()->setLeft(1);
-        $sheet->getPageMargins()->setBottom(0.5);
-
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(26);//设置字体加粗大小
-        $sheet->getStyle('D1')->getFont()->setBold(true)->setSize(26);//设置字体加粗大小
-        for ($i=2;$i<=9;$i++){
-            $sheet->getStyle("A$i")->getFont()->setBold(true)->setSize(18);
-            $sheet->getStyle("B$i")->getFont()->setBold(true)->setSize(18);
-        }
-
-        for ($i=2;$i<=9;$i++){
-            $sheet->mergeCells("B$i:D$i");
-        }
-        $sheet->mergeCells('A1:C1');
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        //$sheet->getStyle('D1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-
-        $sheet->setCellValue('A1', '萬宇股份有限公司');  
-        $sheet->setCellValue('D1', '離職單');   
-        $sheet->setCellValue('A3', '姓名：');
-        $sheet->setCellValue('A4', '身份字號：');
-        $sheet->setCellValue('A5', '職稱：');
-        $sheet->setCellValue('A6', '離職原因：');
-        $sheet->setCellValue('A7', '離職日期：');
-        $sheet->setCellValue('A9', '員工簽名：');    
-
-        if($request->input('inputName') == null)
+        if($inputName === null)
         {
-            $DBname=DB::table('employees')->select('SSN','member_name')->where('id','=',$request->input('id'))->get()->first();
-            $name=$DBname->member_name;
-            $SSN=$DBname->SSN;
+            $empId = $request->id;
+
         }
-        else
-        {
-            $name=$request->input('inputName');
-            $count = DB::table('employees')->where('member_name',$name)->count();
+        else{
+            $empId = DB::table('employees')->where('member_name',$inputName)->first();
             
-            if($count == 0){
-                return back()->with('danger','查無此人!!');
+            if(!isset($empId->id))
+            {
+                return back()->with('danger',$inputName.' 查無此人，請檢查有無錯字');
             }
-            $DBname=DB::table('employees')->select('SSN','member_name')->where('member_name','=',$name)->get()->first();
-            $SSN=$DBname->SSN;
+            else{
+                $empId = $empId->id;
+            }
         }
 
-        $sheet->setCellValue('B3', $name);  
-        $sheet->setCellValue('B4', $SSN);    
+        $query = DB::table('employees')->where('id',$empId)->first();
+        $member_sn = $query->member_sn;
+        $member_name = $query->member_name;
 
-        $file_name = '離職單_'.$name.'_'.date('Y_m_d');
-        // Write a new .xlsx file
-        $writer = new Xlsx($spreadsheet);
+        $query = DB::table('twotime_table')->where([
+                ['empid',$member_sn],
+                ['type','離職'],
+                ['status','Y']
+            ])
+            ->orderby('id','desc')
+            ->first();
+        if($query != null)
+        {
+            $filePath = $query->filePath;
+        }
+        else{
+            return back()->with('danger',$member_name.' 查無審核通過的離職記錄');
+        }
+
+        $date = date('Y-m-d',strtotime($query->start));
+        $path = 'public'.$query->filePath;
+
+        $fileName = $query->empid.'_'.$date.'_離職單.pdf';
+        $mimeType = Storage::mimeType($path);
+        $headers = [['Content-Type' => $mimeType]];
+        
+        return Storage::download($path, $fileName, $headers);
+        
+        
+        // // Create a new Spreadsheet object
+        // $spreadsheet = new Spreadsheet();
+        
+        // //設定預設格式
+        // $spreadsheet->getActiveSheet()->getPageSetup()
+        // ->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_A4);
+        
+        // // Retrieve the current active worksheet
+        // $sheet = $spreadsheet->getActiveSheet();
+        // $sheet->getDefaultColumnDimension()->setWidth(17);//預設寬度
+        // $sheet->getDefaultRowDimension()->setRowHeight(40);//預設高度
+        // $sheet->getColumnDimension('A')->setWidth(18);
+
+        // $sheet->getPageMargins()->setTop(0.5);
+        // $sheet->getPageMargins()->setRight(1);        
+        // $sheet->getPageMargins()->setLeft(1);
+        // $sheet->getPageMargins()->setBottom(0.5);
+
+        // $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(26);//设置字体加粗大小
+        // $sheet->getStyle('D1')->getFont()->setBold(true)->setSize(26);//设置字体加粗大小
+        // for ($i=2;$i<=9;$i++){
+        //     $sheet->getStyle("A$i")->getFont()->setBold(true)->setSize(18);
+        //     $sheet->getStyle("B$i")->getFont()->setBold(true)->setSize(18);
+        // }
+
+        // for ($i=2;$i<=9;$i++){
+        //     $sheet->mergeCells("B$i:D$i");
+        // }
+        // $sheet->mergeCells('A1:C1');
+        // $sheet->getStyle('A1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        // //$sheet->getStyle('D1')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        // $sheet->setCellValue('A1', '萬宇股份有限公司');  
+        // $sheet->setCellValue('D1', '離職單');   
+        // $sheet->setCellValue('A3', '姓名：');
+        // $sheet->setCellValue('A4', '身份字號：');
+        // $sheet->setCellValue('A5', '職稱：');
+        // $sheet->setCellValue('A6', '離職原因：');
+        // $sheet->setCellValue('A7', '離職日期：');
+        // $sheet->setCellValue('A9', '員工簽名：');    
+
+        // if($request->input('inputName') == null)
+        // {
+        //     $DBname=DB::table('employees')->select('SSN','member_name')->where('id','=',$request->input('id'))->get()->first();
+        //     $name=$DBname->member_name;
+        //     $SSN=$DBname->SSN;
+        // }
+        // else
+        // {
+        //     $name=$request->input('inputName');
+        //     $count = DB::table('employees')->where('member_name',$name)->count();
+            
+        //     if($count == 0){
+        //         return back()->with('danger','查無此人!!');
+        //     }
+        //     $DBname=DB::table('employees')->select('SSN','member_name')->where('member_name','=',$name)->get()->first();
+        //     $SSN=$DBname->SSN;
+        // }
+
+        // $sheet->setCellValue('B3', $name);  
+        // $sheet->setCellValue('B4', $SSN);    
+
+        // $file_name = '離職單_'.$name.'_'.date('Y_m_d');
+        // // Write a new .xlsx file
+        // $writer = new Xlsx($spreadsheet);
 
 
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
-        header('Cache-Control: max-age=0');
+        // header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        // header('Content-Disposition: attachment;filename="'.$file_name.'.xlsx"');
+        // header('Cache-Control: max-age=0');
 
-        // Save the new .xlsx file
-        $writer->save('php://output');  
+        // // Save the new .xlsx file
+        // $writer->save('php://output');  
     }
 
     //請假
@@ -225,6 +273,9 @@ class TableController extends Controller
     //salary
     public function salary(Request $request){
 
+        if($request->input('exlist') == null){
+            return back()->with('danger','請輸入資料');
+        }
         $inputData = array_filter(explode(',',$request->input('exlist')));
         $sheetCount = count($inputData)/2;
         $offset = 0;
@@ -379,6 +430,9 @@ class TableController extends Controller
     //簽到單
     public function attendance(Request $request){
 
+        if($request->signList == null){
+            return back()->with('danger','請輸入資料');
+        }
         $inputArr =explode(',',$request->signlist);
         array_pop($inputArr);//因最後有一個逗號，會多一個元素
         $worksheetCount = intval(count($inputArr) / 2)-1;//因為分頁是從零起算，再減1
@@ -442,10 +496,10 @@ class TableController extends Controller
                 $sheet->getRowDimension("$j")->setRowHeight(20);
             }
             //自定欄寬
-            $sheet->getColumnDimension('A')->setWidth(5);
+            $sheet->getColumnDimension('A')->setWidth(7);
             $sheet->getColumnDimension('B')->setWidth(15.5);
             $sheet->getColumnDimension('C')->setWidth(15.5);
-            $sheet->getColumnDimension('D')->setWidth(20.5);
+            $sheet->getColumnDimension('D')->setWidth(12.5);
             $sheet->getColumnDimension('F')->setWidth(17.5);
 
             $sheet->getPageMargins()->setTop(0.5);
@@ -483,7 +537,7 @@ class TableController extends Controller
             
             $year = date('Y',strtotime($inputArr[$arrIndex+1]));
             $month = date('m',strtotime($inputArr[$arrIndex+1]));
-
+            $sheet->setTitle($name.$inputArr[$arrIndex+1]);
             $sheet->setCellValue('A1', $query->organize);  
             $sheet->setCellValue('E1', '執   勤   簽   到   簿');  
             $sheet->setCellValue('A2', '年份');
@@ -679,13 +733,12 @@ class TableController extends Controller
         $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
         $signPath = storage_path('app').'/'.$signPath[0];
         $applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
+
         if($emp != "NULL")//指請假單
         {
             if($status == 'Y')
             {
-                $result = $convertPdfService->convertTable($id);
-
-                //請假單處理完畢，以下處理代理人額班表班新增
+                //處理代理人額班表班新增
                 $request = DB::table('twotime_table')->where('id',$id)->first();
                 $leaveMan = $request->empid;
                 $start = $request->start;
@@ -708,8 +761,10 @@ class TableController extends Controller
                         'leave_member'=>$leaveMan,
                     ]);
                 }
-                $queryID = extra_schedule::where('emp_id',$emp)->max('id');
-                DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'extra_id'=>$queryID,'filePath'=>$result]);  
+                $queryMaxID = extra_schedule::where('emp_id',$emp)->max('id');
+
+                $result = $convertPdfService->convertTable($id,'請假',$queryMaxID);
+                DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'extra_id'=>$queryMaxID,'filePath'=>$result]);  
             }
             elseif($status == 'N'){
                 $result = "";
@@ -722,7 +777,8 @@ class TableController extends Controller
         {
             if($status == 'Y')
             {
-                $result = $convertPdfService->convertTable($id);
+                $result = $convertPdfService->convertTable($id,'離職');
+                    dd($result);
                 DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
             }
             elseif($status == 'N'){
@@ -786,6 +842,22 @@ class TableController extends Controller
          return view("show_table",["results"=>$query]);
     }
 
+    public function download($id){
+        $time = date('Y_m_d_H_i');
+        $queryPath = DB::table('twotime_table')->where('id',$id)->first()->filePath;
+        
+        $filePath = Storage::path('public'.$queryPath);
+
+        $fileName ='download_'.$time.".pdf";
+        $mimeType = Storage::mimeType('public'.$queryPath);
+        $headers = [
+            ['Content-Type' => $mimeType],
+            ['Content-Disposition: attachment;filename="'.$fileName]
+        ];
+
+        return response()->download($filePath,$fileName,$headers);
+    }
+
     public function tableresultAPI(Request $request){
         $employeeID = $request->EmployeeID;
         $month = date('Y-m').'-01';
@@ -836,11 +908,15 @@ class TableController extends Controller
 
     //薪資試算表匯出
     public function export_access_salary(Request $request){
+        if($request->exportbymonth == null){
+            return back()->with('danger','請輸入資料');
+        }
         $this->accessSalaryService->export($request);
     }
 
     //試算薪資表匯入
     public function import_access_salary(Request $request){
+        
         $result = $this->accessSalaryService->import($request);
 
         if($result !=1)
@@ -874,6 +950,9 @@ class TableController extends Controller
 
     public function export_extra_schedule(AccessTableService $accessTableService,Request $request)
     {
+        if($request->exportbymonth == null){
+            return back()->with('danger','請輸入資料');
+        }
         $result = $accessTableService->export_extra_schedule($request->exportbymonth);
     }
 

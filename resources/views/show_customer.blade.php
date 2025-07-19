@@ -73,7 +73,7 @@
 
                     @can('admin')
                     <td>
-                        <input class="btn btn-light btn-md active" type="submit" value="更新" onclick="submit_onclick_request({{$customer->customer_id}})">
+                        <input class="btn btn-light btn-md active" type="submit" value="更新 / 檢視" onclick="submit_onclick_request({{$customer->customer_id}})">
                     </td>
                     <td>
                         <input class="btn btn-light btn-md active" type="button" value="刪除" onclick="submit_onclick({{$customer->customer_id}})">

@@ -57,7 +57,7 @@
                     <td>{{$employee->member_account}}</td>
                     <td>{{$employee->member_password_text}}</td>
                     <td>
-                        <input class="btn btn-light btn-md active" type="submit" value="更新" onclick="submit_onclick_request({{$employee->member_sn}})">
+                        <input class="btn btn-light btn-md active" type="submit" value="更新 / 檢視" onclick="submit_onclick_request({{$employee->member_sn}})">
                     </td>
                     @can('admin')
                     <td>

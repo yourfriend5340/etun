@@ -148,6 +148,7 @@ Route::POST('schedules/export',[SchedulesController::class,'export'])->name('sch
 Route::POST('schedules/download_example',[SchedulesController::class,'download_example'])->name('schedules.download_example');
 
 Route::get('/table', [TableController::class, 'index'])->name('table');
+Route::get('/table/download/{id}', [TableController::class, 'download'])->name('table.download');
 Route::get('/table_overview', [TableController::class, 'overview'])->name('table.overview');
 Route::POST('/table_attendance', [TableController::class, 'attendance'])->name('table.attendance');
 Route::POST('/table_salary', [TableController::class, 'salary'])->name('table.salary');

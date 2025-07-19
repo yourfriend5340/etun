@@ -129,8 +129,8 @@ class AccessTableService
                ['empid',$json->EmployeeID],
                ['type','請假'],
                ['start',$startTime],
-               ['end',$endTime],
-               ['status',null]
+               //['end',$endTime],
+               ['status','Y']
             ])->count();
 
             if($test == 0)
@@ -150,31 +150,33 @@ class AccessTableService
                catch(Exception $e){
                   $message =  $e->getMessage();
                }
+               $message = '已上傳成功，請待審核，審核後，結果會在下次登入時告知';
             }
             else
             {
-               $data=[
-                  'empid'=>$json->EmployeeID,
-                  'type'=>'請假',
-                  'start'=>$startTime,
-                  'end'=>$endTime,
-                  'reason'=>$json->reason,
-                  'filePath'=>'leave/'.$json->EmployeeID.'/'.$imageName,
-               ];
+               $message = '上傳失敗，已查到該時段已通過審核之假單';
+               // $data=[
+               //    'empid'=>$json->EmployeeID,
+               //    'type'=>'請假',
+               //    'start'=>$startTime,
+               //    'end'=>$endTime,
+               //    'reason'=>$json->reason,
+               //    'filePath'=>'leave/'.$json->EmployeeID.'/'.$imageName,
+               // ];
 
-               try{
-                  twotime_table::where([
-                     ['empid',$json->EmployeeID],
-                     ['type','請假'],
-                     ['start',$startTime],
-                     ['end',$endTime],
-                  ])->update($data);
-               }
-               catch(Exception $e){
-                  $message =  $e->getMessage();
-               }
+               // try{
+               //    twotime_table::where([
+               //       ['empid',$json->EmployeeID],
+               //       ['type','請假'],
+               //       ['start',$startTime],
+               //       ['end',$endTime],
+               //    ])->update($data);
+               // }
+               // catch(Exception $e){
+               //    $message =  $e->getMessage();
+               // }
             }
-            $message = '已上傳成功，請待審核，審核後，結果會在下次登入時告知';
+
          }
          else{
             $message = '請附上簽名檔';

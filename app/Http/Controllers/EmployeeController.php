@@ -701,9 +701,10 @@ class EmployeeController extends Controller
         //儲存鐘點費
         $clock = [];
         //$month = [];
-        $clock_salary_array=array_filter(explode(',',$clock_salary));
+        $clock_salary_array=explode(',',$clock_salary);
+        array_pop($clock_salary_array);//因為最後是一個空值，故unset掉
         $num=count($clock_salary_array);
-        //dd($clock_salary_array);
+
         $coffset = 0;
         $moffset = 0;
 
