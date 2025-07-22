@@ -218,6 +218,7 @@
                             排班巡邏管理
                         </button>
                         <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton" style="background-color: #e3f2fd;">
+                            <li><a class="dropdown-item" href="{{route('punch_record')}}">出勤紀錄查詢</a></li>
                             <li><a class="dropdown-item" href="{{route('patrol_record')}}">巡邏紀錄查詢</a></li>
                             <li><a class="dropdown-item" href="{{route('schedule')}}">排班與巡邏匯入匯出</a></li>
                         </ul>

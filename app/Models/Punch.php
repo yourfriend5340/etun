@@ -24,5 +24,6 @@ class Punch extends Model
         'PunchOutTime',
         'type',
         'punchTime',
+        'additional',
     ];
 }

@@ -36,5 +36,6 @@ Route::POST('/schedule', [App\Http\Controllers\Auth\AuthUserController::class, '
 Route::POST('/leave', [App\Http\Controllers\TableController::class, 'leaveAPI']);
 Route::POST('/resign', [App\Http\Controllers\TableController::class, 'resignAPI']);
 Route::POST('/tableresult', [App\Http\Controllers\TableController::class, 'tableresultAPI']);
+Route::POST('/additional', [App\Http\Controllers\TableController::class, 'additionalAPI']);
 
 });

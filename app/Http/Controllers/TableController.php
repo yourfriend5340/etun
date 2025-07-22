@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Employee;
 use App\Models\Customer;
 use App\Models\extra_schedule;
+use App\Models\Punch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Redirect;
@@ -41,6 +42,11 @@ class TableController extends Controller
         return view('table',['employees'=>$employee,'customers'=>$customer,'leaves'=>$leave]);
     }
 
+    public function showPunch(Request $request){
+        $emp=DB::table('employees')->select('member_sn','member_name')->get();
+        return view("show_punch_record",["user_info"=>$emp]);
+    }
+    
     //離職
     public function resign(Request $request){
         $inputName = $request->inputName;
@@ -895,6 +901,138 @@ class TableController extends Controller
             return response(['result'=>$query]);
     }
     
+
+    public function additional ($id){
+        $query0 = DB::table('punch_record')
+            ->join('employees','punch_record.employee_id','employees.member_sn')
+            ->where('punch_record.id',$id)
+            ->first(array('punch_record.*','employees.member_sn','employees.member_name'));
+
+        $addTime = $query0->punchTime;
+        $addEmp = $query0->employee_id;
+
+        $queryYear = date('Y',strtotime($addTime));
+        $queryMonth = intval(date('m',strtotime($addTime)));
+        $queryDay = intval(date('d',strtotime($addTime)));
+
+        $data = DB::table('punch_record')
+            ->join('employees','punch_record.employee_id','employees.member_sn')
+            ->where([
+                ['employee_id',$addEmp],
+                ['year',$queryYear],
+                ['month',$queryMonth],
+                ['additional',null],
+            ])
+            ->where(function ($query) use ($queryDay){
+                $query->where('day',$queryDay)
+                    ->orwhere('day',$queryDay-1);
+            })
+            ->orderby('punchTime','desc')
+            ->get(array('punch_record.*','employees.member_sn','employees.member_name'));
+
+        return view("edit_additional",["results"=>$query0,"history"=>$data]);
+    }
+
+    public function updateAdditional($id,$status){
+        $punch = DB::table('punch_record')->where('id',$id)->update(['additional'=>$status]);
+    }
+
+    public function requestPunch($id,$start,$end){
+        dd($id,$start,$end);
+    }
+
+    public function additionalAPI(Request $request){
+
+        $empId = $request->EmployeeID;  
+        $type = ucwords($request->type);
+        $addTime = date('Y-m-d H:i',strtotime($request->time));
+        $queryYear = date('Y',strtotime($addTime));
+        $queryMonth = intval(date('m',strtotime($addTime)));
+        $queryDay = intval(date('d',strtotime($addTime)));
+        $result = 0;
+
+        $query = DB::table('schedules')
+            ->where([
+                ['employee_id',$empId],
+                ['year',$queryYear],
+                ['month',$queryMonth],
+            ])
+            ->orderby('customer_id','asc')
+            ->get();
+
+        //check申請時間，有無在當日的排班表中
+        $result = TableController::checkTime($query,$addTime,$queryDay);
+            
+        //承前行，check申請時間，因可能是夜班，檢查申請日前一天，時間有無在該班區間
+        if($result == 0){
+            $result = TableController::checkTime($query,$addTime,($queryDay-1));
+        }
+
+        //若結果仍為0，輸出錯誤
+        if($result == 0){
+            return response('failure, 您的申請時間,沒有在排班區間內(上班時間前的二十分鐘，或是下班後的十分鐘),請確認時間');
+        }
+        
+        $data = [
+            'employee_id'=>$empId,
+            'year'=>$queryYear,
+            'month'=>$queryMonth,
+            'day'=>$queryDay,
+            'type'=>strtoupper($type),
+            'additional'=>'N',
+            'punchTime'=>$addTime
+        ];
+
+        $check = DB::table('punch_record')->where($data)->count();
+        
+        if($check == 0){
+            Punch::create($data);
+        }
+        else{
+            return response('failure,同樣的資料你已申請過');
+        }
+
+        return response('success,已上傳申請');
+    }
+
+    function checkTime($queryC,$aTime,$qDay)
+    {
+        $qYear = date('Y',strtotime($aTime));
+        $qMonth = intval(date('m',strtotime($aTime)));
+
+        foreach ($queryC as $q)
+        {
+            $temp = 'day'.$qDay;
+            $class = $q->$temp;
+            for($i=0;$i<strlen($class);$i++)//讀當天n個班
+            {
+                $tempClass = substr($class,$i,1);
+                $tempClass_end = $tempClass.'_end';
+                $startTime = $q->$tempClass;
+                $endTime = $q->$tempClass_end;
+
+                if(strtotime($endTime) < strtotime($startTime))//假加下班時間比上班時間小，有隔日狀況，故日期+1
+                {
+                    $endTime = $qYear.'-'.$qMonth.'-'.($qDay+1).' '.$q->$tempClass_end;
+                }
+                else{
+                    $endTime = $qYear.'-'.$qMonth.'-'.$qDay.' '.$q->$tempClass_end;
+                }
+                $startTime = $qYear.'-'.$qMonth.'-'.$qDay.' '.$q->$tempClass;
+
+                //加上前二十後十分的條件
+                $startTime = date('Y-m-d H:i',strtotime("-20 minutes",strtotime($startTime)));
+                $endTime = date('Y-m-d H:i',strtotime("+10 minutes",strtotime($endTime)));
+
+                if(strtotime($aTime) <= strtotime($endTime)  && strtotime($aTime) >= strtotime($startTime)){
+                    return 1;//有找到合理時間
+                }
+            }
+
+        }
+        return 0;//無找到
+    }
+
     //構造注入service
     /** @var AccessSalaryService */
     protected $accessSalaryService;

@@ -158,8 +158,14 @@ Route::POST('/table_export_access_salary', [TableController::class, 'export_acce
 Route::POST('/table_import_access_salary', [TableController::class, 'import_access_salary'])->name('table.import_access_salary');
 Route::POST('/table_export_extra_schedule', [TableController::class, 'export_extra_schedule'])->name('table.export_extra_schedule');
 Route::get('/table/request/{Request_id}', [App\Http\Controllers\TableController::class, 'request'])->name('table.request');
+Route::get('/table/additional/{Request_id}', [App\Http\Controllers\TableController::class, 'additional'])->name('table.additional');
 Route::get('/table/update/id={update_id}&status={update_status}&emp={update_emp}',[App\Http\Controllers\TableController::class,'updateStatus'])->name('table.updateStatus');
+Route::get('/table/update/addtional/id={update_id}&additional={update_status}',[App\Http\Controllers\TableController::class,'updateAdditional'])->name('table.updateAdditional');
 Route::get('/table/requestoverview/name={name}&start_time={start_time}&end_time={end_time}',[App\Http\Controllers\TableController::class,'requestoverview'])->name('table.requestoverview');
+
+Route::get('/punch_record', [App\Http\Controllers\TableController::class, 'showPunch'])->name('punch_record');
+Route::get('/punch_record/request/name={search_id}&start_time={start_time}&end_time={end_time}',
+            [App\Http\Controllers\TableController::class,'requestPunch'])->name('punch_record.request');
 
 Route::POST('ajaxRequest',[AjaxController::class,'ajaxRequestPost'])->name('ajaxRequest');
 Route::POST('ajaxRequestCustomer',[AjaxController::class,'ajaxRequestCustomer'])->name('ajaxRequestCustomer');

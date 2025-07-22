@@ -90,11 +90,11 @@
                             <td colspan="7">目前沒有需要審核的申請</td>
                         </tr>
                     @endif
-
+                {{-- 
                 @else
                     <tr>
                         <td colspan="7">您沒有權限審核</td>
-                    </tr>
+                    </tr> --}}
                 @endcan    
             </tbody>
         </table>
@@ -107,6 +107,63 @@
     </div>
     @endif
     
+
+
+    @if (count($additionals) != 0)
+    <div class="col-12">
+        <h2 class="h_two my-0 p-1">補卡審核</h2>
+    </div>
+    <div class="col-12 table-responsive">
+        <table class="table table-bordered table-striped table-hover text-center align-middle">
+
+            <thead>
+                <tr>
+                <td>ID</td>
+                <td>申請人ID</td>
+                <td>申請人</td>
+                <td>類別</td>
+                <td>時間</td>
+                <td>審核</td>
+                </tr>
+            </thead>
+
+            <tbody>  
+                @can('group_admin')
+                    @if (isset($additionals))
+                        @foreach($additionals as $a )
+                            <tr>
+                                <td>{{$a->id}}</td>
+                                <td>{{$a->employee_id}}</td>
+                                <td>{{$a->member_name}}</td>
+                                @if( $a->type == "IN")
+                                    <td>上班</td>
+                                @else
+                                    <td>下班</td>
+                                @endif
+                                <td>{{$a->punchTime}}</td>
+                                <td>
+                                    <input class="btn btn-light btn-md active" id="addAccess" type="button" value="審核" onclick="submit_request2({{$a->id}})">
+                                </td>
+                            </tr>
+                        @endforeach
+                    @else
+                        <tr>
+                            <td colspan="7">目前沒有需要審核的申請</td>
+                        </tr>
+                    @endif
+                @endcan    
+            </tbody>
+        </table>
+
+        @can('group_admin')
+            <div class="d-inline-flex p-2 bd-highlight">
+                {{ $additionals->links() }}  
+            </div>
+        @endcan
+    </div>
+    @endif
+
+
     <div class="col-12">
         <h2 class="h_three my-0 p-1">巡邏紀錄</h2>
     </div>
@@ -184,6 +241,14 @@
         if (id !='')
         {
             window.location.href="/table/request/"+id;
+            //window.event.returnValue=false;
+        }    
+    }
+
+    function submit_request2(id) {
+        if (id !='')
+        {
+            window.location.href="/table/additional/"+id;
             //window.event.returnValue=false;
         }    
     }

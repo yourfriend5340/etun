@@ -47,11 +47,18 @@ class HomeController extends Controller
                 ->orderby('twotime_table.id')
                 ->paginate(5,(array(('twotime_table.*'),'employees.member_name')));
 
+        $additionals = DB::table('punch_record')
+                ->join('employees','employees.member_sn','employee_id')
+                ->where('additional','N')
+                ->orderby('punch_record.id')
+                ->paginate(5,(array(('punch_record.*'),'employees.member_name')));    
+
         return view("home",["employees"=>$employee,
                             "topAnn"=>$topAnn,
                             "announcements"=>$announcement,
                             'patrol_records'=>$patrol,
                             'leaves'=>$leave,
+                            'additionals'=>$additionals,
                         ]);
     }
     public function show()
