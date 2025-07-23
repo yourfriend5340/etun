@@ -41,7 +41,45 @@
 
 
     <div class="row mx-1 mt-5">
-        <h5>員工當日及前日打卡記錄：</h5>
+        <h5>員工排班紀錄：</h5>
+        <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
+            <thead>
+                <tr class="col text-left">
+                    
+                    <td>ID</td>
+                    <td>員工姓名</td>
+                    <td>客戶姓名</td>
+                    <td>申請日排班</td>
+                    <td>申請日前一天排班</td>
+                    <td>定義</td>
+                </tr>
+            </thead>
+
+            <tbody>
+            @if (isset($schedules) && count($schedules) != 0)
+                @foreach($schedules as $s )
+                        <tr>
+                            <td>{{$s->id}}</td>
+                            <td>{{$s->member_name}}</td>
+                            <td >{{$s->firstname}}</td>
+                            <td>{{$s->applyDate}}</td>
+                            <td>{{$s->applyYesterday}}</td>
+                            <td>{{$s->timeDefind}}</td>
+                        </tr>
+                @endforeach
+            @else
+                <tr>
+                    <td colspan='6'>查無紀錄</td>
+                </tr>
+            @endif    
+            </tbody>
+
+        </table>
+   
+    </div>
+
+    <div class="row mx-1 mt-5">
+        <h5>員工當日及前日打卡紀錄：</h5>
         <table class="table table-bordered table-striped table-hover text-center align-middle">
             <thead>
                 <tr>
@@ -95,7 +133,7 @@
     function submitN(id)
     {
         if(window.confirm('確定將單號 '+ id + ' 號否決嗎？')){
-            window.location.href="/table/update/additional/id=" + id + "&additional=N";
+            window.location.href="/table/update/addtional/id=" + id + "&additional=N";
         }
     }
 

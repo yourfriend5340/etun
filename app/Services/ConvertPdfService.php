@@ -24,7 +24,10 @@ class ConvertPdfService
       $requestName = DB::table('extra_schedules')
                      ->join('employees','extra_schedules.emp_id','employees.member_sn')               
                      ->where('extra_schedules.id',$extraId)
-                     ->first()->member_name;                     
+                     ->first();
+      if(isset($requestName->member_name)){
+         $requestName = $requestName->member_name;
+      }                     
 
       $empId = $request->empid;
       $empName = $request->member_name;

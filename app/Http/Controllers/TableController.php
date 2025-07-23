@@ -436,7 +436,7 @@ class TableController extends Controller
     //簽到單
     public function attendance(Request $request){
 
-        if($request->signList == null){
+        if($request->signlist === null){
             return back()->with('danger','請輸入資料');
         }
         $inputArr =explode(',',$request->signlist);
@@ -783,8 +783,8 @@ class TableController extends Controller
         {
             if($status == 'Y')
             {
-                $result = $convertPdfService->convertTable($id,'離職');
-                    dd($result);
+                $queryMaxID = extra_schedule::where('emp_id',$emp)->max('id');
+                $result = $convertPdfService->convertTable($id,'離職',$queryMaxID);
                 DB::table('twotime_table')->where('id',$id)->update(['status'=>$status,'filePath'=>$result]);  
             }
             elseif($status == 'N'){
@@ -871,7 +871,7 @@ class TableController extends Controller
         $query = DB::table('twotime_table')
             ->select('type','start','end','reason','status')
             ->where('empid',$employeeID)
-            ->whereBetween('start',array($month,$nextmonth))
+            ->whereBetween('created_at',array($month,$nextmonth))
             ->get()
             ->map(function($item){
                 if($item->type == '離職'){
@@ -914,7 +914,7 @@ class TableController extends Controller
         $queryYear = date('Y',strtotime($addTime));
         $queryMonth = intval(date('m',strtotime($addTime)));
         $queryDay = intval(date('d',strtotime($addTime)));
-
+        
         $data = DB::table('punch_record')
             ->join('employees','punch_record.employee_id','employees.member_sn')
             ->where([
@@ -929,16 +929,120 @@ class TableController extends Controller
             })
             ->orderby('punchTime','desc')
             ->get(array('punch_record.*','employees.member_sn','employees.member_name'));
+        
+        $temp = 'day'.$queryDay;
+        $temp2 = 'day'.$queryDay-1;
+        $schedule = DB::table('schedules')
+            ->join('employees','schedules.employee_id','employees.member_sn')
+            ->join('customers','schedules.customer_id','customers.customer_id')
+            ->where([
+                ['employee_id',$addEmp],
+                ['year',$queryYear],
+                ['month',$queryMonth]
+            ])
+            ->where(function ($query) use ($temp,$temp2){
+                $query->where($temp,'!=','')
+                    ->orwhere($temp2,'!=','');
+            })
+            ->get(array('customers.firstname','employees.member_name','schedules.id','schedules.year','schedules.month',"schedules.$temp","schedules.$temp2",
+                        'schedules.A','schedules.A_end','schedules.B','schedules.B_end','schedules.C','schedules.C_end','schedules.D','schedules.D_end',
+                        'schedules.E','schedules.E_end','schedules.F','schedules.F_end','schedules.G','schedules.G_end','schedules.H','schedules.H_end',
+                        'schedules.I','schedules.I_end','schedules.J','schedules.J_end'
+            ));
 
-        return view("edit_additional",["results"=>$query0,"history"=>$data]);
+        $tempStr = "";  
+        $tempArr = ['A','B','C','D','E','F','G','H','I','J'];         
+ 
+        foreach($schedule as $s)
+        {
+            if($s->$temp != "")
+            {
+                $s->applyDate = $s->$temp;
+                unset($s->$temp);
+            }
+            if($s->$temp2 != "")
+            {
+                $s->applyYesterday = $s->$temp2;
+                unset($s->$temp2);
+            }
+
+            $tempArr2=[];  
+            for($i=0;$i<=9;$i++){
+                $class = $tempArr[$i];
+                $class2 = $class.'_end';
+
+                if($s->$class == ""){
+                    unset($s->$class);
+                    unset($s->$class2);
+                }
+                else{
+                    $tempStr = $class.":".$s->$class."-".$s->$class2;
+                    array_push($tempArr2,$tempStr);
+                    //unset($s->$class);
+                    //unset($s->$class2);
+                }
+            }
+            $tempArr2 = array_unique($tempArr2);
+            for($j=0;$j<count($tempArr2);$j+=2){
+                $s->timeDefind = $tempArr2[$j].','.$tempArr2[$j+1];
+                array_shift($tempArr2);
+                array_shift($tempArr2);
+            }
+
+        }
+
+        return view("edit_additional",["results"=>$query0,"history"=>$data,"schedules"=>$schedule]);
     }
 
     public function updateAdditional($id,$status){
         $punch = DB::table('punch_record')->where('id',$id)->update(['additional'=>$status]);
+
+        $empId = DB::table('punch_record')->where('id',$id)->first()->employee_id;
+        
+        $query = DB::table('punch_record')
+            ->join('employees','employees.member_sn','punch_record.employee_id')
+            ->where([
+                ['employee_id',$empId],
+            ])
+            ->where(function ($query){
+                $query->where('additional','Y')
+                    ->orwhere('additional',null);
+            })
+            ->orderby('punchTime','desc')
+            ->get(array('punch_record.*','employees.member_sn','employees.member_name'));
+
+        $emp=DB::table('employees')->select('member_sn','member_name')->get();
+        return view('show_punch_record',['punch_records'=>$query,'user_info'=>$emp]);
     }
 
-    public function requestPunch($id,$start,$end){
-        dd($id,$start,$end);
+    public function requestPunch($name,$start,$end){
+
+        $empId = DB::table('employees')->where('member_name',$name)->first();
+
+        if(isset($empId->member_sn))
+        {
+            $empId = $empId->member_sn;
+        }
+        else{
+            return back()->with('danger','查無此人！');
+        }
+
+        $query = DB::table('punch_record')
+            ->join('employees','employees.member_sn','punch_record.employee_id')
+            ->where([
+                ['employee_id',$empId],
+            ])
+            ->where(function ($query){
+                $query->where('additional','Y')
+                    ->orwhere('additional',null);
+            })
+            ->whereBetween('punchTime',array($start,$end))
+            ->orderby('punchTime','desc')
+            ->get(array('punch_record.*','employees.member_sn','employees.member_name'));
+
+        $emp=DB::table('employees')->select('member_sn','member_name')->get();
+
+        return view('show_punch_record',['punch_records'=>$query,'user_info'=>$emp]);
     }
 
     public function additionalAPI(Request $request){
@@ -979,7 +1083,7 @@ class TableController extends Controller
             'month'=>$queryMonth,
             'day'=>$queryDay,
             'type'=>strtoupper($type),
-            'additional'=>'N',
+            'additional'=>'A',
             'punchTime'=>$addTime
         ];
 

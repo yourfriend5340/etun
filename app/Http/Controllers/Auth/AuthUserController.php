@@ -377,7 +377,8 @@ class AuthUserController extends Controller
         $request=$request->all();
 
         $now = date("Y-m-d H:i:s");
-        //$now = '2025-06-08 11:50:00';
+        //$now = '2025-07-23 06:40:00';
+        //$now = '2025-07-23 20:59:00';
         $year = date('Y', strtotime($now));
         $month = intval(date('m', strtotime($now)));
         $day = intval(date('d', strtotime($now)));
@@ -582,6 +583,8 @@ class AuthUserController extends Controller
     {
         $request=$request->all();
         $now=date("Y-m-d H:i:s");
+        //$now = '2025-07-23 06:40:00';
+        //$now = '2025-07-23 20:59:00';
         $year=date('Y', strtotime($now));
         $month=intval(date('m', strtotime($now)));
         $day=intval(date('d', strtotime($now)));

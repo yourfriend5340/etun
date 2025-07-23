@@ -49,40 +49,44 @@
     @endif
 </div>
 
-<div class="contain table-responsive table-bordered mx-1">
 
-    @if (isset($punch_records))
+<div class="contain table-responsive table-bordered mx-1">
 
         <table class="table table-bordered table-striped table-hover text-center align-middle table-responsive-md">
             <thead>
                 <tr class="col text-left">
-                {{--<td>ID</td>--}}
-                <td>客戶名稱</td>
-                <td>巡邏場所ID</td>
-                <td>巡邏場所</td>
-                <td>巡邏日期</td>
-                <td>巡邏時間</td>
-                <td>照片</td>
-                <td>匯入方式</td>
-                <td>上傳時間</td>
-
-                
+                    
+                    <td>ID</td>
+                    <td>員工ID</td>
+                    <td>員工姓名</td>
+                    <td>種類</td>
+                    <td>時間</td>
                 </tr>
             </thead>
 
             <tbody>
-
-                
-        </tbody>
+            @if (isset($punch_records) && count($punch_records) != 0)
+                @foreach($punch_records as $p )
+                        <tr>
+                            <td>{{$p->id}}</td>
+                            <td>{{$p->member_sn}}</td>
+                            <td >{{$p->member_name}}</td>
+                            @if($p->type == 'IN')
+                                <td>上班</td>
+                            @else
+                                <td>下班</td>
+                            @endif
+                            <td>{{$p->punchTime}}</td>   
+                        </tr>
+                @endforeach
+            @else
+                <tr>
+                    <td colspan='5'>查無紀錄</td>
+                </tr>
+            @endif    
+            </tbody>
 
         </table>
-
-        <div class="d-inline-flex p-2 bd-highlight">
-            
-            {{ $patrol_records->links(); }}
-
-        </div>
-    @endif
    
 </div>
 

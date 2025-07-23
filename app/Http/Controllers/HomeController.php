@@ -49,7 +49,7 @@ class HomeController extends Controller
 
         $additionals = DB::table('punch_record')
                 ->join('employees','employees.member_sn','employee_id')
-                ->where('additional','N')
+                ->where('additional','A')
                 ->orderby('punch_record.id')
                 ->paginate(5,(array(('punch_record.*'),'employees.member_name')));    
 

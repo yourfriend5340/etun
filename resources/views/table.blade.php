@@ -63,7 +63,7 @@
                      <input class="place w-25 d-inline-flex mx-2" name="inputName" id="resignInputName" placeholder="或輸入名字">
 
                      <div class='w-100'></div>
-                     <em>(下拉選單僅顯示"已通過審核離職"人員，也請記得至人事資料將人員狀態改成"離職")</em>
+                     <em>(下拉選單僅顯示系統中目前為"在職"的人員，或至</em><a href="https://www.etunproject.com/table_overview"> 總覽 </a><em>可查詢審核結果，或至server存檔區尋找檔案)</em>
                   </div>
 
                </div>
