@@ -551,7 +551,7 @@ class AccessSalaryService
                       $punchOutTime = "";
                       //查詢出勤表中時數
                       for($m=0;$m<count($empPunch);$m++){
-                        if(isset($empPunch[$m]->employee_id))
+                        if(isset($empPunch[$m]->employee_id) && isset($empPunch[$m]->customer_id))
                         {
                           //查詢出勤表中，符合員工id、客戶id、幾號的哪一班的資訊
                           if($empPunch[$m]->employee_id == $empId && $empPunch[$m]->customer_id == $cusId 
