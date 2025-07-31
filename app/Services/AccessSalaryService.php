@@ -551,36 +551,41 @@ class AccessSalaryService
                       $punchOutTime = "";
                       //查詢出勤表中時數
                       for($m=0;$m<count($empPunch);$m++){
+                        if(isset($empPunch[$m]->employee_id))
+                        {
+                          //查詢出勤表中，符合員工id、客戶id、幾號的哪一班的資訊
+                          if($empPunch[$m]->employee_id == $empId && $empPunch[$m]->customer_id == $cusId 
+                          && $empPunch[$m]->class == $temp && $empPunch[$m]->day == $j){
+                              
+                              $startTime = $empPunch[$m]->start;
+                              $endTime = $empPunch[$m]->end;
+                              $punchInTime = $empPunch[$m]->PunchInTime;
+                              $punchOutTime = $empPunch[$m]->PunchOutTime;
 
-                        //查詢出勤表中，符合員工id、客戶id、幾號的哪一班的資訊
-                        if($empPunch[$m]->employee_id == $empId && $empPunch[$m]->customer_id == $cusId 
-                        && $empPunch[$m]->class == $temp && $empPunch[$m]->day == $j){
-                            
-                            $startTime = $empPunch[$m]->start;
-                            $endTime = $empPunch[$m]->end;
-                            $punchInTime = $empPunch[$m]->PunchInTime;
-                            $punchOutTime = $empPunch[$m]->PunchOutTime;
+                              //忘了下班卡的狀況，無法計薪，故設為打上班卡時間
+                              if($punchOutTime == null || $punchOutTime == "" )
+                              {
+                                $punchOutTime = $punchInTime;
+                              }
+                              //遲到容許時間20分鐘
+                              $allowLatePunchInTime = date('Y-m-d H:i:s',strtotime("+ 20 minute",strtotime($startTime)) );
+                              $allowLatePunchOutTime = date('Y-m-d H:i:s',strtotime("- 10 minute",strtotime($endTime)) );
+                              if(strtotime($punchInTime) < strtotime($allowLatePunchInTime)){
+                                  $punchInTime = $startTime;
+                              }
 
-                            //忘了下班卡的狀況，無法計薪，故設為打上班卡時間
-                            if($punchOutTime == null || $punchOutTime == "" )
-                            {
-                              $punchOutTime = $punchInTime;
-                            }
-                            //遲到容許時間20分鐘
-                            $allowLatePunchInTime = date('Y-m-d H:i:s',strtotime("+ 20 minute",strtotime($startTime)) );
-                            $allowLatePunchOutTime = date('Y-m-d H:i:s',strtotime("- 10 minute",strtotime($endTime)) );
-                            if(strtotime($punchInTime) < strtotime($allowLatePunchInTime)){
-                                $punchInTime = $startTime;
-                            }
+                              //容許提前10分鐘下班
+                              if(strtotime($punchOutTime) > strtotime($allowLatePunchOutTime) ){
+                                $punchOutTime = $endTime;
+                              }
 
-                            //容許提前10分鐘下班
-                            if(strtotime($punchOutTime) > strtotime($allowLatePunchOutTime) ){
-                              $punchOutTime = $endTime;
-                            }
-
-                            $workTime = round(((strtotime($punchOutTime) - strtotime($punchInTime)) / 60 / 60),1);
-                            $totalTime = $totalTime + $workTime;  
-                            //dump($totalTime);   
+                              $workTime = round(((strtotime($punchOutTime) - strtotime($punchInTime)) / 60 / 60),1);
+                              $totalTime = $totalTime + $workTime;  
+                              //dump($totalTime);   
+                          }
+                        }
+                        else{
+                          continue;
                         }
                       }//end loop m
                     }//end loop k
