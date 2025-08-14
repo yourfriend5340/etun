@@ -56,6 +56,7 @@
         <table class="table table-bordered table-striped table-hover text-center align-middle">
             <thead>
                 <tr>
+                    <td>核選</td>
                     <td>客戶</td>
                     <td>班別</td>
                     <td>開始時間</td>
@@ -72,6 +73,7 @@
                         for($j=0;$j<count($yesterday[$i]);$j++)
                         {
                             echo '<tr>';
+                            echo '<td> <input type="radio" id="y'.$i.$j.'" name="drone" value="'.$yesterday[$i][$j]['customer'].'"></td>';
                             echo '<td>'.$yesterday[$i][$j]['customer'].'</td>';
                             echo '<td>'.$yesterday[$i][$j]['class'].'</td>';
                             echo '<td>'.$yesterday[$i][$j]['start'].'</td>';
@@ -91,6 +93,7 @@
                         for($j=0;$j<count($today[$i]);$j++)
                         {
                             echo '<tr>';
+                            echo '<td> <input type="radio" id="t'.$i.$j.'" name="drone" value="'.$today[$i][$j]['customer'].'"></td>';
                             echo '<td>'.$today[$i][$j]['customer'].'</td>';
                             echo '<td>'.$today[$i][$j]['class'].'</td>';
                             echo '<td>'.$today[$i][$j]['start'].'</td>';
@@ -134,14 +137,21 @@
         var index = userSelect.selectedIndex;
         var mem_name = userSelect.options[index].text;
         var mem_id = userSelect.options[index].value;
+        var selectRadio = document.querySelector('input[name="drone"]:checked');
 
+        if(selectRadio){
+            var selectCus = selectRadio.value;
+        }
+        else{
+            var selectCus = 0;
+        }
         
-        if(mem_id != "" && mem_name!="")
+        if(mem_id != "" && mem_name!="" && selectCus != 0)
         {
             var check = document.getElementById('result').value;
             if(check == 'Y')
             {
-                if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？(代理人：' + mem_name + ')'))
+                if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？\n(代理人：' + mem_name + '，地點：'+ selectCus + ')'))
                 {
                     window.location.href="/table/update/id=" + id + "&status=Y&emp=" + mem_id;
                     //window.event.returnValue=false;
@@ -154,7 +164,7 @@
         }
         else
         {
-            alert('您無選擇代理人，請選擇後再行點選！！');
+            alert('您無選擇代理人或核選標籤，請選擇後再行點選！！');
         }
     }
 

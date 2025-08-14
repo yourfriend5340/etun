@@ -16,6 +16,6 @@ class extra_schedule extends Model
         'start',
         'end',
         'leave_member',
-        
+        'cus_id',
     ];
 }

@@ -429,11 +429,11 @@ class AuthUserController extends Controller
                 }
 
                 $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
-                //$allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classStartTime)));//第j個班開始時二十分鐘開放打卡(此rule移除)
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classStartTime)));//第j個班開始時二十分鐘開放打卡(此rule移除)
 
                 //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
-                //if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
-                if(strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) < strtotime($classEndTime)){
+                if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                //if(strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) < strtotime($classEndTime)){
                      $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
                      $cusId=$schedule[$i]->customer_id;
                      $class=$queryClassName;
@@ -497,11 +497,11 @@ class AuthUserController extends Controller
                     }
 
                     $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
-                    //$allowPunchEndTime=date("Y-m-d H:i",strtotime("+20 minute",strtotime($classStartTime)));//第j個班開始時二十分鐘開放打卡(此rule移除)
+                    $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classStartTime)));//第j個班開始時二十分鐘開放打卡(此rule移除)
 
                     //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
-                    //if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
-                    if(strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) < strtotime($classEndTime)){
+                    if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                    //if(strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) < strtotime($classEndTime)){
                         $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
                         $cusId=$schedule[$i]->customer_id;
                         $class=$queryClassName;
@@ -523,7 +523,9 @@ class AuthUserController extends Controller
             for($i=0;$i<count($request_extra);$i++)
             {
                 $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($request_extra[$i]->start)));
-                if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($request_extra[$i]->end))
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($request_extra[$i]->end)));
+                if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($allowPunchEndTime))
+                //if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($request_extra[$i]->end))
                 {
                     $lat2 = $lat1;
                     $lng2 = $lng1;

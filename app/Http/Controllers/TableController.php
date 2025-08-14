@@ -738,7 +738,7 @@ class TableController extends Controller
     public function updateStatus($id,$status,$emp,ConvertPdfService $convertPdfService){
         $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
         $signPath = storage_path('app').'/'.$signPath[0];
-        $applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
+        //$applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
 
         if($emp != "NULL")//指請假單
         {
@@ -802,10 +802,10 @@ class TableController extends Controller
             ->leftjoin('extra_schedules','twotime_table.extra_id','extra_schedules.id')
             ->leftjoin('employees as e2','extra_schedules.emp_id','e2.member_sn')
             ->select('twotime_table.*','e1.member_name','e2.member_name AS coverMan')
-            ->where([
-                ['empid',$applicantId],
-            ])
-            ->orderby('id','desc')
+            //->where([
+            //    ['empid',$applicantId],
+            //])
+            ->orderby('updated_at','desc')
             ->paginate(20);
 
          return view("show_table",["results"=>$query]);
