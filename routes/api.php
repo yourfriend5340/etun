@@ -37,5 +37,9 @@ Route::POST('/leave', [App\Http\Controllers\TableController::class, 'leaveAPI'])
 Route::POST('/resign', [App\Http\Controllers\TableController::class, 'resignAPI']);
 Route::POST('/tableresult', [App\Http\Controllers\TableController::class, 'tableresultAPI']);
 Route::POST('/additional', [App\Http\Controllers\TableController::class, 'additionalAPI']);
+Route::POST('/patrolpoint', [App\Http\Controllers\PatrolRecordController::class, 'patrolpointAPI']);
+
+Route::POST('/patrol2', [App\Http\Controllers\PatrolRecordController::class, 'api_store2']);
+Route::POST('/patrolPIC2', [App\Http\Controllers\PatrolRecordController::class, 'api_store_PIC2']);
 
 });

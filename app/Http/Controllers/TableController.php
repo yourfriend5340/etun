@@ -637,7 +637,7 @@ class TableController extends Controller
         for($i=0;$i<count($requestSchedule);$i++){
             $class = $requestSchedule[$i]->$queryDay;
             $cus = $requestSchedule[$i]->firstname;
-
+            $cus_id = $requestSchedule[$i]->customer_id;
             
             for($j=0;$j<strlen($class);$j++)
             {
@@ -663,7 +663,7 @@ class TableController extends Controller
                 {
                     $endDay = '0'.$endDay;
                 }
-
+                $todaySchedule[$i][$j]['customer_id'] = $cus_id;
                 $todaySchedule[$i][$j]['customer'] = $cus;
                 $todaySchedule[$i][$j]['class'] = $subClass;
                 $todaySchedule[$i][$j]['start'] = $year.'-'.$month.'-'.$day.' '.$start;
@@ -689,7 +689,7 @@ class TableController extends Controller
         for($i=0;$i<count($requestSchedule);$i++){
             $class = $requestSchedule[$i]->$queryYesterdayDay;
             $cus = $requestSchedule[$i]->firstname;
-
+            $cus_id = $requestSchedule[$i]->customer_id;
             //該客戶幾個班
             for($j=0;$j<strlen($class);$j++)
             {
@@ -716,7 +716,7 @@ class TableController extends Controller
                 {
                     $endDay = '0'.$endDay;
                 }
-
+                $yesterdaySchedule[$i][$j]['customer_id'] = $cus_id;
                 $yesterdaySchedule[$i][$j]['customer'] = $cus;
                 $yesterdaySchedule[$i][$j]['class'] = $subClass;
                 $yesterdaySchedule[$i][$j]['start'] = $yesterdayYear.'-'.$yesterdayMonth.'-'.$yesterdayDate.' '.$start;
@@ -735,7 +735,7 @@ class TableController extends Controller
     }
 
 
-    public function updateStatus($id,$status,$emp,ConvertPdfService $convertPdfService){
+    public function updateStatus($id,$status,$emp,$cus_id,ConvertPdfService $convertPdfService){
         $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
         $signPath = storage_path('app').'/'.$signPath[0];
         //$applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;
@@ -765,6 +765,7 @@ class TableController extends Controller
                         'start'=>$start,
                         'end'=>$end,
                         'leave_member'=>$leaveMan,
+                        'cus_id'=>$cus_id,
                     ]);
                 }
                 $queryMaxID = extra_schedule::where('emp_id',$emp)->max('id');

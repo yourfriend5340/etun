@@ -159,7 +159,7 @@ Route::POST('/table_import_access_salary', [TableController::class, 'import_acce
 Route::POST('/table_export_extra_schedule', [TableController::class, 'export_extra_schedule'])->name('table.export_extra_schedule');
 Route::get('/table/request/{Request_id}', [App\Http\Controllers\TableController::class, 'request'])->name('table.request');
 Route::get('/table/additional/{Request_id}', [App\Http\Controllers\TableController::class, 'additional'])->name('table.additional');
-Route::get('/table/update/id={update_id}&status={update_status}&emp={update_emp}',[App\Http\Controllers\TableController::class,'updateStatus'])->name('table.updateStatus');
+Route::get('/table/update/id={update_id}&status={update_status}&emp={update_emp}&cus={update_cus}',[App\Http\Controllers\TableController::class,'updateStatus'])->name('table.updateStatus');
 Route::get('/table/update/addtional/id={update_id}&additional={update_status}',[App\Http\Controllers\TableController::class,'updateAdditional'])->name('table.updateAdditional');
 Route::get('/table/requestoverview/name={name}&start_time={start_time}&end_time={end_time}',[App\Http\Controllers\TableController::class,'requestoverview'])->name('table.requestoverview');
 

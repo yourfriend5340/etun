@@ -73,7 +73,7 @@
                         for($j=0;$j<count($yesterday[$i]);$j++)
                         {
                             echo '<tr>';
-                            echo '<td> <input type="radio" id="y'.$i.$j.'" name="drone" value="'.$yesterday[$i][$j]['customer'].'"></td>';
+                            echo '<td> <input type="radio" id="y'.$i.$j.'" name="drone" value="'.$yesterday[$i][$j]['customer_id'].'"></td>';
                             echo '<td>'.$yesterday[$i][$j]['customer'].'</td>';
                             echo '<td>'.$yesterday[$i][$j]['class'].'</td>';
                             echo '<td>'.$yesterday[$i][$j]['start'].'</td>';
@@ -93,7 +93,7 @@
                         for($j=0;$j<count($today[$i]);$j++)
                         {
                             echo '<tr>';
-                            echo '<td> <input type="radio" id="t'.$i.$j.'" name="drone" value="'.$today[$i][$j]['customer'].'"></td>';
+                            echo '<td> <input type="radio" id="t'.$i.$j.'" name="drone" value="'.$today[$i][$j]['customer_id'].'"></td>';
                             echo '<td>'.$today[$i][$j]['customer'].'</td>';
                             echo '<td>'.$today[$i][$j]['class'].'</td>';
                             echo '<td>'.$today[$i][$j]['start'].'</td>';
@@ -153,7 +153,7 @@
             {
                 if(window.confirm('確定將單號 '+ id + ' 號審核通過嗎？\n(代理人：' + mem_name + '，地點：'+ selectCus + ')'))
                 {
-                    window.location.href="/table/update/id=" + id + "&status=Y&emp=" + mem_id;
+                    window.location.href="/table/update/id=" + id + "&status=Y&emp=" + mem_id + "&cus=" + selectCus;
                     //window.event.returnValue=false;
                 }
             }
