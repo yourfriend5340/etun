@@ -915,41 +915,111 @@ class TableController extends Controller
         $queryYear = date('Y',strtotime($addTime));
         $queryMonth = intval(date('m',strtotime($addTime)));
         $queryDay = intval(date('d',strtotime($addTime)));
-        
+
+        if ($queryDay == 1) 
+        {
+            $prevMonthDate = date_create("$queryYear-$queryMonth-01")->modify('-1 month');
+            $prevYear = $prevMonthDate->format('Y');
+            $prevMonth = intval($prevMonthDate->format('m'));
+            $prevDay = intval($prevMonthDate->format('t')); // 上個月最後一天
+        }
+        else
+        {
+            $prevYear = $queryYear;
+            $prevMonth = $queryMonth;
+            $prevDay = $queryDay - 1;
+        }
+
         $data = DB::table('punch_record')
-            ->join('employees','punch_record.employee_id','employees.member_sn')
-            ->where([
-                ['employee_id',$addEmp],
-                ['year',$queryYear],
-                ['month',$queryMonth],
-                ['additional',null],
-            ])
-            ->where(function ($query) use ($queryDay){
-                $query->where('day',$queryDay)
-                    ->orwhere('day',$queryDay-1);
+            ->join('employees', 'punch_record.employee_id', 'employees.member_sn')
+            ->where('employee_id', $addEmp)
+            ->where(function ($query) use ($queryYear, $queryMonth, $queryDay, $prevYear, $prevMonth, $prevDay) {
+                $query->where(function ($q) use ($queryYear, $queryMonth, $queryDay) {
+                    $q->where('year', $queryYear)
+                    ->where('month', $queryMonth)
+                    ->where('day', $queryDay);
+                })
+                ->orWhere(function ($q) use ($prevYear, $prevMonth, $prevDay) {
+                    $q->where('year', $prevYear)
+                    ->where('month', $prevMonth)
+                    ->where('day', $prevDay);
+                });
             })
-            ->orderby('punchTime','desc')
-            ->get(array('punch_record.*','employees.member_sn','employees.member_name'));
+            ->whereNull('additional')
+            ->orderBy('punchTime', 'desc')
+            ->get(['punch_record.*', 'employees.member_sn', 'employees.member_name']);
+
+            $temp = 'day' . $queryDay;
+            $temp2 = 'day' . $prevDay;
+
+            $schedule = DB::table('schedules')
+                ->join('employees', 'schedules.employee_id', 'employees.member_sn')
+                ->join('customers', 'schedules.customer_id', 'customers.customer_id')
+                ->where('employee_id', $addEmp)
+                ->where(function($query) use ($queryYear, $queryMonth, $prevYear, $prevMonth) {
+                    $query->where(function($q) use ($queryYear, $queryMonth) {
+                        $q->where('year', $queryYear)
+                        ->where('month', $queryMonth);
+                    })
+                    ->orWhere(function($q) use ($prevYear, $prevMonth) {
+                        $q->where('year', $prevYear)
+                        ->where('month', $prevMonth);
+                    });
+                })
+                ->where(function($query) use ($temp, $temp2) {
+                    $query->where($temp, '!=', '')
+                        ->orWhere($temp2, '!=', '');
+                })
+                ->get([
+                    'customers.firstname',
+                    'employees.member_name',
+                    'schedules.id',
+                    'schedules.year',
+                    'schedules.month',
+                    "schedules.$temp",
+                    "schedules.$temp2",
+                    'schedules.A', 'schedules.A_end', 'schedules.B', 'schedules.B_end',
+                    'schedules.C', 'schedules.C_end', 'schedules.D', 'schedules.D_end',
+                    'schedules.E', 'schedules.E_end', 'schedules.F', 'schedules.F_end',
+                    'schedules.G', 'schedules.G_end', 'schedules.H', 'schedules.H_end',
+                    'schedules.I', 'schedules.I_end', 'schedules.J', 'schedules.J_end'
+                ]);
         
-        $temp = 'day'.$queryDay;
-        $temp2 = 'day'.$queryDay-1;
-        $schedule = DB::table('schedules')
-            ->join('employees','schedules.employee_id','employees.member_sn')
-            ->join('customers','schedules.customer_id','customers.customer_id')
-            ->where([
-                ['employee_id',$addEmp],
-                ['year',$queryYear],
-                ['month',$queryMonth]
-            ])
-            ->where(function ($query) use ($temp,$temp2){
-                $query->where($temp,'!=','')
-                    ->orwhere($temp2,'!=','');
-            })
-            ->get(array('customers.firstname','employees.member_name','schedules.id','schedules.year','schedules.month',"schedules.$temp","schedules.$temp2",
-                        'schedules.A','schedules.A_end','schedules.B','schedules.B_end','schedules.C','schedules.C_end','schedules.D','schedules.D_end',
-                        'schedules.E','schedules.E_end','schedules.F','schedules.F_end','schedules.G','schedules.G_end','schedules.H','schedules.H_end',
-                        'schedules.I','schedules.I_end','schedules.J','schedules.J_end'
-            ));
+        // $data = DB::table('punch_record')
+        //     ->join('employees','punch_record.employee_id','employees.member_sn')
+        //     ->where([
+        //         ['employee_id',$addEmp],
+        //         ['year',$queryYear],
+        //         ['month',$queryMonth],
+        //         ['additional',null],
+        //     ])
+        //     ->where(function ($query) use ($queryDay){
+        //         $query->where('day',$queryDay)
+        //             ->orwhere('day',$queryDay-1);
+        //     })
+        //     ->orderby('punchTime','desc')
+        //     ->get(array('punch_record.*','employees.member_sn','employees.member_name'));
+        
+        // $temp = 'day'.$queryDay;
+        // $temp2 = 'day'.$queryDay-1;
+
+        // $schedule = DB::table('schedules')
+        //     ->join('employees','schedules.employee_id','employees.member_sn')
+        //     ->join('customers','schedules.customer_id','customers.customer_id')
+        //     ->where([
+        //         ['employee_id',$addEmp],
+        //         ['year',$queryYear],
+        //         ['month',$queryMonth]
+        //     ])
+        //     ->where(function ($query) use ($temp,$temp2){
+        //         $query->where($temp,'!=','')
+        //             ->orwhere($temp2,'!=','');
+        //     })
+        //     ->get(array('customers.firstname','employees.member_name','schedules.id','schedules.year','schedules.month',"schedules.$temp","schedules.$temp2",
+        //                 'schedules.A','schedules.A_end','schedules.B','schedules.B_end','schedules.C','schedules.C_end','schedules.D','schedules.D_end',
+        //                 'schedules.E','schedules.E_end','schedules.F','schedules.F_end','schedules.G','schedules.G_end','schedules.H','schedules.H_end',
+        //                 'schedules.I','schedules.I_end','schedules.J','schedules.J_end'
+        //     ));
 
         $tempStr = "";  
         $tempArr = ['A','B','C','D','E','F','G','H','I','J'];         
