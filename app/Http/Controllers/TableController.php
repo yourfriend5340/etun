@@ -655,13 +655,13 @@ class TableController extends Controller
                     $endDay = $day;
                 }
 
-                if($day < 10)
+                if(intval($day) < 10)
                 {
-                    $day = '0'.$day;
+                    $day = '0'.intval($day);
                 }
-                if($endDay < 10)
+                if(intval($endDay) < 10)
                 {
-                    $endDay = '0'.$endDay;
+                    $endDay = '0'.intval($endDay);
                 }
                 $todaySchedule[$i][$j]['customer_id'] = $cus_id;
                 $todaySchedule[$i][$j]['customer'] = $cus;
@@ -708,13 +708,13 @@ class TableController extends Controller
                     $endDay = $yesterdayDate;
                 }
 
-                if($yesterdayDate < 10)
+                if(intval($yesterdayDate) < 10)
                 {
-                    $yesterdayDate = '0'.$yesterdayDate;
+                    $yesterdayDate = '0'.intval($yesterdayDate);
                 }
-                if($endDay < 10)
+                if(intval($endDay) < 10)
                 {
-                    $endDay = '0'.$endDay;
+                    $endDay = '0'.intval($endDay);
                 }
                 $yesterdaySchedule[$i][$j]['customer_id'] = $cus_id;
                 $yesterdaySchedule[$i][$j]['customer'] = $cus;
