@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\Patrol_Import;
 use App\Exports\PatrolRecordExport;
+use Illuminate\Support\Facades\Storage;
 
 class PatrolRecordController extends Controller
 {
