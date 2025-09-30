@@ -505,7 +505,7 @@ class PatrolRecordController extends Controller
         $json=json_decode($request->input('req'));
         $file=$request->file('file');
 
-
+dd($json);
         if($json->Lat == "" || $json->Lng == "")
         {
             return response()->json([
