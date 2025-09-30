@@ -916,7 +916,7 @@ class PatrolRecordController extends Controller
         } 
         else
         {
-            rreturn response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
+            return response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
         } 
 
 
