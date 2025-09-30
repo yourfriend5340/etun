@@ -869,7 +869,7 @@ class PatrolRecordController extends Controller
         }
 
         //以上是針對班表查詢，以下為額外代班查詢
-        if($cusId == "" || $cusId == null)
+        if($cusId == "")
         {
             $day = intval(date('d', strtotime($now)));
                 $request_extra = DB::table('extra_schedules')
@@ -896,6 +896,10 @@ class PatrolRecordController extends Controller
                 }
             }
 
+
+        } 
+        if($cusId != null)
+        {
             $point = DB::table('qrcode')
             ->select('patrol_RD_No','patrol_RD_Name')
             ->join('customers','qrcode.customer_id','=','customers.customer_id')
@@ -913,7 +917,7 @@ class PatrolRecordController extends Controller
             $json = json_encode($data);
 
             return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
-        } 
+        }
         else
         {
             return response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
