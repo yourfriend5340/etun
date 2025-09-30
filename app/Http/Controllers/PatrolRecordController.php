@@ -692,6 +692,7 @@ class PatrolRecordController extends Controller
             $str=$search_employee->member_name.'App上傳';
 
             if ($request->file('file')!=null){
+                //for mac
                 //$imageName = $json->Date.'_'.$json->Qrcode->time.'_'.$json->Qrcode->QrcodeID.'.'.$request->file('file')->extension();
                 //$path = $request->file('file')->storeas('public/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID,$imageName);
 
@@ -699,16 +700,13 @@ class PatrolRecordController extends Controller
                 // 將日期字串中的冒號與空白取代成底線
                 $cleanDate = str_replace([':', ' '], '_', $json->Date);
                 $cleanTime = str_replace(':', '_', $json->Qrcode->time);
-
                 // 組合合法檔名
                 $imageName = $cleanDate . '_' . $cleanTime . '_' . $json->Qrcode->QrcodeID . '.' . $request->file('file')->extension();
-
                 $directory = 'public/patrolPIC/' . $search_cusid->customer_id . '/' . $json->EmployeeID;
-
                 // 確保資料夾存在（不會重複建立）
                 Storage::makeDirectory($directory);
-
                 $path = $request->file('file')->storeAs($directory, $imageName);
+                //end for windows
                 
             }
                 $data=[
