@@ -872,7 +872,7 @@ class TableController extends Controller
         $query = DB::table('twotime_table')
             ->select('type','start','end','reason','status')
             ->where('empid',$employeeID)
-            ->whereBetween('created_at',array($month,$nextmonth))
+            ->whereBetween('update_at',array($month,$nextmonth))
             ->get()
             ->map(function($item){
                 if($item->type == '離職'){
