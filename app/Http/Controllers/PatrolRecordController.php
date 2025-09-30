@@ -785,7 +785,7 @@ class PatrolRecordController extends Controller
 
                 $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
                 $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classEndTime)));
-dd($allowPunchStartTime,$allowPunchEndTime);
+
                 //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
                 if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
                      $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
