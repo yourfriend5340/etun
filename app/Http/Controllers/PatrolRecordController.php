@@ -692,7 +692,16 @@ class PatrolRecordController extends Controller
 
             if ($request->file('file')!=null){
                 $imageName = $json->Date.'_'.$json->Qrcode->time.'_'.$json->Qrcode->QrcodeID.'.'.$request->file('file')->extension();
-                $path = $request->file('file')->storeas('public/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID,$imageName);
+                //$path = $request->file('file')->storeas('public/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID,$imageName);
+
+                //for WINDOWS
+                $directory = 'public/patrolPIC/' . $search_cusid->customer_id . '/' . $json->EmployeeID;
+
+                // 確保資料夾存在（不會重複建立）
+                Storage::makeDirectory($directory);
+
+                $path = $request->file('file')->storeAs($directory, $imageName);
+                
             }
                 $data=[
                     'customer_id'=>$search_cusid->customer_id,
