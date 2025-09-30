@@ -683,7 +683,7 @@ class PatrolRecordController extends Controller
                 }
             }
         }  
-
+        dd($json->Date);
         if($lat2 != "" && $lng2 != "")
         {
             $search_employee=DB::table('employees')->select('member_name')->where('member_sn','=',$json->EmployeeID)->get()->first();
@@ -696,7 +696,6 @@ class PatrolRecordController extends Controller
                 //$path = $request->file('file')->storeas('public/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID,$imageName);
 
                 //for WINDOWS
-
                 // 將日期字串中的冒號與空白取代成底線
                 $cleanDate = str_replace([':', ' '], '_', $json->Date);
                 $cleanTime = str_replace(':', '_', $json->Qrcode->time);
