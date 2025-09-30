@@ -683,7 +683,7 @@ class PatrolRecordController extends Controller
                 }
             }
         }  
-        dd($json->Date);
+
         if($lat2 != "" && $lng2 != "")
         {
             $search_employee=DB::table('employees')->select('member_name')->where('member_sn','=',$json->EmployeeID)->get()->first();
