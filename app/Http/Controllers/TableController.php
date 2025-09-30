@@ -735,7 +735,7 @@ class TableController extends Controller
     }
 
 
-    public function updateStatus($id,$status,$emp,$cus_id,ConvertPdfService $convertPdfService){
+    public function updateStatus($id,$status,$emp,$cus_id="",ConvertPdfService $convertPdfService){
         $signPath = DB::table('twotime_table')->where('id',$id)->get()->pluck('filePath'); 
         $signPath = storage_path('app').'/'.$signPath[0];
         //$applicantId = DB::table('twotime_table')->where('id',$id)->first()->empid;

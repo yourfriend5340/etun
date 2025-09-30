@@ -171,7 +171,7 @@
     function submitN(id)
     {
         if(window.confirm('確定將單號 '+ id + ' 號否決嗎？')){
-            window.location.href="/table/update/id=" + id + "&status=N&emp=0";
+            window.location.href="/table/update/id=" + id + "&status=N&emp=0&cus=0";
         }
     }
 
