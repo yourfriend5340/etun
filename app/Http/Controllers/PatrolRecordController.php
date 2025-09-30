@@ -897,8 +897,8 @@ class PatrolRecordController extends Controller
             }
 
 
-        } dd($cusId);
-        if($cusId != null)
+        } 
+        if($cusId != "")
         {
             $point = DB::table('qrcode')
             ->select('patrol_RD_No','patrol_RD_Name')
