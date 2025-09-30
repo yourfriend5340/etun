@@ -895,25 +895,31 @@ class PatrolRecordController extends Controller
                     break;
                 }
             }
-        }  
 
-        $point = DB::table('qrcode')
-                    ->select('patrol_RD_No','patrol_RD_Name')
-                    ->join('customers','qrcode.customer_id','=','customers.customer_id')
-                    ->where([
-                        ['qrcode.customer_id',$cusId],
-                        ['patrol_RD_No','!=',''],
-                        ['printQR',1]
-                    ])->get()->toarray();
+            $point = DB::table('qrcode')
+            ->select('patrol_RD_No','patrol_RD_Name')
+            ->join('customers','qrcode.customer_id','=','customers.customer_id')
+            ->where([
+                ['qrcode.customer_id',$cusId],
+                ['patrol_RD_No','!=',''],
+                ['printQR',1]
+            ])->get()->toarray();
 
-        $cus_name = DB::table('customers')->where('customer_id',$cusId)->first()->firstname;
-        $cus_arr['customer_id'] = $cusId;
-        $cus_arr['customer_name'] = $cus_name;
-        
-        $data = array_merge($cus_arr,$point);
-        $json = json_encode($data);
+            $cus_name = DB::table('customers')->where('customer_id',$cusId)->first()->firstname;
+            $cus_arr['customer_id'] = $cusId;
+            $cus_arr['customer_name'] = $cus_name;
+            
+            $data = array_merge($cus_arr,$point);
+            $json = json_encode($data);
 
-        return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
+            return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
+        } 
+        else
+        {
+            rreturn response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
+        } 
+
+
         
     }
 
