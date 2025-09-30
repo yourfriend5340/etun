@@ -869,7 +869,7 @@ class PatrolRecordController extends Controller
         }
 
         //以上是針對班表查詢，以下為額外代班查詢
-        if($cusId == "" || !isset($cusId))
+        if($cusId == "" || $cusId == null)
         {
             $day = intval(date('d', strtotime($now)));
                 $request_extra = DB::table('extra_schedules')
