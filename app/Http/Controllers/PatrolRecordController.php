@@ -558,6 +558,13 @@ return response()->json([
 
         $search_employee=DB::table('employees')->select('member_name')->where('member_sn','=',$json->EmployeeID)->get()->first();
         $search_cusid=DB::table('qrcode')->select('customer_id','patrol_RD_Name')->where('patrol_RD_No','=',$json->Qrcode->QrcodeID)->get()->first();
+        if($search_cus->customer_id == "")
+        {
+                return response()->json([
+                'message' => 'Qrcode not in whitelist',
+                'qrcode' => $json->Qrcode->QrcodeID
+            ], 422);
+        }
         $search_cus=DB::table('customers')->select('firstname')->where('customer_id','=',$search_cusid->customer_id)->get()->first();
         $str=$search_employee->member_name.'App上傳';
 
