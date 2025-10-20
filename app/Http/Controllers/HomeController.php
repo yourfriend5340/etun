@@ -36,6 +36,7 @@ class HomeController extends Controller
         $request_id=($patrol->id)-20;
 
         $patrol=DB::table('patrol_records')
+        ->select('patrol_records.*','customers.firstname')
         ->join('customers','patrol_records.customer_id','=','customers.customer_id')
         ->where('id','>',$request_id)
         ->orderBy('id','desc')

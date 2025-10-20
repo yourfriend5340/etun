@@ -222,26 +222,332 @@ class PatrolRecordController extends Controller
         $search_employee=DB::table('employees')->select('member_name')->where('member_sn','=',$json_arr['EmployeeID'])->get()->first();
         $str=$search_employee->member_name.'App上傳';
 
-        foreach ($json_arr['Qrcode'] as $data){
-            $search_cusid=DB::table('qrcode')->select('customer_id','patrol_RD_Name')->where('patrol_RD_No','=',$data['QrcodeID'])->get()->first();
-            //dd($search_employee->member_name);
 
-            $data=[
-                'customer_id'=>$search_cusid->customer_id,
-                'patrol_upload_user'=>$str,
-                'patrol_RD_DateB'=>$json_arr['Date'],
-            
-                'patrol_RD_TimeB'=>$data['time'],
-                'patrol_RD_No'=>$data['QrcodeID'],
-                'patrol_RD_Name'=>$search_cusid->patrol_RD_Name,
-                'patrol_upload_date'=>$now,
-            ];
-            $patrol= PatrolRecord::create($data);
-        }
+        //查詢現有時間之cus id
+        $json_arr=$request->all();
+        $employeeID = $json_arr['EmployeeID'];
         
-        return response()->json([
-            'message' => 'success to upload data'
-        ]);
+        $now = date("Y-m-d H:i:s");
+        //$now = '2025-07-23 07:11:00';
+        //$now = '2025-07-23 20:59:00';
+        $year = date('Y', strtotime($now));
+        $month = intval(date('m', strtotime($now)));
+        $day = intval(date('d', strtotime($now)));
+        $time = date('H:i', strtotime($now));        
+        $employeeID = $json_arr['EmployeeID'];
+        $cusId = "";
+
+        //查詢公告、員工名字
+        $announce=DB::table('announcements')->latest()->take(5)->get();
+        $employeeName=DB::table('employees')->where('member_sn','=',$employeeID)->first()->member_name;
+
+        //查詢當天排班表
+        $schedule=DB::table('schedules')->where([
+                    ['employee_id','=',$employeeID],
+                    ['year','=',$year],
+                    ['month','=',$month]
+                    ])->get()->toarray();
+
+        for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
+            $queryDate='day'.$day;
+            $classList=$schedule[$i]->$queryDate;
+
+            if($classList == ""){
+                continue;
+            }
+            $countClassList=strlen($classList);
+
+            for($j=1;$j<=$countClassList;$j++){
+                $queryClassName=substr($classList, $j-1, $j);//讀第j個班 
+                $queryClassEndTime=$queryClassName.'_end';//組合語法
+                $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
+                $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
+                $time=$year.'-'.$month.'-'.$day.' '.$time;
+
+
+                if(strtotime($classEndTime) < strtotime($classStartTime))
+                { 
+                    $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                    $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                    $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
+                }
+                else{
+                    $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                    $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                }
+
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classEndTime)));
+
+                //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                     $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                     $cusId=$schedule[$i]->customer_id;
+                     //$class=$queryClassName;
+                     //dd($cusId,$class,$classStartTime,$classEndTime);
+                     //$lat2=$queryLocation->lat;
+                     //$lng2=$queryLocation->lng;
+                     break;
+                }
+            }
+        }
+        //大遲到隔天上班的,找昨天班表，並考慮到可能是1號，前一天是上月底
+        if($cusId == "")
+        {
+            if($day == 1)
+            {
+                $year = date("Y",strtotime("-1 day",strtotime($now)));
+                $month = date("m",strtotime("-1 day",strtotime($now)));
+            }
+            $day = date("d",strtotime("-1 day",strtotime($now)));
+            
+
+            //查詢昨天排班表
+            $schedule=DB::table('schedules')->where([
+                        ['employee_id','=',$employeeID],
+                        ['year','=',$year],
+                        ['month','=',$month]
+                        ])->get()->toarray();
+
+            for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
+                $queryDate='day'.$day;
+                if(isset($schedule[$i]->$queryDate))
+                {
+                    $classList=$schedule[$i]->$queryDate;
+                }
+                else{
+                    $classList=="";
+                }
+                
+                if($classList == ""){
+                    continue;
+                }
+                $countClassList=strlen($classList);
+
+                for($j=1;$j<=$countClassList;$j++){
+                    $queryClassName=substr($classList, $j-1, $j);//讀第j個班 
+                    $queryClassEndTime=$queryClassName.'_end';//組合語法
+                    $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
+                    $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
+                    $time=$year.'-'.$month.'-'.$day.' '.$time;
+
+
+                    if(strtotime($classEndTime) < strtotime($classStartTime))
+                    { 
+                        $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                        $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                        $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
+                    }
+                    else{
+                        $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                        $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                    }
+
+                    $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
+                    $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classEndTime)));//第j個班開始時二十分鐘開放打卡(此rule移除)
+
+                    //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                    if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                    //if(strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) < strtotime($classEndTime)){
+                        $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                        $cusId=$schedule[$i]->customer_id;
+                        //$class=$queryClassName;
+                        //dd($cusId,$class,$classStartTime,$classEndTime);
+                        //$lat2=$queryLocation->lat;
+                        //$lng2=$queryLocation->lng;
+                        break;
+                    }
+                }
+            }
+        }
+
+        //以上是針對班表查詢，以下為額外代班查詢
+        if($cusId == "")
+        {
+            $day = intval(date('d', strtotime($now)));
+                $request_extra = DB::table('extra_schedules')
+                ->join('customers', 'extra_schedules.cus_id', '=', 'customers.customer_id')
+                ->where('emp_id', $employeeID)
+                ->select('extra_schedules.*', 'customers.lat', 'customers.lng') // 自訂欄位
+                ->get();
+
+            for($i=0;$i<count($request_extra);$i++)
+            {
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($request_extra[$i]->start)));
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($request_extra[$i]->end)));
+
+                if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($allowPunchEndTime))
+                //if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($request_extra[$i]->end))
+                {
+                    //$lat2 = $request_extra[$i]->lat;
+                    //$lng2 = $request_extra[$i]->lng;
+                    $cusId = $request_extra[$i]->cus_id;
+                    //$class = '代';
+                    //$classStartTime = $request_extra[$i]->start;
+                    //$classEndTime = $request_extra[$i]->end;
+                    break;
+                }
+            }
+
+
+        } 
+        if($cusId != "")
+        {
+            $point = DB::table('qrcode')
+            ->select('patrol_RD_No','patrol_RD_Name')
+            ->join('customers','qrcode.customer_id','=','customers.customer_id')
+            ->where([
+                ['qrcode.customer_id',$cusId],
+                ['patrol_RD_No','!=',''],
+                ['printQR',1]
+            ])->get()->toarray();
+
+            $cus_name = DB::table('customers')->where('customer_id',$cusId)->first()->firstname;
+            $cus_arr['customer_id'] = $cusId;
+            $cus_arr['customer_name'] = $cus_name;
+            
+            $data = array_merge($cus_arr,$point);
+            $json = json_encode($data);
+
+           // return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        else
+        {
+            return response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
+        } 
+        //end 查詢id
+
+// 建立白名單 map
+$qrcode = DB::table('qrcode')
+    ->select('patrol_RD_no')
+    ->where([
+        ['customer_id', $cusId],
+        ['patrol_RD_No', '!=', '']
+    ])->get()->toArray();
+
+$validQrcodes = array_flip(array_map(function ($item) {
+    return $item->patrol_RD_no;
+}, $qrcode));
+
+// 查管理室座標
+$gps = DB::table('customers')
+    ->select('Lat', 'Lng')
+    ->where('customer_id', $cusId)
+    ->first();
+
+$officeLat = floatval($gps->Lat);
+$officeLng = floatval($gps->Lng);
+
+// Haversine 距離函式
+function haversineDistance($lat1, $lng1, $lat2, $lng2)
+{
+    $earthRadius = 6371000;
+    $lat1 = deg2rad($lat1);
+    $lng1 = deg2rad($lng1);
+    $lat2 = deg2rad($lat2);
+    $lng2 = deg2rad($lng2);
+
+    $dLat = $lat2 - $lat1;
+    $dLng = $lng2 - $lng1;
+
+    $a = sin($dLat / 2) ** 2 +
+        cos($lat1) * cos($lat2) * sin($dLng / 2) ** 2;
+
+    $c = 2 * atan2(sqrt($a), sqrt(1 - $a));
+    return $earthRadius * $c;
+}
+
+// 先標記 abnormal 與找出 abnormal='x' 的 QrcodeID
+$abnormalXIds = [];
+
+// 第一步：先標記 abnormal (x/*/空字串)
+foreach ($json_arr['Qrcode'] as &$item) {
+    $qrcodeId = $item['QrcodeID'] ?? '';
+    $lat = isset($item['Lat']) ? floatval($item['Lat']) : null;
+    $lng = isset($item['Lng']) ? floatval($item['Lng']) : null;
+
+    if (!isset($validQrcodes[$qrcodeId])) {
+        // 不在白名單
+        $item['abnormal'] = 'x';
+        $abnormalXIds[] = $qrcodeId;
+    } else {
+        // 在白名單，判斷距離
+        if (is_null($lat) || is_null($lng)) {
+            $item['abnormal'] = '*'; // GPS缺失視為異常
+        } else {
+            $distanceFromOffice = haversineDistance($lat, $lng, $officeLat, $officeLng);
+            if ($distanceFromOffice > 300) {
+                $item['abnormal'] = '*'; // 超過範圍異常
+            } else {
+                $item['abnormal'] = ''; // 正常
+            }
+        }
+    }
+}
+unset($item);
+
+// 第二步：檢查 GPS 重複（沒移動），全部改為 '*'
+$gpsCountMap = [];
+foreach ($json_arr['Qrcode'] as $item) {
+    if (!isset($item['Lat']) || !isset($item['Lng'])) continue;
+    $key = floatval($item['Lat']) . '_' . floatval($item['Lng']);
+    if (!isset($gpsCountMap[$key])) {
+        $gpsCountMap[$key] = [];
+    }
+    $gpsCountMap[$key][] = $item;
+}
+
+// 找出重複 GPS，標記
+foreach ($gpsCountMap as $key => $items) {
+    if (count($items) > 1) {
+        foreach ($json_arr['Qrcode'] as &$item) {
+            $itemKey = floatval($item['Lat']) . '_' . floatval($item['Lng']);
+            if ($itemKey === $key && $item['abnormal'] !== 'x') {
+                $item['abnormal'] = '*';
+            }
+        }
+        unset($item);
+    }
+}
+
+// 寫入 DB，只寫 abnormal 非 'x' 的
+foreach ($json_arr['Qrcode'] as $data) {
+    if ($data['abnormal'] === 'x') {
+        continue;
+    }
+
+    $search_cusid = DB::table('qrcode')
+        ->select('customer_id', 'patrol_RD_Name')
+        ->where('patrol_RD_No', '=', $data['QrcodeID'])
+        ->first();
+
+    if (!$search_cusid) {
+        continue;
+    }
+
+    $data1 = [
+        'customer_id' => $search_cusid->customer_id,
+        'patrol_upload_user' => $str,
+        'patrol_RD_DateB' => $json_arr['Date'],
+        'patrol_RD_TimeB' => $data['time'],
+        'patrol_RD_No' => $data['QrcodeID'],
+        'lng' => $data['Lng'],
+        'lat' => $data['Lat'],
+        'abnormal' => $data['abnormal'],
+        'patrol_RD_Name' => $search_cusid->patrol_RD_Name,
+        'patrol_upload_date' => $now,
+    ];
+
+    PatrolRecord::create($data1);
+}
+
+// 回傳 abnormal = 'x' 的 QrcodeID 陣列
+return response()->json([
+    'message' => 'success to upload data',
+    'abnormal_x_qrcode_ids' => $abnormalXIds,
+], 201);
+
+
     }
 
     public function api_store_PIC(Request $request)
@@ -263,7 +569,9 @@ class PatrolRecordController extends Controller
                 'customer_id'=>$search_cusid->customer_id,
                 'patrol_upload_user'=>$str,
                 'patrol_RD_DateB'=>$json->Date,
-            
+                'abnormal'=>'*',
+                'lat'=>$json->Lat,
+                'lng'=>$json->Lng,
                 'patrol_RD_TimeB'=>$json->Qrcode->time,
                 'patrol_RD_No'=>$json->Qrcode->QrcodeID,
                 'patrol_RD_Name'=>$search_cusid->patrol_RD_Name,

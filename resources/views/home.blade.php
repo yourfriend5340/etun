@@ -176,6 +176,8 @@
                     <td>保全員</td>
                     <td>客戶</td>
                     <td>場所</td>
+                    <td>經度</td>
+                    <td>緯度</td>
                     <td>照片</td>
                     <td>日期</td>
                     <td>時間</td>
@@ -190,6 +192,8 @@
                             <td scope="top">{{$patrol->patrol_upload_user}}</td>
                             <td scope="top">{{$patrol->firstname}}</td>
                             <td scope="top">{{$patrol->patrol_RD_Name}}</td>
+                            <td scope="top">{{$patrol->lng }}</td>
+                           <td scope="top">{{$patrol->lat}}</td>
 
                             <td scope="top"> 
                                 <input class="btn btn-light btn-md active" id="btn" type="button" value="連結" onclick="submit_onclick_PIC({{$patrol->id}})">
@@ -199,17 +203,35 @@
                             <td scope="top">{{$patrol->patrol_RD_TimeB}}</td>
                         </tr>
                     @else
+                        @if($patrol->abnormal != "")
                         <tr>
+                             <td scope="top">{{$patrol->id}}</td>
+                             <td scope="top">{{$patrol->patrol_upload_user}}</td>
+                             <td scope="top">{{$patrol->firstname}}</td>
+                             <td scope="top">{{$patrol->patrol_RD_Name}}</td>
+                             <td scope="top">{{$patrol->lng }}</td>
+                             <td scope="top">{{$patrol->lat}}</td>
+                             <td scope="top"> 
+                                <em>-</em>
+                            </td>
+                             <td scope="top">{{$patrol->patrol_RD_DateB}}</td>
+                             <td scope="top">{{$patrol->patrol_RD_TimeB}}</td>
+                        </tr>
+                        @else
+                            <tr>
                             <td>{{$patrol->id}}</td>
                             <td>{{$patrol->patrol_upload_user}}</td>
                             <td>{{$patrol->firstname}}</td>
                             <td>{{$patrol->patrol_RD_Name}}</td>
+                            <td>{{$patrol->lng }}</td>
+                            <td>{{$patrol->lat}}</td>
                             <td> 
                                 <em>-</em>
                             </td>
                             <td>{{$patrol->patrol_RD_DateB}}</td>
                             <td>{{$patrol->patrol_RD_TimeB}}</td>
                         </tr>
+                        @endif
                     @endif
 
 
