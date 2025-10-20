@@ -579,8 +579,8 @@ return response()->json([
         }
 
         //查詢現有時間之cus id
-        $json_arr=$request->all();
-        $employeeID = $json_arr['EmployeeID'];
+        //$json_arr=$request->all();
+        $employeeID = $json->EmployeeID;
         
         $now = date("Y-m-d H:i:s");
         //$now = '2025-07-23 07:11:00';
@@ -589,7 +589,7 @@ return response()->json([
         $month = intval(date('m', strtotime($now)));
         $day = intval(date('d', strtotime($now)));
         $time = date('H:i', strtotime($now));        
-        $employeeID = $json_arr['EmployeeID'];
+        //$employeeID = $json_arr['EmployeeID'];
         $cusId = "";
 
         //查詢公告、員工名字
