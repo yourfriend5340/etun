@@ -783,7 +783,7 @@ return response()->json([
         $validQrcodes = array_flip(array_map(function ($item) {
             return $item->patrol_RD_no;
         }, $qrcode));
-
+dd($json->Qrcode->QrcodeID);
         // 判斷是否在白名單
         $qrcodeId = $json->Qrcode->QrcodeID;
 
