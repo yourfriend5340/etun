@@ -578,27 +578,50 @@ return response()->json([
             //end for windows
         }
 
+        // 建立白名單 map
+        $qrcode = DB::table('qrcode')
+            ->select('patrol_RD_no')
+            ->where([
+                ['customer_id', $search_cusid->customer_id],  // 用對應客戶ID
+                ['patrol_RD_No', '!=', '']
+            ])->get()->toArray();
 
+        $validQrcodes = array_flip(array_map(function ($item) {
+            return $item->patrol_RD_no;
+        }, $qrcode));
 
-            $data=[
-                'customer_id'=>$search_cusid->customer_id,
-                'patrol_upload_user'=>$str,
-                'patrol_RD_DateB'=>$json->Date,
-                'abnormal'=>'*',
-                'lat'=>$json->Lat,
-                'lng'=>$json->Lng,
-                'patrol_RD_TimeB'=>$json->Qrcode->time,
-                'patrol_RD_No'=>$json->Qrcode->QrcodeID,
-                'patrol_RD_Name'=>$search_cusid->patrol_RD_Name,
-                'patrol_upload_date'=>$now,
-                'picturePath'=>'storage/patrolPIC/'.$search_cusid->customer_id.'/'.$json->EmployeeID.'/'.$imageName
-            ];
-            $patrol= PatrolRecord::create($data);
-            //dd($data);
-            
+        // 判斷是否在白名單
+        $qrcodeId = $json->Qrcode->QrcodeID;
+
+        if (!isset($validQrcodes[$qrcodeId])) {
+            // 不在白名單，回傳json
             return response()->json([
+                'message' => 'Qrcode not in whitelist',
+                'qrcode' => $qrcodeId
+            ], 422);
+        }
+
+        // 在白名單，寫入資料庫
+        $data = [
+            'customer_id' => $search_cusid->customer_id,
+            'patrol_upload_user' => $str,
+            'patrol_RD_DateB' => $json->Date,
+            'abnormal' => '*',
+            'lat' => $json->Lat ?? null,
+            'lng' => $json->Lng ?? null,
+            'patrol_RD_TimeB' => $json->Qrcode->time ?? null,
+            'patrol_RD_No' => $qrcodeId,
+            'patrol_RD_Name' => $search_cusid->patrol_RD_Name,
+            'patrol_upload_date' => $now,
+            'picturePath' => 'storage/patrolPIC/' . $search_cusid->customer_id . '/' . $json->EmployeeID . '/' . $imageName
+        ];
+
+        PatrolRecord::create($data);
+
+        return response()->json([
             'message' => 'success to upload data'
         ]);
+
     }
 
     //iclude gps version
