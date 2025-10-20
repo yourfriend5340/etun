@@ -558,6 +558,7 @@ return response()->json([
 
         $search_employee=DB::table('employees')->select('member_name')->where('member_sn','=',$json->EmployeeID)->get()->first();
         $search_cusid=DB::table('qrcode')->select('customer_id','patrol_RD_Name')->where('patrol_RD_No','=',$json->Qrcode->QrcodeID)->get()->first();
+        dd($search_cusid);
         if(isset($search_cusid->customer_id))
         {
                 return response()->json([
