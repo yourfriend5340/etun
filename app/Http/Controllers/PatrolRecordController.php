@@ -762,7 +762,7 @@ return response()->json([
             $cus_arr['customer_name'] = $cus_name;
             
             $data = array_merge($cus_arr,$point);
-            $json = json_encode($data);
+            //$json = json_encode($data);
 
            // return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
         }
@@ -783,7 +783,7 @@ return response()->json([
         $validQrcodes = array_flip(array_map(function ($item) {
             return $item->patrol_RD_no;
         }, $qrcode));
-dd($json->Qrcode->QrcodeID);
+
         // 判斷是否在白名單
         $qrcodeId = $json->Qrcode->QrcodeID;
 
