@@ -544,7 +544,7 @@ foreach ($json_arr['Qrcode'] as $data) {
 // 回傳 abnormal = 'x' 的 QrcodeID 陣列
 return response()->json([
     'message' => 'success to upload data',
-    'abnormal_x_qrcode_ids' => $abnormalXIds,
+    'abnormal_data' => $abnormalXIds,
 ], 201);
 
 
