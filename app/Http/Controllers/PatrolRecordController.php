@@ -578,11 +578,205 @@ return response()->json([
             //end for windows
         }
 
+        //查詢現有時間之cus id
+        $json_arr=$request->all();
+        $employeeID = $json_arr['EmployeeID'];
+        
+        $now = date("Y-m-d H:i:s");
+        //$now = '2025-07-23 07:11:00';
+        //$now = '2025-07-23 20:59:00';
+        $year = date('Y', strtotime($now));
+        $month = intval(date('m', strtotime($now)));
+        $day = intval(date('d', strtotime($now)));
+        $time = date('H:i', strtotime($now));        
+        $employeeID = $json_arr['EmployeeID'];
+        $cusId = "";
+
+        //查詢公告、員工名字
+        $announce=DB::table('announcements')->latest()->take(5)->get();
+        $employeeName=DB::table('employees')->where('member_sn','=',$employeeID)->first()->member_name;
+
+        //查詢當天排班表
+        $schedule=DB::table('schedules')->where([
+                    ['employee_id','=',$employeeID],
+                    ['year','=',$year],
+                    ['month','=',$month]
+                    ])->get()->toarray();
+
+        for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
+            $queryDate='day'.$day;
+            $classList=$schedule[$i]->$queryDate;
+
+            if($classList == ""){
+                continue;
+            }
+            $countClassList=strlen($classList);
+
+            for($j=1;$j<=$countClassList;$j++){
+                $queryClassName=substr($classList, $j-1, $j);//讀第j個班 
+                $queryClassEndTime=$queryClassName.'_end';//組合語法
+                $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
+                $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
+                $time=$year.'-'.$month.'-'.$day.' '.$time;
+
+
+                if(strtotime($classEndTime) < strtotime($classStartTime))
+                { 
+                    $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                    $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                    $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
+                }
+                else{
+                    $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                    $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                }
+
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classEndTime)));
+
+                //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                     $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                     $cusId=$schedule[$i]->customer_id;
+                     //$class=$queryClassName;
+                     //dd($cusId,$class,$classStartTime,$classEndTime);
+                     //$lat2=$queryLocation->lat;
+                     //$lng2=$queryLocation->lng;
+                     break;
+                }
+            }
+        }
+        //大遲到隔天上班的,找昨天班表，並考慮到可能是1號，前一天是上月底
+        if($cusId == "")
+        {
+            if($day == 1)
+            {
+                $year = date("Y",strtotime("-1 day",strtotime($now)));
+                $month = date("m",strtotime("-1 day",strtotime($now)));
+            }
+            $day = date("d",strtotime("-1 day",strtotime($now)));
+            
+
+            //查詢昨天排班表
+            $schedule=DB::table('schedules')->where([
+                        ['employee_id','=',$employeeID],
+                        ['year','=',$year],
+                        ['month','=',$month]
+                        ])->get()->toarray();
+
+            for ($i=0;$i<count($schedule);$i++){//該員工該月有排i-1個客戶的班，在第i個客戶中今天有j個班，找到對應的班
+                $queryDate='day'.$day;
+                if(isset($schedule[$i]->$queryDate))
+                {
+                    $classList=$schedule[$i]->$queryDate;
+                }
+                else{
+                    $classList=="";
+                }
+                
+                if($classList == ""){
+                    continue;
+                }
+                $countClassList=strlen($classList);
+
+                for($j=1;$j<=$countClassList;$j++){
+                    $queryClassName=substr($classList, $j-1, $j);//讀第j個班 
+                    $queryClassEndTime=$queryClassName.'_end';//組合語法
+                    $classStartTime=$schedule[$i]->$queryClassName;//第j個班的開始時間
+                    $classEndTime=$schedule[$i]->$queryClassEndTime;//第j個班的結束時間
+                    $time=$year.'-'.$month.'-'.$day.' '.$time;
+
+
+                    if(strtotime($classEndTime) < strtotime($classStartTime))
+                    { 
+                        $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                        $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                        $classEndTime = date("Y-m-d H:i",strtotime("+1 day",strtotime($classEndTime)));
+                    }
+                    else{
+                        $classStartTime= $year.'-'.$month.'-'.$day.' '.$classStartTime;
+                        $classEndTime= $year.'-'.$month.'-'.$day.' '.$classEndTime;
+                    }
+
+                    $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($classStartTime)));//第j個班開始前十分鐘開放打卡
+                    $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($classEndTime)));//第j個班開始時二十分鐘開放打卡(此rule移除)
+
+                    //現在時間介於第j個班的開始時間及結束時間區間時，設定變數並break loop
+                    if(strtotime($now) <= strtotime($allowPunchEndTime) && strtotime($now) >= strtotime($allowPunchStartTime)){
+                    //if(strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) < strtotime($classEndTime)){
+                        $queryLocation=DB::table('customers')->where('customer_id','=',$schedule[$i]->customer_id)->first();
+                        $cusId=$schedule[$i]->customer_id;
+                        //$class=$queryClassName;
+                        //dd($cusId,$class,$classStartTime,$classEndTime);
+                        //$lat2=$queryLocation->lat;
+                        //$lng2=$queryLocation->lng;
+                        break;
+                    }
+                }
+            }
+        }
+
+        //以上是針對班表查詢，以下為額外代班查詢
+        if($cusId == "")
+        {
+            $day = intval(date('d', strtotime($now)));
+                $request_extra = DB::table('extra_schedules')
+                ->join('customers', 'extra_schedules.cus_id', '=', 'customers.customer_id')
+                ->where('emp_id', $employeeID)
+                ->select('extra_schedules.*', 'customers.lat', 'customers.lng') // 自訂欄位
+                ->get();
+
+            for($i=0;$i<count($request_extra);$i++)
+            {
+                $allowPunchStartTime=date("Y-m-d H:i",strtotime("-20 minute",strtotime($request_extra[$i]->start)));
+                $allowPunchEndTime=date("Y-m-d H:i",strtotime("+10 minute",strtotime($request_extra[$i]->end)));
+
+                if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($allowPunchEndTime))
+                //if( strtotime($now) >= strtotime($allowPunchStartTime) && strtotime($now) <= strtotime($request_extra[$i]->end))
+                {
+                    //$lat2 = $request_extra[$i]->lat;
+                    //$lng2 = $request_extra[$i]->lng;
+                    $cusId = $request_extra[$i]->cus_id;
+                    //$class = '代';
+                    //$classStartTime = $request_extra[$i]->start;
+                    //$classEndTime = $request_extra[$i]->end;
+                    break;
+                }
+            }
+
+
+        } 
+        if($cusId != "")
+        {
+            $point = DB::table('qrcode')
+            ->select('patrol_RD_No','patrol_RD_Name')
+            ->join('customers','qrcode.customer_id','=','customers.customer_id')
+            ->where([
+                ['qrcode.customer_id',$cusId],
+                ['patrol_RD_No','!=',''],
+                ['printQR',1]
+            ])->get()->toarray();
+
+            $cus_name = DB::table('customers')->where('customer_id',$cusId)->first()->firstname;
+            $cus_arr['customer_id'] = $cusId;
+            $cus_arr['customer_name'] = $cus_name;
+            
+            $data = array_merge($cus_arr,$point);
+            $json = json_encode($data);
+
+           // return response()->json($data, 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        else
+        {
+            return response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
+        } 
+        //end 查詢id
+
         // 建立白名單 map
         $qrcode = DB::table('qrcode')
             ->select('patrol_RD_no')
             ->where([
-                ['customer_id', $search_cusid->customer_id],  // 用對應客戶ID
+                ['customer_id', $cusId],  // 用對應客戶ID
                 ['patrol_RD_No', '!=', '']
             ])->get()->toArray();
 
