@@ -840,4 +840,45 @@ class EmployeeController extends Controller
         return view("show_employee",["employees"=>$employee,'fromName'=>1]);
 
     }
+
+    public function api_upload_id(Request $request)
+    {
+        $membersn = $request->input('Employee_ID');
+        $IDCard_front_imageName=null;
+        $IDCard_back_imageName=null;
+        $EmployeeCard_imageName=null;
+        $OthersCard_imageName=null;
+
+        if ($request->file('idcard_front')!=null){
+            $IDCard_front_imageName = $membersn.'_IDCard_front.'.$request->file('IDCard_front')->extension();
+            $path = $request->file('IDCard_front')->storeas('employee_upload/credential/IDCard_front',$IDCard_front_imageName);
+        }
+
+        if ($request->file('idcard_back')!=null){
+            $IDCard_back_imageName = $membersn.'_IDCard_back.'.$request->file('IDCard_back')->extension();
+            $path = $request->file('IDCard_back')->storeas('employee_upload/credential/IDCard_back',$IDCard_back_imageName);
+        }
+
+        if ($request->file('secondcard')!=null){
+            $EmployeeCard_imageName = $membersn.'_EmployeeCard.'.$request->file('EmployeeCard')->extension();
+            $path = $request->file('EmployeeCard')->storeas('employee_upload/credential/EmployeeCard',$EmployeeCard_imageName);
+        }
+
+        $request=Employee::where('member_sn','=',$membersn)->count();
+        if($request!=0)
+        {
+            $data=[
+                'upload_id_control'=> 0 ,
+                'upload_pic_route1'=> $IDCard_front_addr,
+                'upload_pic_route2'=> $IDCard_back_addr,
+                'upload_pic_route3'=> $EmployeeCard_addr,
+            ];
+            $employee=Employee::where('member_sn','=',$membersn)->update($data);
+            return response()->json(['success'],200);
+        }
+        else
+        {
+            return response()->json(['沒有權限上傳，請洽管理人員開通'],403);
+        }
+}
 }

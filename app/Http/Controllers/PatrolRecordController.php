@@ -822,7 +822,7 @@ return response()->json([
 
         return response()->json([
             'message' => 'success to upload data'
-        ]);
+        ],201);
 
     }
 

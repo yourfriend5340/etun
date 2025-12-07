@@ -41,5 +41,5 @@ Route::POST('/patrolpoint', [App\Http\Controllers\PatrolRecordController::class,
 
 Route::POST('/patrol2', [App\Http\Controllers\PatrolRecordController::class, 'api_store2']);
 Route::POST('/patrolPIC2', [App\Http\Controllers\PatrolRecordController::class, 'api_store_PIC2']);
-
+Route::POST('upload_id',[App\Http\Controllers\EmployeeController::class,'api_upload_id']);
 });
