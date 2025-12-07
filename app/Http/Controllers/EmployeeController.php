@@ -842,7 +842,7 @@ class EmployeeController extends Controller
     }
 
 public function api_upload_id(Request $request)
-{
+{dd(get_class($request));
     // 驗證 -------------------------------------------------------
     $validated = $request->validate([
         'EmployeeID'     => 'required',
@@ -900,7 +900,8 @@ public function api_upload_id(Request $request)
 
     return response()->json([
         'status' => 'success',
-        'message' => '上傳完成'
+        'message' => '上傳完成',
+
     ], 200);
 }
 
