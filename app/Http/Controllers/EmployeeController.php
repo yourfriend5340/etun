@@ -861,8 +861,8 @@ public function api_upload_id(Request $request)
     ];
 
     // 檢查員工是否存在
-    $employee = Employee::where('member_sn', $membersn)->first();
-    if (!$employee) {
+    $employee_check = Employee::where('member_sn', $membersn)->count();
+    if ($employee_check ==0) {
         return response()->json([
             'message' => '沒有權限上傳，請洽管理人員開通'
         ], 403);
