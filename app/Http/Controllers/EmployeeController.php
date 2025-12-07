@@ -843,13 +843,7 @@ class EmployeeController extends Controller
 
 public function api_upload_id(Request $request)
 {
-    
-    dd([
-        'class' => get_class($request),
-        'interfaces' => class_implements($request),
-        'parents' => class_parents($request),
-    ]);
-    // 驗證 -------------------------------------------------------
+    // 驗證
     $validated = $request->validate([
         'EmployeeID'     => 'required',
         'idcard_front'   => 'nullable|file|mimes:jpg,jpeg,png',
@@ -863,52 +857,52 @@ public function api_upload_id(Request $request)
     $IDCard_back_imageName = null;
     $EmployeeCard_imageName = null;
 
-    // 上傳身分證正面 -------------------------------------------
+    // 上傳身分證正面
     if ($request->hasFile('idcard_front')) {
-        $IDCard_front_imageName = $membersn . '_IDCard_front.' . $request->file('idcard_front')->extension();
+        $IDCard_front_imageName = $membersn.'_IDCard_front.'.$request->file('idcard_front')->extension();
         $request->file('idcard_front')
             ->storeAs('employee_upload/credential/IDCard_front', $IDCard_front_imageName);
     }
 
-    // 上傳身分證背面 -------------------------------------------
+    // 上傳身分證背面
     if ($request->hasFile('idcard_back')) {
-        $IDCard_back_imageName = $membersn . '_IDCard_back.' . $request->file('idcard_back')->extension();
+        $IDCard_back_imageName = $membersn.'_IDCard_back.'.$request->file('idcard_back')->extension();
         $request->file('idcard_back')
             ->storeAs('employee_upload/credential/IDCard_back', $IDCard_back_imageName);
     }
 
-    // 上傳第二證件 -------------------------------------------
+    // 上傳第二證件
     if ($request->hasFile('secondcard')) {
-        $EmployeeCard_imageName = $membersn . '_EmployeeCard.' . $request->file('secondcard')->extension();
+        $EmployeeCard_imageName = $membersn.'_EmployeeCard.'.$request->file('secondcard')->extension();
         $request->file('secondcard')
             ->storeAs('employee_upload/credential/EmployeeCard', $EmployeeCard_imageName);
     }
 
-    // 檢查員工是否存在 -----------------------------------------
+    // 檢查員工是否存在
     $request_emp = Employee::where('member_sn', $membersn)->count();
     if ($request_emp == 0) {
         return response()->json(['message' => '沒有權限上傳，請洽管理人員開通'], 403);
     }
 
-    // 寫入資料庫 -----------------------------------------------
+    // 更新資料庫，存相對路徑
     Employee::where('member_sn', $membersn)->update([
         'upload_id_control' => 0,
         'upload_pic_route1' => $IDCard_front_imageName
-            ? '/etun/storage/app/employee_upload/credential/IDCard_front/' . $IDCard_front_imageName
+            ? 'employee_upload/credential/IDCard_front/'.$IDCard_front_imageName
             : null,
         'upload_pic_route2' => $IDCard_back_imageName
-            ? '/etun/storage/app/employee_upload/credential/IDCard_back/' . $IDCard_back_imageName
+            ? 'employee_upload/credential/IDCard_back/'.$IDCard_back_imageName
             : null,
         'upload_pic_route3' => $EmployeeCard_imageName
-            ? '/etun/storage/app/employee_upload/credential/EmployeeCard/' . $EmployeeCard_imageName
+            ? 'employee_upload/credential/EmployeeCard/'.$EmployeeCard_imageName
             : null,
     ]);
 
     return response()->json([
         'status' => 'success',
         'message' => '上傳完成',
-
     ], 200);
 }
+
 
 }
