@@ -881,5 +881,5 @@ class EmployeeController extends Controller
         {
             return response()->json(['沒有權限上傳，請洽管理人員開通'],403);
         }
-}
+    }
 }
