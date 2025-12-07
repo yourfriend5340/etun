@@ -842,7 +842,7 @@ class EmployeeController extends Controller
     }
 
 public function api_upload_id(Request $request)
-{dd($request->all(), $request->file('idcard_front'));
+{
 
     // 驗證輸入
     $validated = $request->validate([
