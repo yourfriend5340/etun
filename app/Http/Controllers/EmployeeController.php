@@ -843,7 +843,7 @@ class EmployeeController extends Controller
 
     public function api_upload_id(Request $request)
     {
-        $membersn = $request->input('Employee_ID');
+        $membersn = $request->input('EmployeeID');
         $IDCard_front_imageName=null;
         $IDCard_back_imageName=null;
         $EmployeeCard_imageName=null;
