@@ -842,7 +842,13 @@ class EmployeeController extends Controller
     }
 
 public function api_upload_id(Request $request)
-{dd(get_class($request));
+{
+    
+    dd([
+        'class' => get_class($request),
+        'interfaces' => class_implements($request),
+        'parents' => class_parents($request),
+    ]);
     // 驗證 -------------------------------------------------------
     $validated = $request->validate([
         'EmployeeID'     => 'required',
