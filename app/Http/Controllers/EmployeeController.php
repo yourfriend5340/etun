@@ -847,7 +847,8 @@ class EmployeeController extends Controller
         $IDCard_front_imageName=null;
         $IDCard_back_imageName=null;
         $EmployeeCard_imageName=null;
-        $OthersCard_imageName=null;
+
+        dd($membersn);
 
         if ($request->file('idcard_front')!=null){
             $IDCard_front_imageName = $membersn.'_IDCard_front.'.$request->file('IDCard_front')->extension();
