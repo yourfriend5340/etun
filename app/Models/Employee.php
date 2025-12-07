@@ -69,9 +69,12 @@ class Employee extends Authenticatable
         'care_date',
         'checkup',
         'memo',
+        'upload_id_control',
+        'upload_pic_route1',
+        'upload_pic_route2',
+        'upload_pic_route3',
     ];
-
-
+    
     public function getAuthPassword()
     {
         return ['password'=>$this->attributes['member_password'], 'salt'=>$this->attributes['salt']];
