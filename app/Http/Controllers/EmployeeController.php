@@ -847,7 +847,7 @@ class EmployeeController extends Controller
         $IDCard_front_imageName=null;
         $IDCard_back_imageName=null;
         $EmployeeCard_imageName=null;
-dd($request->all());
+
         if ($request->file('idcard_front')!=null){
             $IDCard_front_imageName = $membersn.'_IDCard_front.'.$request->file('idcard_front')->extension();
             $path = $request->file('idcard_front')->storeAs('employee_upload/credential/IDCard_front',$IDCard_front_imageName);
