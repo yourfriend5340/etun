@@ -848,31 +848,29 @@ class EmployeeController extends Controller
         $IDCard_back_imageName=null;
         $EmployeeCard_imageName=null;
 
-        dd($membersn);
-
         if ($request->file('idcard_front')!=null){
             $IDCard_front_imageName = $membersn.'_IDCard_front.'.$request->file('idcard_front')->extension();
-            $path = $request->file('idcard_front')->storeas('employee_upload/credential/IDCard_front',$IDCard_front_imageName);
+            $path = $request->file('idcard_front')->storeAs('employee_upload/credential/IDCard_front',$IDCard_front_imageName);
         }
 
         if ($request->file('idcard_back')!=null){
             $IDCard_back_imageName = $membersn.'_IDCard_back.'.$request->file('idcard_back')->extension();
-            $path = $request->file('idcard_back')->storeas('employee_upload/credential/IDCard_back',$IDCard_back_imageName);
+            $path = $request->file('idcard_back')->storeAs('employee_upload/credential/IDCard_back',$IDCard_back_imageName);
         }
 
         if ($request->file('secondcard')!=null){
             $EmployeeCard_imageName = $membersn.'_EmployeeCard.'.$request->file('secondcard')->extension();
-            $path = $request->file('secondcard')->storeas('employee_upload/credential/EmployeeCard',$EmployeeCard_imageName);
+            $path = $request->file('secondcard')->storeAs('employee_upload/credential/EmployeeCard',$EmployeeCard_imageName);
         }
 
-        $request=Employee::where('member_sn','=',$membersn)->count();
-        if($request!=0)
+        $request_emp=Employee::where('member_sn','=',$membersn)->count();
+        if($request_emp!=0)
         {
             $data=[
                 'upload_id_control'=> 0 ,
                 'upload_pic_route1'=> '/etun/storage/app/employee_upload/credential/IDCard_front/'.$IDCard_front_imageName,
                 'upload_pic_route2'=> '/etun/storage/app/employee_upload/credential/IDCard_back/'.$IDCard_back_imageName,
-                'upload_pic_route3'=> '/etun/storage/app/emloyee_upload/credential/EmployeeCard_front/'.$IDCard_front_imageName,
+                'upload_pic_route3'=> '/etun/storage/app/employee_upload/credential/EmployeeCard/'.$EmployeeCard_imageName,
             ];
             $employee=Employee::where('member_sn','=',$membersn)->update($data);
             return response()->json(['success'],200);
