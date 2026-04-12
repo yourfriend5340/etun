@@ -30,8 +30,9 @@ class CustomerAuthController extends Controller
     $token = $user->createToken('API Token')->accessToken;
 
     return response()->json([
-        'name' => $user->firstname,
-        'account' =>$user->account,
+        'cus_name' => $user->firstname,
+        'cus_id'   => $user->customer_id,
+        'cus_account' =>$user->account,
         'token' => $token,
 
     ]);
