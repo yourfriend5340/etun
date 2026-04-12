@@ -58,6 +58,11 @@ return [
             'hash'=>false,
         ],
 
+        'customer_api' => [
+            'driver' => 'passport',
+            'provider' => 'customers',
+            'hash' => false,
+        ],
 
 
         
@@ -96,6 +101,8 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\Customer::class,
         ],
+
+        
          
     ],
 

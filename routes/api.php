@@ -49,15 +49,8 @@ Route::POST('/patrolPIC2', [App\Http\Controllers\PatrolRecordController::class, 
 Route::POST('/upload_id',[App\Http\Controllers\EmployeeController::class,'api_upload_id']);
 });
 
-Route::middleware('auth:api')->group(function () {
-    // employee API
-});
+Route::middleware('auth:customer_api')->post('/customer/patrol-records', [\App\Http\Controllers\PatrolRecordController::class,'patrol_recordApi']);
 
-Route::middleware('auth:customer')->group(function () {
-    Route::get('/customer/profile', function () {
-        return auth()->guard('customer')->user();
-    });
-});
 
 
 

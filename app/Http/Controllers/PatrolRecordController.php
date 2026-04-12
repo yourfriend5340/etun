@@ -9,6 +9,7 @@ use Maatwebsite\Excel\Facades\Excel;
 use App\Imports\Patrol_Import;
 use App\Exports\PatrolRecordExport;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class PatrolRecordController extends Controller
 {
@@ -1485,8 +1486,49 @@ return response()->json([
             return response()->json(['message' => '請在工作地點跟時間進行此操作'], 404);
         } 
 
-
-        
     }
+
+    public function patrol_recordApi(Request $request)
+    {
+        $request->validate([
+            'customer_id' => 'required',
+            'start' => 'required|date',
+            'end' => 'required|date',
+        ]);
+
+        $user = Auth::guard('customer_api')->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'unauthenticated'], 401);
+        }
+
+        if ($user->customer_id != $request->customer_id) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $baseUrl = 'https://59.127.88.31/';
+
+        $records = DB::table('patrol_records')
+            ->select('patrol_RD_Name','patrol_RD_DateB','picturePath')
+            ->where('customer_id', $request->customer_id)
+            ->whereBetween('patrol_RD_DateB', [$request->start, $request->end])
+            ->orderBy('patrol_RD_DateB', 'desc')
+            ->get()
+            ->map(function ($item) use ($baseUrl) {
+                return [
+                    'patrol_RD_Name' => $item->patrol_RD_Name,
+                    'patrol_RD_DateB' => $item->patrol_RD_DateB,
+                    'picturePath' => $item->picturePath
+                        ? $baseUrl . ltrim($item->picturePath, '/')
+                        : null,
+                ];
+            });
+
+        return response()->json([
+            'count' => $records->count(),
+            'records' => $records
+        ]);
+    }
+
 
 }
