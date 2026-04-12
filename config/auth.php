@@ -51,6 +51,16 @@ return [
             'provider' => 'employees',
             'hash'=>false,
         ],
+        // 新增：customer API
+        'customer' => [
+            'driver' => 'session',
+            'provider' => 'customers',
+            'hash'=>false,
+        ],
+
+
+
+        
     ],
 
     /*
@@ -80,6 +90,11 @@ return [
         'employees' => [
              'driver' => 'eloquent',
              'model' => App\Models\Employee::class,
+        ],
+        // 新增 customers
+        'customers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Customer::class,
         ],
          
     ],

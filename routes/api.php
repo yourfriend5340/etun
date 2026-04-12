@@ -3,6 +3,9 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\EmployeeController;
+use App\Http\Controllers\Auth\CustomerAuthController;
+
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -24,6 +27,8 @@ use App\Http\Controllers\EmployeeController;
 
 
 Route::POST('/login', [App\Http\Controllers\Auth\AuthUserController::class, 'login']);
+Route::post('/customer/login', [CustomerAuthController::class, 'login']);
+
 
 Route::middleware('auth:api')->group(function () {
 //Route::group(['prefix' => 'v1', 'namespace' => 'Api\v1', 'middleware' => ['api','auth:api'] ], function () {
@@ -43,3 +48,16 @@ Route::POST('/patrol2', [App\Http\Controllers\PatrolRecordController::class, 'ap
 Route::POST('/patrolPIC2', [App\Http\Controllers\PatrolRecordController::class, 'api_store_PIC2']);
 Route::POST('/upload_id',[App\Http\Controllers\EmployeeController::class,'api_upload_id']);
 });
+
+Route::middleware('auth:api')->group(function () {
+    // employee API
+});
+
+Route::middleware('auth:customer')->group(function () {
+    Route::get('/customer/profile', function () {
+        return auth()->guard('customer')->user();
+    });
+});
+
+
+

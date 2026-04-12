@@ -10,6 +10,8 @@ use Laravel\Passport\Passport;
 use Carbon\Carbon;
 use App\Foundation\Auth\AdminEloquentUserProvider;
 use App\Models\User;
+use App\Foundation\Auth\AdminEloquentCustomerProvider;
+
 
 
 class AuthServiceProvider extends ServiceProvider
@@ -37,9 +39,22 @@ class AuthServiceProvider extends ServiceProvider
             Passport::routes();
         }
             Passport::tokensExpireIn(Carbon::now()->addDays(15));
-
             Passport::refreshTokensExpireIn(Carbon::now()->addDays(30));
             Passport::personalAccessTokensExpireIn(now()->addDays(1));
+
+            /*
+            |--------------------------------------------------------------------------
+            | CUSTOMER AUTH PROVIDER
+            |--------------------------------------------------------------------------
+            */
+            Auth::provider('customer-eloquent', function ($app, array $config) {
+                return new \App\Foundation\Auth\AdminEloquentCustomerProvider(
+                    $app['hash'],
+                    $config['model']
+                );
+            });
+
+
             //config(['auth.guards.api.provider' => 'employees']);
 
                 // 系統管理者 Gate 規則
