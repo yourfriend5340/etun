@@ -10,8 +10,15 @@
     </div>
 
     <div class="row justify-content-center m-0">
-        <div class="col-6 text-center">系統維護管理員：阿禧</div>
+        <div class="col-6 text-center">
+            系統維護管理員：阿禧 
+            &nbsp;&nbsp;
+            <a href="{{ route('privacy') }}" target="_blank" rel="noopener noreferrer">
+                隱私權保護政策
+            </a>
+        </div>
     </div>
+
 
     <div class="row justify-content-center m-0">
         <div class="col text-center">聯絡信箱：<a href="mailto:yourfriend5340@gmail.com">yourfriend5340@gmail.com</a></div>
